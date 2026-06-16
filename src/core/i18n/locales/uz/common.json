@@ -1,0 +1,46 @@
+{
+  "brand": "Kadrlar",
+  "brandSub": "HR boshqaruv tizimi",
+  "adminRole": "Tizim administratori",
+  "adminName": "Timur Aliyev",
+  "adminInitials": "TA",
+  "rail": { "hr": "KADRLAR", "reports": "HISOBOTLAR" },
+  "sec": { "dash": "VOSITALAR PANELI", "company": "KOMPANIYASI", "eval": "ISH FAOLIYATINI BAHOLASH" },
+  "nav": {
+    "workSchedule": "Ish grafigi",
+    "employees": "Xodimlar ro'yxati",
+    "supervisorStruct": "Nazoratchi strukturasi",
+    "orgStruct": "Tashkilot strukturasi",
+    "shifts": "Smena jadvallari",
+    "leave": "Izn so'rovi",
+    "attendance": "Davomat hisoboti",
+    "assessments": "Oddiy attestatsiyalar"
+  },
+  "titles": {
+    "dashboard": "Ish grafigi",
+    "employees": "Xodimlar ro'yxati",
+    "supervisorStruct": "Nazoratchi strukturasi",
+    "orgStruct": "Tashkilot strukturasi",
+    "shifts": "Smena jadvallari",
+    "leave": "Izn so'rovi",
+    "attendance": "Davomat hisoboti",
+    "assessments": "Oddiy attestatsiyalar",
+    "assessmentDetail": "Baholash"
+  },
+  "search": "Qidirish...",
+  "allDepts": "Barcha bo'limlar",
+  "noResults": "Natija topilmadi",
+  "status": {
+    "active": "Ishlamoqda",
+    "leave": "Ta'tilda",
+    "probation": "Sinov muddati",
+    "approved": "Ma'qullandi",
+    "submitted": "Topshirildi",
+    "notCreated": "Yaratilmagan",
+    "rejected": "Rad etildi",
+    "pending": "Kutilmoqda",
+    "pendingApproval": "Ma'qullov kutilmoqda"
+  },
+  "gender": { "Ayol": "Ayol", "Erkak": "Erkak" },
+  "actions": { "edit": "Tahrirlash", "options": "Opsiyalar", "printPdf": "PDF chop etish", "create": "Yaratish" }
+}

@@ -1,0 +1,46 @@
+{
+  "brand": "Кадры",
+  "brandSub": "Система управления персоналом",
+  "adminRole": "Системный администратор",
+  "adminName": "Timur Aliyev",
+  "adminInitials": "TA",
+  "rail": { "hr": "КАДРЫ", "reports": "ОТЧЁТЫ" },
+  "sec": { "dash": "ПАНЕЛЬ ИНСТРУМЕНТОВ", "company": "КОМПАНИЯ", "eval": "ОЦЕНКА ДЕЯТЕЛЬНОСТИ" },
+  "nav": {
+    "workSchedule": "График работы",
+    "employees": "Список сотрудников",
+    "supervisorStruct": "Структура руководителей",
+    "orgStruct": "Организационная структура",
+    "shifts": "Расписание смен",
+    "leave": "Заявки на отпуск",
+    "attendance": "Отчёт посещаемости",
+    "assessments": "Аттестации"
+  },
+  "titles": {
+    "dashboard": "График работы",
+    "employees": "Список сотрудников",
+    "supervisorStruct": "Структура руководителей",
+    "orgStruct": "Организационная структура",
+    "shifts": "Расписание смен",
+    "leave": "Заявки на отпуск",
+    "attendance": "Отчёт посещаемости",
+    "assessments": "Аттестации",
+    "assessmentDetail": "Аттестация"
+  },
+  "search": "Поиск...",
+  "allDepts": "Все отделы",
+  "noResults": "Ничего не найдено",
+  "status": {
+    "active": "Работает",
+    "leave": "В отпуске",
+    "probation": "Испытательный срок",
+    "approved": "Утверждено",
+    "submitted": "Отправлено",
+    "notCreated": "Не создано",
+    "rejected": "Отклонено",
+    "pending": "Ожидает",
+    "pendingApproval": "Ожидает утверждения"
+  },
+  "gender": { "Ayol": "Женский", "Erkak": "Мужской" },
+  "actions": { "edit": "Редактировать", "options": "Опции", "printPdf": "Печать PDF", "create": "Создать" }
+}

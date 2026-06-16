@@ -1,0 +1,13 @@
+{
+  "action": "Action", "employee": "Employee", "started": "Started",
+  "startedBy": "Started by", "reviewers": "Reviewer(s)",
+  "status": "Status", "totalScore": "Total score", "validity": "Validity period",
+  "template": "Template", "dept": "Department",
+  "period": "Jan 01, 2026 – Dec 31, 2026",
+  "tpl": "Neurology dept. nurse assessment",
+  "baseDetails": "Basic details", "competencies": "Employee competencies",
+  "overall": "Overall score", "date": "Date", "notes": "Notes",
+  "managerName": "Manager name", "managerComment": "Manager comment",
+  "managerScore": "Manager score", "commentHistory": "Comment history",
+  "charsLeft": "characters left"
+}

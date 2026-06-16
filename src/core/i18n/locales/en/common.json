@@ -1,0 +1,46 @@
+{
+  "brand": "Human Resources",
+  "brandSub": "HR management system",
+  "adminRole": "System administrator",
+  "adminName": "Timur Aliyev",
+  "adminInitials": "TA",
+  "rail": { "hr": "HR", "reports": "REPORTS" },
+  "sec": { "dash": "DASHBOARD", "company": "COMPANY", "eval": "PERFORMANCE EVALUATION" },
+  "nav": {
+    "workSchedule": "Dashboard",
+    "employees": "Employee list",
+    "supervisorStruct": "Supervisor structure",
+    "orgStruct": "Org structure",
+    "shifts": "Shift schedules",
+    "leave": "Leave requests",
+    "attendance": "Attendance report",
+    "assessments": "Assessments"
+  },
+  "titles": {
+    "dashboard": "Dashboard",
+    "employees": "Employee list",
+    "supervisorStruct": "Supervisor structure",
+    "orgStruct": "Org structure",
+    "shifts": "Shift schedules",
+    "leave": "Leave requests",
+    "attendance": "Attendance report",
+    "assessments": "Assessments",
+    "assessmentDetail": "Assessment"
+  },
+  "search": "Search...",
+  "allDepts": "All departments",
+  "noResults": "No results found",
+  "status": {
+    "active": "Active",
+    "leave": "On leave",
+    "probation": "Probation",
+    "approved": "Approved",
+    "submitted": "Submitted",
+    "notCreated": "Not created",
+    "rejected": "Rejected",
+    "pending": "Pending",
+    "pendingApproval": "Pending approval"
+  },
+  "gender": { "Ayol": "Female", "Erkak": "Male" },
+  "actions": { "edit": "Edit", "options": "Options", "printPdf": "Print PDF", "create": "Create" }
+}

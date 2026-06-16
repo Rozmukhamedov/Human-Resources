@@ -1,0 +1,23 @@
+{
+  "today": "seshanba 19 may 2026",
+  "country": "Uzbekistan",
+  "clouds": "Bulutli",
+  "mail": "E-pochta manzili",
+  "mailNone": "Mavjud emas",
+  "unread": "O'qilmagan yangi pochta xabari",
+  "birthday": "Tug'ilgan kun",
+  "birthdaySub": "Yaqinlashib kelayotgan tug'ilgan kunlar",
+  "scheduleStatus": "Ish grafigi holat kesimida (SHO)",
+  "empByDept": "Xodimlar bo'limlar kesimida",
+  "totalDepts": "Jami bo'limlar",
+  "notFilledList": "To'ldirilmagan bo'limlar ro'yxati",
+  "total": "Jami",
+  "totalRow": "Jami",
+  "statCards": {
+    "totalEmps": "Jami xodimlar",
+    "active": "Faol xodimlar",
+    "onLeave": "Ta'tilda",
+    "probation": "Sinov muddatida",
+    "totalScore": "Umumiy hisob"
+  }
+}

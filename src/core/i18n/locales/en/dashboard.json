@@ -1,0 +1,23 @@
+{
+  "today": "Tuesday, 19 May 2026",
+  "country": "Uzbekistan",
+  "clouds": "Clouds",
+  "mail": "Email address",
+  "mailNone": "Not available",
+  "unread": "Unread new mail messages",
+  "birthday": "Birthdays",
+  "birthdaySub": "Upcoming birthdays",
+  "scheduleStatus": "Schedule status overview",
+  "empByDept": "Employees by department",
+  "totalDepts": "Total departments",
+  "notFilledList": "Departments not filled",
+  "total": "Total",
+  "totalRow": "Total",
+  "statCards": {
+    "totalEmps": "Total employees",
+    "active": "Active employees",
+    "onLeave": "On leave",
+    "probation": "Probation",
+    "totalScore": "Total score"
+  }
+}

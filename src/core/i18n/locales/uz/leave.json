@@ -1,0 +1,8 @@
+{
+  "reason": "Sabab", "desc": "Tavsifi", "period": "Qachondan / Qachongacha",
+  "days": "Kunda", "type": "Turi", "approver": "Ma'qullovchi", "status": "Holat",
+  "action": "Harakat", "pdf": "PDF", "leaveStatus": "Izn holati",
+  "show": "Ko'rsatish", "calendar": "Taqvim", "workSchedule": "Ish grafigi",
+  "annual": "Mehnat ta'tili", "sick": "Kasallik ta'tili",
+  "paid": "To'langan", "unpaid": "To'lanmagan"
+}

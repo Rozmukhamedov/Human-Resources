@@ -1,0 +1,33 @@
+{
+  "action": "Action",
+  "name": "First name",
+  "surname": "Last name",
+  "dept": "Department",
+  "pos": "Position",
+  "sup": "Supervisor",
+  "status": "Status",
+  "profile": {
+    "profile": "Employee profile",
+    "leaveReq": "Leave requests",
+    "activities": "Activities",
+    "assess": "Assessments",
+    "incidents": "Incidents",
+    "empInfo": "Employee information",
+    "employmentInfo": "Employment information",
+    "code": "Employee code",
+    "gender": "Gender",
+    "nameF": "First name",
+    "phone": "Phone number",
+    "surnameF": "Last name",
+    "email": "Email address",
+    "dob": "Date of birth",
+    "supervisorF": "Supervisor",
+    "deptF": "Department",
+    "hireDate": "Hire date",
+    "positionF": "Position",
+    "actEmptyTitle": "No activities yet",
+    "actEmptySub": "Tap the button below to create a new activity",
+    "actBtn": "Create activity",
+    "links": "Links"
+  }
+}

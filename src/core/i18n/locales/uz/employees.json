@@ -1,0 +1,33 @@
+{
+  "action": "Harakat",
+  "name": "Ismi",
+  "surname": "Familiyasi",
+  "dept": "Bo'lim",
+  "pos": "Lavozim",
+  "sup": "Nazoratchi",
+  "status": "Holat",
+  "profile": {
+    "profile": "Xodim profili",
+    "leaveReq": "Izn so'rovi",
+    "activities": "Faoliyatlar",
+    "assess": "Oddiy attestatsiyalar",
+    "incidents": "Hodisalar",
+    "empInfo": "Xodim ma'lumotlari",
+    "employmentInfo": "Bandlik ma'lumotlari",
+    "code": "Xodim kodi",
+    "gender": "Jinsi",
+    "nameF": "Ismi",
+    "phone": "Telefon raqami",
+    "surnameF": "Familiyasi",
+    "email": "E-pochta manzili",
+    "dob": "Tug'ilgan kun sanasi",
+    "supervisorF": "Nazoratchi",
+    "deptF": "Bo'lim",
+    "hireDate": "Ishga yollash sanasi",
+    "positionF": "Lavozim",
+    "actEmptyTitle": "Hozircha faoliyatlar yo'q",
+    "actEmptySub": "Yangi faoliyat yaratish uchun quyidagi tugmaga teging",
+    "actBtn": "Faoliyat yaratish",
+    "links": "Havolalar"
+  }
+}

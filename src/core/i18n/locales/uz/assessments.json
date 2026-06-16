@@ -1,0 +1,13 @@
+{
+  "action": "Harakat", "employee": "Xodim", "started": "Boshlangan",
+  "startedBy": "Kim tomonidan boshlangan", "reviewers": "Sharhlovchi(lar)",
+  "status": "Holat", "totalScore": "Umumiy hisob", "validity": "Yaroqlilik muddati",
+  "template": "Andoza", "dept": "Bo'lim",
+  "period": "yan 01, 2026 – dek 31, 2026",
+  "tpl": "Nevrologiya bo'limi hamshiralarini baholash",
+  "baseDetails": "Bazaviy tafsilotlar", "competencies": "Xodim kompetensiyalari",
+  "overall": "Umumiy baho", "date": "Sana", "notes": "Qaydlar",
+  "managerName": "Menejer ismi", "managerComment": "Menejerning sharhi",
+  "managerScore": "Menejerning bahosi", "commentHistory": "Izohlar tarixi",
+  "charsLeft": "belgi qoldi"
+}

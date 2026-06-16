@@ -1,0 +1,8 @@
+{
+  "reason": "Reason", "desc": "Description", "period": "From / To",
+  "days": "Days", "type": "Type", "approver": "Approver", "status": "Status",
+  "action": "Action", "pdf": "PDF", "leaveStatus": "Leave status",
+  "show": "Show", "calendar": "Calendar", "workSchedule": "Work schedule",
+  "annual": "Annual leave", "sick": "Sick leave",
+  "paid": "Paid", "unpaid": "Unpaid"
+}

@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:'Public Sans',system-ui,sans-serif;color:#1f2430;-webkit-font-smoothing:antialiased;background:#eef0f3;}
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-thumb{background:#cfd4db;border-radius:8px;border:2px solid transparent;background-clip:padding-box;}
+  ::-webkit-scrollbar-thumb:hover{background:#b6bcc6;background-clip:padding-box;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+</style>
+</helmet>
+<div style="--accent:{{ accent }};--accent-soft:{{ accentSoft }};--accent-ring:{{ accentRing }};display:flex;height:100vh;width:100%;overflow:hidden;background:#eef0f3;font-family:'Public Sans',sans-serif;">
+
+  <!-- ICON RAIL -->
+  <div style="width:74px;flex:0 0 74px;background:#10131c;display:flex;flex-direction:column;align-items:center;padding:18px 0;gap:6px;">
+    <div style="width:40px;height:40px;border-radius:11px;background:var(--accent,#4f46e5);display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;margin-bottom:14px;box-shadow:0 4px 14px rgba(79,70,229,.45);">K</div>
+    <div onClick="{{ goHR }}" style="{{ railHRStyle }}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"></circle><path d="M2 21v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1"></path><path d="M16 3.5a3 3 0 0 1 0 6"></path><path d="M22 21v-1a4.5 4.5 0 0 0-3-4.2"></path></svg>
+      <span style="font-size:9.5px;font-weight:700;letter-spacing:.04em;">{{ t.rail.hr }}</span>
+    </div>
+    <div onClick="{{ goReports }}" style="{{ railRepStyle }}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"></path><path d="M10 20V4"></path><path d="M16 20v-7"></path><path d="M22 20H2"></path></svg>
+      <span style="font-size:9.5px;font-weight:700;letter-spacing:.04em;">{{ t.rail.reports }}</span>
+    </div>
+  </div>
+
+  <!-- NAV PANEL -->
+  <div style="width:264px;flex:0 0 264px;background:#fff;border-right:1px solid #e8eaee;display:flex;flex-direction:column;">
+    <div style="padding:22px 22px 16px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:21px;color:#161a23;letter-spacing:-.01em;">{{ t.brand }}</div>
+        <div style="font-size:11.5px;color:#9aa1ad;margin-top:1px;">{{ t.brandSub }}</div>
+      </div>
+      <div style="width:30px;height:30px;border-radius:50%;background:var(--accent,#4f46e5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:600;cursor:pointer;box-shadow:0 3px 10px var(--accent-ring,rgba(79,70,229,.3));">+</div>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;padding:4px 12px 20px;">
+      <sc-for list="{{ navGroups }}" as="group" hint-placeholder-count="3">
+        <div style="margin-top:14px;">
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:.09em;color:#a3a9b4;padding:6px 10px;text-transform:uppercase;">{{ group.label }}</div>
+          <sc-for list="{{ group.items }}" as="item" hint-placeholder-count="3">
+            <div onClick="{{ item.onClick }}" style="{{ item.style }}">
+              <span style="{{ item.dotStyle }}"></span>
+              <span style="flex:1;">{{ item.label }}</span>
+              <sc-if value="{{ item.badge }}" hint-placeholder-val="0">
+                <span style="background:var(--accent-soft,#eef2ff);color:var(--accent,#4f46e5);font-size:11px;font-weight:700;border-radius:8px;padding:1px 7px;">{{ item.badge }}</span>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="padding:14px 16px;border-top:1px solid #eef0f3;display:flex;align-items:center;gap:10px;">
+      <div style="width:34px;height:34px;border-radius:50%;background:#eef1f6;display:flex;align-items:center;justify-content:center;font-weight:700;color:#6b7280;font-size:13px;">TA</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;color:#2a2f3a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Timur Aliyev</div>
+        <div style="font-size:11px;color:#9aa1ad;">{{ t.adminRole }}</div>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aeb4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#f4f5f8;">
+
+    <!-- TOPBAR -->
+    <div style="height:58px;flex:0 0 58px;background:#fff;border-bottom:1px solid #e8eaee;display:flex;align-items:center;padding:0 18px 0 8px;gap:8px;">
+      <div style="display:flex;align-items:flex-end;gap:2px;height:100%;flex:1;min-width:0;overflow:hidden;">
+        <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="2">
+          <div onClick="{{ tab.onClick }}" style="{{ tab.style }}">
+            <span style="white-space:nowrap;">{{ tab.label }}</span>
+            <sc-if value="{{ tab.closable }}" hint-placeholder-val="{{ true }}">
+              <span onClick="{{ tab.onClose }}" style="margin-left:8px;color:#b4b9c3;font-size:15px;line-height:1;cursor:pointer;">&times;</span>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <!-- language toggle -->
+      <div style="display:flex;background:#f1f3f6;border-radius:9px;padding:2px;gap:1px;">
+        <div onClick="{{ setUz }}" style="{{ uzStyle }}">UZ</div>
+        <div onClick="{{ setEn }}" style="{{ enStyle }}">EN</div>
+      </div>
+      <!-- theme swatches -->
+      <div style="display:flex;gap:5px;align-items:center;padding:0 4px;">
+        <sc-for list="{{ themes }}" as="th" hint-placeholder-count="3">
+          <div onClick="{{ th.onClick }}" title="{{ th.name }}" style="{{ th.style }}"></div>
+        </sc-for>
+      </div>
+      <div style="width:1px;height:24px;background:#e8eaee;margin:0 4px;"></div>
+      <div style="position:relative;width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#7a818c;cursor:pointer;" style-hover="background:#f3f4f7;">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>
+        <span style="position:absolute;top:5px;right:5px;background:#ef4444;color:#fff;font-size:9px;font-weight:700;border-radius:10px;min-width:15px;height:15px;display:flex;align-items:center;justify-content:center;padding:0 3px;">7</span>
+      </div>
+      <div style="width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#7a818c;cursor:pointer;" style-hover="background:#f3f4f7;">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div style="flex:1;overflow-y:auto;">
+
+      <!-- ============ DASHBOARD ============ -->
+      <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:24px 28px 48px;max-width:1320px;margin:0 auto;">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px;">
+          <sc-for list="{{ statCards }}" as="s" hint-placeholder-count="4">
+            <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;padding:18px 20px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="font-size:12.5px;color:#8d94a0;font-weight:600;">{{ s.label }}</div>
+                <div style="{{ s.iconWrap }}">
+                  <span style="{{ s.dot }}"></span>
+                </div>
+              </div>
+              <div style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:30px;color:{{ s.color }};margin-top:10px;letter-spacing:-.02em;">{{ s.value }}</div>
+              <div style="font-size:12px;color:#a3a9b4;margin-top:2px;">{{ s.sub }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:16px;margin-bottom:18px;">
+          <!-- weather + mail + news -->
+          <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;padding:22px;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="font-weight:700;font-size:14px;color:#2a2f3a;">{{ t.dash.today }}</div>
+                <div style="display:flex;background:#f1f3f6;border-radius:7px;overflow:hidden;font-size:11px;font-weight:700;">
+                  <span style="padding:3px 9px;background:var(--accent,#4f46e5);color:#fff;">°C</span>
+                  <span style="padding:3px 9px;color:#8d94a0;">°F</span>
+                </div>
+              </div>
+              <div style="font-size:12px;color:#9aa1ad;margin-top:2px;">{{ t.dash.country }}</div>
+              <div style="display:flex;align-items:center;gap:14px;margin-top:18px;">
+                <svg width="58" height="58" viewBox="0 0 24 24" fill="none" stroke="#9cb4e8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0 0-9 6 6 0 0 0-11.6-1.5A4 4 0 1 0 5 19z" fill="#dde7fa" stroke="#9cb4e8"></path></svg>
+                <div>
+                  <div style="font-family:'Plus Jakarta Sans';font-size:36px;font-weight:800;color:#2a2f3a;line-height:1;">28°</div>
+                  <div style="font-size:12px;color:#9aa1ad;margin-top:4px;">{{ t.dash.clouds }}</div>
+                </div>
+              </div>
+            </div>
+            <div style="border-left:1px solid #f0f1f4;padding-left:24px;">
+              <div style="font-weight:700;font-size:14px;color:#2a2f3a;">{{ t.dash.mail }}</div>
+              <div style="font-size:12px;color:#9aa1ad;margin-top:2px;">{{ t.dash.mailNone }}</div>
+              <div style="display:flex;align-items:center;gap:14px;margin-top:18px;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#b9c0cc" stroke-width="1.6"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="m3 6 9 7 9-7"></path></svg>
+                <div>
+                  <div style="font-family:'Plus Jakarta Sans';font-size:30px;font-weight:800;color:var(--accent,#4f46e5);line-height:1;">0</div>
+                  <div style="font-size:12px;color:#9aa1ad;margin-top:4px;max-width:140px;">{{ t.dash.unread }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- birthdays -->
+          <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;padding:18px 20px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent,#4f46e5)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"></path><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"></path><path d="M2 21h20"></path><path d="M7 8v3M12 8v3M17 8v3M7 4h.01M12 3h.01M17 4h.01"></path></svg>
+              <div>
+                <div style="font-weight:700;font-size:14px;color:#2a2f3a;">{{ t.dash.birthday }}</div>
+                <div style="font-size:11.5px;color:#9aa1ad;">{{ t.dash.birthdaySub }}</div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px;margin-top:8px;max-height:170px;overflow-y:auto;">
+              <sc-for list="{{ birthdays }}" as="b" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:11px;padding:8px 6px;border-radius:9px;" style-hover="background:#f7f8fa;">
+                  <div style="width:34px;height:34px;border-radius:50%;background:var(--accent-soft,#eef2ff);color:var(--accent,#4f46e5);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:0 0 34px;">{{ b.ini }}</div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:13px;font-weight:600;color:#2a2f3a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ b.name }}</div>
+                    <div style="font-size:11.5px;color:#9aa1ad;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ b.dept }}</div>
+                  </div>
+                  <div style="font-size:12px;font-weight:600;color:var(--accent,#4f46e5);white-space:nowrap;">{{ b.date }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;">
+          <!-- donut -->
+          <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;padding:20px 22px;">
+            <div style="font-weight:700;font-size:14px;color:#2a2f3a;margin-bottom:6px;">{{ t.dash.scheduleStatus }}</div>
+            <div style="display:flex;align-items:center;gap:28px;">
+              <div style="position:relative;width:170px;height:170px;flex:0 0 170px;">
+                <div style="width:170px;height:170px;border-radius:50%;background:conic-gradient(var(--accent,#4f46e5) 0 92.86%, #f59e0b 92.86% 96.43%, #94a3b8 96.43% 100%);"></div>
+                <div style="position:absolute;inset:30px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                  <div style="font-family:'Plus Jakarta Sans';font-size:34px;font-weight:800;color:#2a2f3a;line-height:1;">28</div>
+                  <div style="font-size:11px;color:#9aa1ad;">{{ t.dash.totalDepts }}</div>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:14px;">
+                <div style="display:flex;align-items:center;gap:10px;"><span style="width:11px;height:11px;border-radius:3px;background:var(--accent,#4f46e5);"></span><span style="font-size:13px;color:#5b6270;flex:1;">{{ t.st.approved }}</span><span style="font-weight:700;color:#2a2f3a;">26</span></div>
+                <div style="display:flex;align-items:center;gap:10px;"><span style="width:11px;height:11px;border-radius:3px;background:#f59e0b;"></span><span style="font-size:13px;color:#5b6270;flex:1;">{{ t.st.submitted }}</span><span style="font-weight:700;color:#2a2f3a;">1</span></div>
+                <div style="display:flex;align-items:center;gap:10px;"><span style="width:11px;height:11px;border-radius:3px;background:#94a3b8;"></span><span style="font-size:13px;color:#5b6270;flex:1;">{{ t.st.notCreated }}</span><span style="font-weight:700;color:#2a2f3a;">1</span></div>
+              </div>
+            </div>
+          </div>
+          <!-- not filled list -->
+          <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;padding:20px 22px;">
+            <div style="font-weight:700;font-size:14px;color:#2a2f3a;margin-bottom:12px;">{{ t.dash.notFilledList }}</div>
+            <div style="display:flex;font-size:11px;font-weight:700;color:#a3a9b4;letter-spacing:.05em;text-transform:uppercase;padding:0 4px 8px;border-bottom:1px solid #f0f1f4;">
+              <span style="width:34px;">#</span><span style="flex:1;">{{ t.emp.dept }}</span><span>{{ t.dash.total }}</span>
+            </div>
+            <div style="display:flex;align-items:center;padding:11px 4px;border-bottom:1px solid #f4f5f7;"><span style="width:34px;color:#a3a9b4;font-size:13px;">1</span><span style="flex:1;font-size:13px;color:#3a4150;">Ichki nazorat va tashkiliy uslubiy bo'lim</span><span style="font-weight:700;color:#2a2f3a;">1.00</span></div>
+            <div style="display:flex;align-items:center;padding:11px 4px;border-bottom:1px solid #f4f5f7;"><span style="width:34px;color:#a3a9b4;font-size:13px;">2</span><span style="flex:1;font-size:13px;color:#3a4150;">Kichik yoshdagi bolalar patologiyasi bo'limi</span><span style="font-weight:700;color:#2a2f3a;">1.00</span></div>
+            <div style="display:flex;align-items:center;padding:11px 4px;"><span style="width:34px;"></span><span style="flex:1;font-size:13px;font-weight:700;color:#2a2f3a;">{{ t.dash.totalRow }}</span><span style="font-weight:800;color:var(--accent,#4f46e5);">2.00</span></div>
+          </div>
+        </div>
+
+        <!-- bar chart -->
+        <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;padding:20px 22px;">
+          <div style="font-weight:700;font-size:14px;color:#2a2f3a;margin-bottom:22px;">{{ t.dash.empByDept }}</div>
+          <div style="display:flex;align-items:flex-end;gap:14px;height:220px;padding-left:6px;">
+            <sc-for list="{{ deptBars }}" as="bar" hint-placeholder-count="12">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end;gap:8px;min-width:0;">
+                <div style="font-size:12px;font-weight:700;color:#5b6270;">{{ bar.count }}</div>
+                <div style="{{ bar.barStyle }}"></div>
+                <div style="font-size:10px;color:#a3a9b4;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;writing-mode:vertical-rl;transform:rotate(180deg);height:64px;">{{ bar.name }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ EMPLOYEES ============ -->
+      <sc-if value="{{ isEmployees }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:18px 24px 40px;">
+        <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;overflow:hidden;">
+          <!-- toolbar -->
+          <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid #f0f1f4;">
+            <div style="width:36px;height:36px;border-radius:50%;background:var(--accent,#4f46e5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer;box-shadow:0 3px 10px var(--accent-ring,rgba(79,70,229,.3));">+</div>
+            <div style="flex:1;max-width:380px;display:flex;align-items:center;gap:9px;background:#f4f5f8;border:1px solid #eceef2;border-radius:10px;padding:0 12px;height:38px;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9aa1ad" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+              <input value="{{ query }}" onInput="{{ onSearch }}" placeholder="{{ t.search }}" style="border:none;background:transparent;outline:none;font-size:13.5px;font-family:'Public Sans';color:#2a2f3a;width:100%;" />
+            </div>
+            <select value="{{ filterDept }}" onChange="{{ onFilterDept }}" style="height:38px;border:1px solid #eceef2;border-radius:10px;background:#fff;padding:0 12px;font-size:13px;color:#5b6270;font-family:'Public Sans';cursor:pointer;outline:none;">
+              <option value="all">{{ t.allDepts }}</option>
+              <sc-for list="{{ deptOptions }}" as="d" hint-placeholder-count="6">
+                <option value="{{ d }}">{{ d }}</option>
+              </sc-for>
+            </select>
+            <div style="flex:1;"></div>
+            <div style="font-size:13px;color:#8d94a0;font-weight:500;">{{ rangeLabel }} <span style="color:#cfd4db;">/</span> 1007</div>
+            <div style="display:flex;gap:2px;">
+              <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#b4b9c3;cursor:pointer;" style-hover="background:#f3f4f7;color:#5b6270;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
+              <div style="min-width:32px;height:32px;border-radius:8px;background:var(--accent-soft,#eef2ff);color:var(--accent,#4f46e5);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;padding:0 8px;">1</div>
+              <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#7a818c;cursor:pointer;" style-hover="background:#f3f4f7;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+            </div>
+          </div>
+          <!-- header row -->
+          <div style="display:grid;grid-template-columns:42px 64px 1.1fr 1.1fr 1.6fr 1.5fr 1.4fr 1fr;align-items:center;padding:0 18px;height:46px;background:#fafbfc;border-bottom:1px solid #f0f1f4;">
+            <div onClick="{{ toggleAll }}" style="{{ allCheckStyle }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:{{ allCheckOpacity }};"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            <div style="font-size:11px;font-weight:700;color:#a3a9b4;letter-spacing:.05em;text-transform:uppercase;">{{ t.emp.action }}</div>
+            <sc-for list="{{ empHeaders }}" as="h" hint-placeholder-count="6">
+              <div onClick="{{ h.onClick }}" style="font-size:11px;font-weight:700;color:#a3a9b4;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none;">{{ h.label }}<span style="color:var(--accent,#4f46e5);">{{ h.arrow }}</span></div>
+            </sc-for>
+          </div>
+          <!-- rows -->
+          <sc-for list="{{ employeesView }}" as="e" hint-placeholder-count="12">
+            <div onClick="{{ e.open }}" style="{{ e.rowStyle }}">
+              <div onClick="{{ e.check }}" style="{{ e.checkStyle }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:{{ e.checkOpacity }};"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+              <div style="width:34px;height:34px;border-radius:50%;background:{{ e.avBg }};color:{{ e.avColor }};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">{{ e.ini }}</div>
+              <div style="font-size:13.5px;font-weight:600;color:#2a2f3a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ e.name }}</div>
+              <div style="font-size:13.5px;color:#3a4150;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ e.surname }}</div>
+              <div style="font-size:13px;color:#5b6270;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ e.dept }}</div>
+              <div style="font-size:13px;color:#5b6270;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ e.pos }}</div>
+              <div style="font-size:13px;color:#5b6270;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ e.sup }}</div>
+              <div><span style="{{ e.pillStyle }}">{{ e.statusLabel }}</span></div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noResults }}" hint-placeholder-val="0">
+            <div style="padding:48px;text-align:center;color:#a3a9b4;font-size:14px;">{{ t.noResults }}</div>
+          </sc-if>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ PROFILE ============ -->
+      <sc-if value="{{ isProfile }}" hint-placeholder-val="0">
+      <div style="display:flex;flex-direction:column;height:100%;">
+        <!-- profile sub-tabs -->
+        <div style="background:#fff;border-bottom:1px solid #e8eaee;padding:12px 24px 0;display:flex;gap:4px;">
+          <sc-for list="{{ profileTabs }}" as="pt" hint-placeholder-count="5">
+            <div onClick="{{ pt.onClick }}" style="{{ pt.style }}">{{ pt.label }}<sc-if value="{{ pt.badge }}" hint-placeholder-val="0"><span style="background:#11151d;color:#fff;font-size:10px;font-weight:700;border-radius:7px;padding:1px 6px;margin-left:6px;position:relative;top:-7px;">{{ pt.badge }}</span></sc-if></div>
+          </sc-for>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:24px 28px 44px;">
+
+          <!-- profile info tab -->
+          <sc-if value="{{ profIsInfo }}" hint-placeholder-val="{{ true }}">
+          <div style="max-width:1180px;margin:0 auto;">
+            <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;padding:24px 28px;margin-bottom:18px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:22px;"><span style="width:4px;height:18px;background:var(--accent,#4f46e5);border-radius:3px;"></span><span style="font-weight:700;font-size:14px;letter-spacing:.04em;color:#2a2f3a;text-transform:uppercase;">{{ t.prof.empInfo }}</span></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 220px;gap:28px;">
+                <div style="display:flex;flex-direction:column;gap:20px;">
+                  <div><div style="{{ flLabel }}">{{ t.prof.code }}</div><div style="{{ flVal }}">{{ emp.id }}</div></div>
+                  <div><div style="{{ flLabel }}">{{ t.prof.nameF }}</div><div style="{{ flVal }}">{{ emp.name }}</div></div>
+                  <div><div style="{{ flLabel }}">{{ t.prof.surnameF }}</div><div style="{{ flVal }}">{{ emp.surname }}</div></div>
+                  <div><div style="{{ flLabel }}">{{ t.prof.dob }}</div><div style="{{ flVal }}">{{ emp.dob }}</div></div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:20px;">
+                  <div><div style="{{ flLabel }}">{{ t.prof.gender }}</div><div style="{{ flVal }}">{{ emp.genderLabel }}</div></div>
+                  <div><div style="{{ flLabel }}">{{ t.prof.phone }}</div><div style="{{ flVal }}">{{ emp.phone }}</div></div>
+                  <div><div style="{{ flLabel }}">{{ t.prof.email }}</div><a href="#" style="font-size:14px;color:var(--accent,#4f46e5);font-weight:600;text-decoration:none;">{{ emp.email }}</a></div>
+                </div>
+                <div style="width:200px;height:200px;border-radius:14px;background:#f4f5f8;border:1px solid #eceef2;display:flex;align-items:center;justify-content:center;position:relative;">
+                  <svg width="120" height="120" viewBox="0 0 24 24" fill="#dfe3ea"><circle cx="12" cy="8" r="4.2"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z"></path></svg>
+                  <div style="position:absolute;font-family:'Plus Jakarta Sans';font-weight:800;font-size:40px;color:#aeb4bf;">{{ emp.ini }}</div>
+                </div>
+              </div>
+            </div>
+            <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;padding:24px 28px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:22px;"><span style="width:4px;height:18px;background:var(--accent,#4f46e5);border-radius:3px;"></span><span style="font-weight:700;font-size:14px;letter-spacing:.04em;color:#2a2f3a;text-transform:uppercase;">{{ t.prof.employmentInfo }}</span></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px;">
+                <div><div style="{{ flLabel }}">{{ t.prof.supervisorF }}</div><div style="{{ flVal }}">{{ emp.sup }}</div></div>
+                <div><div style="{{ flLabel }}">{{ t.prof.deptF }}</div><div style="{{ flVal }}">{{ emp.dept }}</div></div>
+                <div><div style="{{ flLabel }}">{{ t.prof.hireDate }}</div><div style="{{ flVal }}">{{ emp.hireDate }}</div></div>
+                <div><div style="{{ flLabel }}">{{ t.prof.positionF }}</div><div style="{{ flVal }}">{{ emp.pos }}</div></div>
+                <div><div style="{{ flLabel }}">{{ t.emp.status }}</div><div><span style="{{ emp.pillStyle }}">{{ emp.statusLabel }}</span></div></div>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+
+          <!-- profile leave tab -->
+          <sc-if value="{{ profIsLeave }}" hint-placeholder-val="0">
+          <div style="max-width:1180px;margin:0 auto;">
+            <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;overflow:hidden;margin-bottom:18px;">
+              <div style="display:grid;grid-template-columns:1.1fr 1.5fr 1.9fr .6fr .9fr 1.2fr 1fr .6fr;align-items:center;padding:0 18px;height:46px;background:#fafbfc;border-bottom:1px solid #f0f1f4;font-size:11px;font-weight:700;color:#a3a9b4;letter-spacing:.05em;text-transform:uppercase;">
+                <div>{{ t.leave.reason }}</div><div>{{ t.leave.desc }}</div><div>{{ t.leave.period }}</div><div>{{ t.leave.days }}</div><div>{{ t.leave.type }}</div><div>{{ t.leave.approver }}</div><div>{{ t.leave.status }}</div><div style="text-align:right;">{{ t.leave.pdf }}</div>
+              </div>
+              <sc-for list="{{ leaveRows }}" as="lv" hint-placeholder-count="4">
+                <div style="display:grid;grid-template-columns:1.1fr 1.5fr 1.9fr .6fr .9fr 1.2fr 1fr .6fr;align-items:center;padding:0 18px;height:54px;border-bottom:1px solid #f4f5f7;" style-hover="background:#fafbfc;">
+                  <div style="font-size:13.5px;font-weight:600;color:var(--accent,#4f46e5);">{{ lv.reason }}</div>
+                  <div style="font-size:13px;color:#5b6270;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ lv.desc }}</div>
+                  <div style="font-size:13px;color:#3a4150;">{{ lv.period }}</div>
+                  <div style="font-size:13px;color:#5b6270;">{{ lv.days }}</div>
+                  <div style="font-size:13px;color:#5b6270;">{{ lv.type }}</div>
+                  <div style="font-size:13px;color:#5b6270;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ lv.approver }}</div>
+                  <div><span style="{{ lv.pillStyle }}">{{ lv.statusLabel }}</span></div>
+                  <div style="text-align:right;color:#c0392b;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="display:inline;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path></svg></div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:18px;">
+              <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;padding:20px 22px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+                  <div style="font-weight:700;font-size:14px;color:#2a2f3a;flex:1;">{{ t.leave.leaveStatus }}</div>
+                  <input value="{{ leaveYear }}" onInput="{{ setLeaveYear }}" style="width:90px;height:36px;border:1px solid #e2e5ea;border-radius:9px;padding:0 12px;font-size:13px;font-family:'Public Sans';outline:none;color:#2a2f3a;" />
+                  <div style="height:36px;padding:0 18px;display:flex;align-items:center;background:var(--accent,#4f46e5);color:#fff;font-size:13px;font-weight:600;border-radius:9px;cursor:pointer;">{{ t.leave.show }}</div>
+                </div>
+                <div style="text-align:center;font-weight:700;font-size:13px;color:#5b6270;margin-bottom:14px;letter-spacing:.03em;">{{ emp.name }} {{ emp.surname }}</div>
+                <div style="display:flex;align-items:flex-end;gap:18px;height:160px;padding:0 10px;border-bottom:2px solid #f0f1f4;">
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;"><span style="font-size:11px;font-weight:700;color:#5b6270;">30</span><div style="width:60%;height:75%;background:var(--accent,#4f46e5);border-radius:6px 6px 0 0;"></div></div>
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;"><span style="font-size:11px;font-weight:700;color:#5b6270;">5</span><div style="width:60%;height:18%;background:#0f9d58;border-radius:6px 6px 0 0;"></div></div>
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;"><span style="font-size:11px;font-weight:700;color:#5b6270;">7</span><div style="width:60%;height:25%;background:#d97706;border-radius:6px 6px 0 0;"></div></div>
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;"><span style="font-size:11px;font-weight:700;color:#94a3b8;">0</span><div style="width:60%;height:2%;background:#cdd2da;border-radius:6px 6px 0 0;"></div></div>
+                </div>
+                <div style="display:flex;justify-content:space-around;margin-top:10px;font-size:11px;color:#9aa1ad;text-align:center;">
+                  <span style="flex:1;">{{ t.leave.annual }}</span><span style="flex:1;">{{ t.leave.sick }}</span><span style="flex:1;">{{ t.leave.unpaid }}</span><span style="flex:1;">—</span>
+                </div>
+              </div>
+              <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;padding:18px 20px;">
+                <div style="display:flex;gap:14px;margin-bottom:14px;border-bottom:1px solid #f0f1f4;padding-bottom:10px;">
+                  <span style="font-size:13px;font-weight:700;color:var(--accent,#4f46e5);border-bottom:2px solid var(--accent,#4f46e5);padding-bottom:8px;margin-bottom:-11px;">{{ t.leave.calendar }}</span>
+                  <span style="font-size:13px;font-weight:500;color:#9aa1ad;">{{ t.leave.workSchedule }}</span>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                  <span style="color:#aeb4bf;cursor:pointer;font-size:18px;">‹</span>
+                  <span style="font-weight:700;font-size:14px;color:#2a2f3a;">May 2026</span>
+                  <span style="color:#aeb4bf;cursor:pointer;font-size:18px;">›</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center;font-size:11px;color:#a3a9b4;font-weight:700;margin-bottom:4px;">
+                  <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center;">
+                  <span style="color:#cdd2da;font-size:12px;padding:6px 0;">28</span><span style="color:#cdd2da;font-size:12px;padding:6px 0;">29</span><span style="color:#cdd2da;font-size:12px;padding:6px 0;">30</span><span style="font-size:12px;padding:6px 0;color:#3a4150;">1</span><span style="font-size:12px;padding:6px 0;color:#3a4150;">2</span><span style="font-size:12px;padding:6px 0;color:#9aa1ad;">3</span><span style="font-size:12px;padding:6px 0;color:#9aa1ad;">4</span>
+                  <span style="font-size:12px;padding:6px 0;color:#3a4150;">5</span><span style="font-size:12px;padding:6px 0;color:#3a4150;">6</span><span style="font-size:12px;padding:6px 0;color:#3a4150;">7</span><span style="font-size:12px;padding:6px 0;color:#3a4150;">8</span><span style="font-size:12px;padding:6px 0;color:#3a4150;">9</span><span style="font-size:12px;padding:6px 0;color:#9aa1ad;">10</span><span style="font-size:12px;padding:6px 0;color:#9aa1ad;">11</span>
+                  <span style="font-size:12px;padding:6px 0;background:var(--accent-soft,#eef2ff);color:var(--accent,#4f46e5);border-radius:7px;font-weight:700;">12</span><span style="font-size:12px;padding:6px 0;background:var(--accent-soft,#eef2ff);color:var(--accent,#4f46e5);border-radius:7px;font-weight:700;">13</span><span style="font-size:12px;padding:6px 0;background:var(--accent,#4f46e5);color:#fff;border-radius:7px;font-weight:700;">14</span><span style="font-size:12px;padding:6px 0;color:#3a4150;">15</span><span style="font-size:12px;padding:6px 0;color:#3a4150;">16</span><span style="font-size:12px;padding:6px 0;color:#9aa1ad;">17</span><span style="font-size:12px;padding:6px 0;color:#9aa1ad;">18</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+
+          <!-- profile activities tab -->
+          <sc-if value="{{ profIsActivities }}" hint-placeholder-val="0">
+          <div style="max-width:900px;margin:40px auto;text-align:center;">
+            <div style="width:96px;height:96px;border-radius:24px;background:var(--accent-soft,#eef2ff);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;">
+              <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="var(--accent,#4f46e5)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M12 18v-6M9 15h6"></path></svg>
+            </div>
+            <div style="font-family:'Plus Jakarta Sans';font-weight:700;font-size:20px;color:#2a2f3a;">{{ t.prof.actEmptyTitle }}</div>
+            <div style="font-size:14px;color:#8d94a0;margin-top:8px;max-width:440px;margin-left:auto;margin-right:auto;">{{ t.prof.actEmptySub }}</div>
+            <div style="margin-top:24px;display:inline-flex;align-items:center;gap:8px;background:var(--accent,#4f46e5);color:#fff;font-weight:600;font-size:14px;padding:11px 22px;border-radius:11px;cursor:pointer;box-shadow:0 4px 14px var(--accent-ring,rgba(79,70,229,.3));"><span style="font-size:18px;">+</span>{{ t.prof.actBtn }}</div>
+          </div>
+          </sc-if>
+
+          <!-- profile assessments tab -->
+          <sc-if value="{{ profIsAssess }}" hint-placeholder-val="0">
+          <div style="max-width:1180px;margin:0 auto;background:#fff;border:1px solid #ebedf1;border-radius:16px;overflow:hidden;">
+            <div style="display:grid;grid-template-columns:60px 1.2fr 1fr 1.2fr 1fr .9fr .9fr 1.3fr;align-items:center;padding:0 18px;height:46px;background:#fafbfc;border-bottom:1px solid #f0f1f4;font-size:11px;font-weight:700;color:#a3a9b4;letter-spacing:.04em;text-transform:uppercase;">
+              <div>{{ t.assess.action }}</div><div>{{ t.assess.employee }}</div><div>{{ t.assess.started }}</div><div>{{ t.assess.reviewers }}</div><div>{{ t.assess.status }}</div><div>{{ t.assess.totalScore }}</div><div>{{ t.assess.template }}</div><div>{{ t.assess.dept }}</div>
+            </div>
+            <sc-for list="{{ assessRows }}" as="a" hint-placeholder-count="8">
+              <div onClick="{{ a.open }}" style="display:grid;grid-template-columns:60px 1.2fr 1fr 1.2fr 1fr .9fr .9fr 1.3fr;align-items:center;padding:0 18px;height:54px;border-bottom:1px solid #f4f5f7;cursor:pointer;" style-hover="background:#fafbfc;">
+                <div style="color:#aeb4bf;font-weight:700;letter-spacing:1px;">•••</div>
+                <div style="font-size:13.5px;font-weight:600;color:#2a2f3a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ a.employee }}</div>
+                <div style="font-size:13px;color:#5b6270;">{{ a.started }}</div>
+                <div style="font-size:13px;color:#5b6270;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ a.reviewers }}</div>
+                <div><span style="{{ a.pillStyle }}">{{ a.statusLabel }}</span></div>
+                <div style="font-size:14px;font-weight:700;color:var(--accent,#4f46e5);">{{ a.score }}</div>
+                <div style="font-size:12.5px;color:#5b6270;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ a.template }}</div>
+                <div style="font-size:12.5px;color:#5b6270;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ a.dept }}</div>
+              </div>
+            </sc-for>
+          </div>
+          </sc-if>
+
+        </div>
+        <!-- profile footer -->
+        <div style="background:#fff;border-top:1px solid #e8eaee;padding:12px 28px;display:flex;align-items:center;gap:14px;">
+          <div style="display:flex;align-items:center;gap:8px;color:#7a818c;font-size:13px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"></path><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"></path></svg>{{ t.prof.links }} <span style="background:#11151d;color:#fff;border-radius:7px;font-size:10px;font-weight:700;padding:1px 6px;">8</span></div>
+          <div style="flex:1;"></div>
+          <div style="padding:9px 18px;border:1px solid #e2e5ea;border-radius:10px;font-size:13.5px;font-weight:600;color:#5b6270;cursor:pointer;" style-hover="background:#f7f8fa;">{{ t.prof.options }}</div>
+          <div style="padding:9px 18px;border:1px solid #e2e5ea;border-radius:10px;font-size:13.5px;font-weight:600;color:#5b6270;cursor:pointer;" style-hover="background:#f7f8fa;">{{ t.prof.printPdf }}</div>
+          <div style="padding:9px 22px;background:var(--accent,#4f46e5);border-radius:10px;font-size:13.5px;font-weight:600;color:#fff;cursor:pointer;box-shadow:0 3px 10px var(--accent-ring,rgba(79,70,229,.3));">{{ t.prof.edit }}</div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ LEAVE (standalone) ============ -->
+      <sc-if value="{{ isLeave }}" hint-placeholder-val="0">
+      <div style="padding:18px 24px 40px;">
+        <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;overflow:hidden;margin-bottom:18px;">
+          <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid #f0f1f4;">
+            <div style="width:36px;height:36px;border-radius:50%;background:var(--accent,#4f46e5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer;box-shadow:0 3px 10px var(--accent-ring,rgba(79,70,229,.3));">+</div>
+            <div style="font-weight:700;font-size:15px;color:#2a2f3a;">{{ t.nav.leave }}</div>
+            <div style="flex:1;"></div>
+            <div style="font-size:13px;color:#8d94a0;">1 - 4 <span style="color:#cfd4db;">/</span> 4</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1.1fr 1.5fr 1.9fr .6fr .9fr 1.2fr 1fr .6fr;align-items:center;padding:0 18px;height:46px;background:#fafbfc;border-bottom:1px solid #f0f1f4;font-size:11px;font-weight:700;color:#a3a9b4;letter-spacing:.05em;text-transform:uppercase;">
+            <div>{{ t.leave.reason }}</div><div>{{ t.leave.desc }}</div><div>{{ t.leave.period }}</div><div>{{ t.leave.days }}</div><div>{{ t.leave.type }}</div><div>{{ t.leave.approver }}</div><div>{{ t.leave.status }}</div><div style="text-align:right;">{{ t.leave.pdf }}</div>
+          </div>
+          <sc-for list="{{ leaveRows }}" as="lv" hint-placeholder-count="4">
+            <div style="display:grid;grid-template-columns:1.1fr 1.5fr 1.9fr .6fr .9fr 1.2fr 1fr .6fr;align-items:center;padding:0 18px;height:54px;border-bottom:1px solid #f4f5f7;" style-hover="background:#fafbfc;">
+              <div style="font-size:13.5px;font-weight:600;color:var(--accent,#4f46e5);">{{ lv.reason }}</div>
+              <div style="font-size:13px;color:#5b6270;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ lv.desc }}</div>
+              <div style="font-size:13px;color:#3a4150;">{{ lv.period }}</div>
+              <div style="font-size:13px;color:#5b6270;">{{ lv.days }}</div>
+              <div style="font-size:13px;color:#5b6270;">{{ lv.type }}</div>
+              <div style="font-size:13px;color:#5b6270;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ lv.approver }}</div>
+              <div><span style="{{ lv.pillStyle }}">{{ lv.statusLabel }}</span></div>
+              <div style="text-align:right;color:#c0392b;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="display:inline;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path></svg></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ ASSESSMENTS (standalone) ============ -->
+      <sc-if value="{{ isAssessments }}" hint-placeholder-val="0">
+      <div style="padding:18px 24px 40px;">
+        <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid #f0f1f4;">
+            <div style="width:36px;height:36px;border-radius:50%;background:var(--accent,#4f46e5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer;box-shadow:0 3px 10px var(--accent-ring,rgba(79,70,229,.3));">+</div>
+            <div style="font-weight:700;font-size:15px;color:#2a2f3a;">{{ t.nav.assessments }}</div>
+            <div style="flex:1;"></div>
+            <div style="font-size:13px;color:#8d94a0;">1 - 12 <span style="color:#cfd4db;">/</span> 74</div>
+          </div>
+          <div style="display:grid;grid-template-columns:54px 1.2fr .9fr 1.1fr 1.1fr .9fr .8fr 1.2fr 1.3fr;align-items:center;padding:0 18px;height:46px;background:#fafbfc;border-bottom:1px solid #f0f1f4;font-size:11px;font-weight:700;color:#a3a9b4;letter-spacing:.04em;text-transform:uppercase;">
+            <div>{{ t.assess.action }}</div><div>{{ t.assess.employee }}</div><div>{{ t.assess.started }}</div><div>{{ t.assess.startedBy }}</div><div>{{ t.assess.reviewers }}</div><div>{{ t.assess.status }}</div><div>{{ t.assess.totalScore }}</div><div>{{ t.assess.validity }}</div><div>{{ t.assess.dept }}</div>
+          </div>
+          <sc-for list="{{ assessRows }}" as="a" hint-placeholder-count="10">
+            <div onClick="{{ a.open }}" style="display:grid;grid-template-columns:54px 1.2fr .9fr 1.1fr 1.1fr .9fr .8fr 1.2fr 1.3fr;align-items:center;padding:0 18px;height:54px;border-bottom:1px solid #f4f5f7;cursor:pointer;" style-hover="background:#fafbfc;">
+              <div style="color:#aeb4bf;font-weight:700;letter-spacing:1px;">•••</div>
+              <div style="font-size:13.5px;font-weight:600;color:#2a2f3a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ a.employee }}</div>
+              <div style="font-size:12.5px;color:#5b6270;">{{ a.started }}</div>
+              <div style="font-size:12.5px;color:#5b6270;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ a.startedBy }}</div>
+              <div style="font-size:12.5px;color:#5b6270;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ a.reviewers }}</div>
+              <div><span style="{{ a.pillStyle }}">{{ a.statusLabel }}</span></div>
+              <div style="font-size:14px;font-weight:700;color:var(--accent,#4f46e5);">{{ a.score }}</div>
+              <div style="font-size:12px;color:#5b6270;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ a.period }}</div>
+              <div style="font-size:12.5px;color:#5b6270;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ a.dept }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ ASSESSMENT DETAIL ============ -->
+      <sc-if value="{{ isAssessmentDetail }}" hint-placeholder-val="0">
+      <div style="padding:24px 28px 48px;max-width:1240px;margin:0 auto;">
+        <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;padding:24px 28px;margin-bottom:18px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:22px;"><span style="width:4px;height:18px;background:var(--accent,#4f46e5);border-radius:3px;"></span><span style="font-weight:700;font-size:14px;letter-spacing:.04em;color:#2a2f3a;text-transform:uppercase;">{{ t.assess.baseDetails }}</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;">
+            <div style="display:flex;flex-direction:column;gap:18px;">
+              <div><div style="{{ flLabel }}">{{ t.assess.dept }}</div><div style="{{ flVal }}">{{ emp.dept }}</div></div>
+              <div><div style="{{ flLabel }}">{{ t.assess.date }}</div><div style="{{ flVal }}">may 14, 2026</div></div>
+              <div><div style="{{ flLabel }}">{{ t.assess.templateF }}</div><div style="{{ flVal }}">{{ t.assess.tpl }}</div></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:18px;">
+              <div><div style="{{ flLabel }}">{{ t.assess.overall }}</div><div style="font-family:'Plus Jakarta Sans';font-size:24px;font-weight:800;color:var(--accent,#4f46e5);">98.13 <span style="font-size:14px;color:#9aa1ad;font-weight:600;">/ 100</span></div></div>
+              <div><div style="{{ flLabel }}">{{ t.assess.employee }}</div><div style="{{ flVal }}">{{ emp.name }} {{ emp.surname }}</div></div>
+              <div><div style="{{ flLabel }}">{{ t.assess.managerName }}</div><div style="{{ flVal }}">{{ emp.sup }}</div></div>
+            </div>
+          </div>
+          <div style="margin-top:22px;">
+            <div style="{{ flLabel }}">{{ t.assess.notes }}</div>
+            <div style="background:#fafbfc;border:1px solid #eceef2;border-radius:11px;padding:14px 16px;font-size:13.5px;color:#5b6270;min-height:70px;">{{ t.assess.tpl }}, may 14, 2026</div>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;padding:24px 28px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:22px;"><span style="width:4px;height:18px;background:var(--accent,#4f46e5);border-radius:3px;"></span><span style="font-weight:700;font-size:14px;letter-spacing:.04em;color:#2a2f3a;text-transform:uppercase;">{{ t.assess.competencies }}</span></div>
+          <sc-for list="{{ comps }}" as="c" hint-placeholder-count="4">
+            <div style="display:grid;grid-template-columns:1.3fr 1fr 110px;gap:24px;padding:18px 0;border-top:1px solid #f0f1f4;align-items:start;">
+              <div>
+                <div style="font-size:14px;font-weight:700;color:#2a2f3a;margin-bottom:10px;">{{ c.title }}</div>
+                <sc-for list="{{ c.items }}" as="it" hint-placeholder-count="3">
+                  <div style="display:flex;gap:8px;font-size:13px;color:#5b6270;margin-bottom:6px;line-height:1.45;"><span style="color:var(--accent,#4f46e5);flex:0 0 auto;margin-top:1px;">›</span><span>{{ it }}</span></div>
+                </sc-for>
+                <div style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--accent,#4f46e5);font-weight:600;margin-top:6px;cursor:pointer;"><span style="font-size:14px;">＋</span>{{ t.assess.commentHistory }}</div>
+              </div>
+              <div>
+                <div style="{{ flLabel }}">{{ t.assess.managerComment }}</div>
+                <div style="background:#fafbfc;border:1px solid #eceef2;border-radius:11px;min-height:84px;"></div>
+              </div>
+              <div>
+                <div style="{{ flLabel }}">{{ t.assess.managerScore }}</div>
+                <div style="height:40px;border:1px solid #e2e5ea;border-radius:10px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:15px;font-weight:700;color:var(--accent,#4f46e5);background:#fff;">{{ c.score }}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aeb4bf" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ SHIFTS ============ -->
+      <sc-if value="{{ isShifts }}" hint-placeholder-val="0">
+      <div style="padding:18px 24px 40px;">
+        <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid #f0f1f4;">
+            <div style="width:36px;height:36px;border-radius:50%;background:var(--accent,#4f46e5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer;box-shadow:0 3px 10px var(--accent-ring,rgba(79,70,229,.3));">+</div>
+            <div style="font-weight:700;font-size:15px;color:#2a2f3a;">{{ t.nav.shifts }}</div>
+            <div style="flex:1;"></div>
+            <div style="font-size:13px;color:#8d94a0;">1 - 18 <span style="color:#cfd4db;">/</span> 218</div>
+          </div>
+          <div style="display:grid;grid-template-columns:60px .7fr 2.4fr 1fr .8fr 1.3fr;align-items:center;padding:0 18px;height:46px;background:#fafbfc;border-bottom:1px solid #f0f1f4;font-size:11px;font-weight:700;color:#a3a9b4;letter-spacing:.05em;text-transform:uppercase;">
+            <div>{{ t.shift.action }}</div><div>{{ t.shift.order }}</div><div>{{ t.shift.dept }}</div><div>{{ t.shift.status }}</div><div>{{ t.shift.month }}</div><div>{{ t.shift.createdBy }}</div>
+          </div>
+          <sc-for list="{{ shiftRows }}" as="sh" hint-placeholder-count="12">
+            <div style="display:grid;grid-template-columns:60px .7fr 2.4fr 1fr .8fr 1.3fr;align-items:center;padding:0 18px;height:52px;border-bottom:1px solid #f4f5f7;cursor:pointer;" style-hover="background:#fafbfc;">
+              <div style="color:#aeb4bf;font-weight:700;letter-spacing:1px;">•••</div>
+              <div style="font-size:13px;font-weight:600;color:var(--accent,#4f46e5);">{{ sh.code }}</div>
+              <div style="font-size:13.5px;color:#3a4150;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ sh.dept }}</div>
+              <div style="display:flex;align-items:center;gap:7px;font-size:13px;color:#3a4150;"><span style="width:8px;height:8px;border-radius:50%;background:{{ sh.dotColor }};"></span>{{ sh.statusLabel }}</div>
+              <div style="font-size:13px;color:#5b6270;">{{ sh.month }}</div>
+              <div style="font-size:13px;color:#5b6270;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ sh.createdBy }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ ORG / SUPERVISOR STRUCTURE ============ -->
+      <sc-if value="{{ isStruct }}" hint-placeholder-val="0">
+      <div style="display:flex;flex-direction:column;height:100%;">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 24px;background:#fff;border-bottom:1px solid #e8eaee;">
+          <div style="width:34px;height:34px;border-radius:9px;background:#f4f5f8;display:flex;align-items:center;justify-content:center;color:#7a818c;cursor:pointer;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg></div>
+          <div style="font-weight:700;font-size:15px;color:#2a2f3a;flex:1;">{{ structTitle }}</div>
+          <select value="{{ orgLevel }}" onChange="{{ setOrgLevel }}" style="height:36px;border:1px solid #e2e5ea;border-radius:9px;padding:0 12px;font-size:13px;color:#5b6270;font-family:'Public Sans';cursor:pointer;outline:none;">
+            <option value="1">{{ t.org.level }} 1</option><option value="2">{{ t.org.level }} 2</option><option value="3">{{ t.org.level }} 3</option>
+          </select>
+        </div>
+        <div style="flex:1;overflow:auto;background:#eef1f6;padding:48px 24px;">
+          <div style="display:flex;flex-direction:column;align-items:center;min-width:760px;">
+            <!-- root -->
+            <div style="{{ orgNode }}">
+              <div style="{{ orgAvatar }}">DR</div>
+              <div style="font-size:13px;font-weight:700;color:#2a2f3a;">Dilshod Rahmonov</div>
+              <div style="font-size:11.5px;color:#9aa1ad;">{{ t.org.deptHead }}</div>
+            </div>
+            <div style="width:2px;height:30px;background:#cfd6e0;"></div>
+            <div style="display:flex;gap:0;align-items:flex-start;position:relative;">
+              <div style="position:absolute;top:0;left:12%;right:12%;height:2px;background:#cfd6e0;"></div>
+              <sc-for list="{{ orgChildren }}" as="c" hint-placeholder-count="3">
+                <div style="display:flex;flex-direction:column;align-items:center;padding:0 22px;">
+                  <div style="width:2px;height:30px;background:#cfd6e0;"></div>
+                  <div style="{{ orgNode }}">
+                    <div style="{{ c.avStyle }}">{{ c.ini }}</div>
+                    <div style="font-size:13px;font-weight:700;color:#2a2f3a;white-space:nowrap;">{{ c.name }}</div>
+                    <div style="font-size:11.5px;color:#9aa1ad;text-align:center;">{{ c.role }}</div>
+                  </div>
+                  <sc-if value="{{ c.hasChildren }}" hint-placeholder-val="0">
+                    <div style="width:2px;height:26px;background:#cfd6e0;"></div>
+                    <div style="display:flex;gap:14px;position:relative;">
+                      <div style="position:absolute;top:0;left:18%;right:18%;height:2px;background:#cfd6e0;"></div>
+                      <sc-for list="{{ c.children }}" as="g" hint-placeholder-count="4">
+                        <div style="display:flex;flex-direction:column;align-items:center;">
+                          <div style="width:2px;height:26px;background:#cfd6e0;"></div>
+                          <div style="background:#fff;border:1px solid #e6e9ee;border-radius:12px;padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;width:120px;box-shadow:0 1px 3px rgba(20,30,50,.05);">
+                            <div style="width:36px;height:36px;border-radius:50%;background:#f1f3f6;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#8d94a0;">{{ g.ini }}</div>
+                            <div style="font-size:11px;color:#5b6270;text-align:center;line-height:1.3;">{{ g.role }}</div>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ ATTENDANCE ============ -->
+      <sc-if value="{{ isAttendance }}" hint-placeholder-val="0">
+      <div style="padding:18px 24px 40px;">
+        <div style="display:flex;align-items:center;gap:18px;margin-bottom:16px;flex-wrap:wrap;">
+          <div style="font-weight:700;font-size:16px;color:#2a2f3a;">{{ t.att.title }} — May 2026</div>
+          <div style="flex:1;"></div>
+          <div style="display:flex;gap:16px;align-items:center;">
+            <sc-for list="{{ attLegend }}" as="lg" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#5b6270;"><span style="width:18px;height:18px;border-radius:6px;background:{{ lg.bg }};border:1px solid {{ lg.c }};"></span>{{ lg.label }}</div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;overflow:auto;">
+          <div style="display:grid;grid-template-columns:240px repeat(14,42px);align-items:center;padding:12px 18px;background:#fafbfc;border-bottom:1px solid #f0f1f4;">
+            <div style="font-size:11px;font-weight:700;color:#a3a9b4;letter-spacing:.05em;text-transform:uppercase;">{{ t.att.employee }}</div>
+            <sc-for list="{{ attDays }}" as="d" hint-placeholder-count="14">
+              <div style="text-align:center;font-size:11px;font-weight:700;color:#a3a9b4;">{{ d }}</div>
+            </sc-for>
+          </div>
+          <sc-for list="{{ attRows }}" as="row" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:240px repeat(14,42px);align-items:center;padding:8px 18px;border-bottom:1px solid #f4f5f7;">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+                <div style="width:32px;height:32px;border-radius:50%;background:var(--accent-soft,#eef2ff);color:var(--accent,#4f46e5);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:0 0 32px;">{{ row.ini }}</div>
+                <div style="min-width:0;"><div style="font-size:13px;font-weight:600;color:#2a2f3a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ row.name }}</div><div style="font-size:11px;color:#9aa1ad;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px;">{{ row.dept }}</div></div>
+              </div>
+              <sc-for list="{{ row.cells }}" as="cell" hint-placeholder-count="14">
+                <div style="display:flex;justify-content:center;"><div style="{{ cell.style }}">{{ cell.ch }}</div></div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ROUTE-INSERT -->
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = {
+    route: 'dashboard', lang: 'uz',
+    accent: '#4f46e5', accentSoft: '#eef2ff', accentRing: 'rgba(79,70,229,.32)', accentName: 'indigo',
+    query: '', sortKey: '', sortDir: 1,
+    selectedEmp: 'C00257', profileTab: 'profile',
+    leaveYear: '2026', orgLevel: '1',
+    filterDept: 'all', sel: {}, allSel: false,
+  };
+
+  THEMES = [
+    { name: 'Indigo', a: '#4f46e5', s: '#eef2ff', r: 'rgba(79,70,229,.32)' },
+    { name: 'Teal', a: '#0d9488', s: '#effcf9', r: 'rgba(13,148,136,.30)' },
+    { name: 'Violet', a: '#7c3aed', s: '#f5f1ff', r: 'rgba(124,58,237,.30)' },
+    { name: 'Blue', a: '#2563eb', s: '#eef4ff', r: 'rgba(37,99,235,.30)' },
+  ];
+
+  DEPTS = ["Nevrologiya bo'limi","Allergologiya bo'limi","Gastroenterologiya bo'limi","Fizioterapiya bo'limi","Gepatologiya bo'limi","Kardiorevmotologiya bo'limi","Radiologiya bo'limi","Otorinolaringologiya bo'limi","Bakteriologik laboratoriya bo'limi","Klinik-diagnostik laboratoriya bo'limi","Chaqaloqlar patologiyasi bo'limi","Jarroxlik reanimatsiya bo'limi","Markazlashtirilgan sterilizatsiya bo'limi","1-Umumiy pediatriya bo'limi","Umumiy pediatriya-2","2-jarroxlik bo'limi","Dorixona","Bolalar Reanimatsiya va intensiv terapiya bulimi","Otorinolaringologiya reanimatsiya","Maslahat-tashxis poliklinika"];
+
+  EMP_RAW = [
+    ["C00257","MK","Moxira","Karimova","Nevrologiya bo'limi","Katta hamshira","Dilshod Rahmonov","leave","Ayol","feb 14, 1991","jan 12, 2019"],
+    ["C00312","AR","Aziz","Rahimov","Jarroxlik reanimatsiya bo'limi","Shifokor-bakteriolog","Nodira Saidova","active","Erkak","may 22, 1988","mar 03, 2017"],
+    ["C00188","GT","Gulnora","Tosheva","Allergologiya bo'limi","Hamshira","Dilshod Rahmonov","active","Ayol","sep 09, 1993","aug 18, 2020"],
+    ["C00421","SA","Sardor","Aliyev","Bakteriologik laboratoriya bo'limi","Laborant-bakteriolog","Bekzod Qodirov","active","Erkak","nov 30, 1990","jun 01, 2018"],
+    ["C00533","NS","Nodira","Saidova","Kardiorevmotologiya bo'limi","Bo'lim mudiri","—","active","Ayol","jan 18, 1980","feb 10, 2012"],
+    ["C00276","JE","Jasur","Ergashev","Radiologiya bo'limi","Shifokor laborant","Otabek Nazarov","probation","Erkak","jul 07, 1996","apr 02, 2025"],
+    ["C00390","MY","Malika","Yo'ldosheva","Gastroenterologiya bo'limi","Hamshira","Gulnora Tosheva","active","Ayol","mar 25, 1992","oct 14, 2019"],
+    ["C00604","BQ","Bekzod","Qodirov","Markazlashtirilgan sterilizatsiya bo'limi","Bo'lim mudiri","—","active","Erkak","dec 02, 1978","jan 09, 2010"],
+    ["C00219","SI","Shaxnoza","Ismoilova","Fizioterapiya bo'limi","Hamshira","Dilshod Rahmonov","leave","Ayol","apr 11, 1994","may 21, 2021"],
+    ["C00455","ON","Otabek","Nazarov","Otorinolaringologiya bo'limi","Shifokor-bakteriolog","Nodira Saidova","active","Erkak","aug 16, 1985","sep 03, 2015"],
+    ["C00322","ZH","Zarina","Hamidova","1-Umumiy pediatriya bo'limi","Hamshira","Gulnora Tosheva","active","Ayol","may 25, 1995","jul 19, 2022"],
+    ["C00501","FT","Farrux","Tursunov","2-jarroxlik bo'limi","Sanitarka (tozalik sohibasi)","Bekzod Qodirov","active","Erkak","feb 28, 1989","mar 30, 2016"],
+    ["C00287","KA","Kamola","Abdullayeva","Chaqaloqlar patologiyasi bo'limi","Hamshira","Dilshod Rahmonov","probation","Ayol","oct 03, 1997","mar 15, 2025"],
+    ["C00366","US","Ulug'bek","Sodiqov","Klinik-diagnostik laboratoriya bo'limi","Laborant-bakteriolog","Bekzod Qodirov","active","Erkak","jan 30, 1991","nov 11, 2018"],
+    ["C00410","NM","Nigora","Mirzayeva","Umumiy pediatriya-2","Katta hamshira","Gulnora Tosheva","active","Ayol","jun 12, 1987","feb 22, 2014"],
+    ["C00298","DR","Dilshod","Rahmonov","Nevrologiya bo'limi","Bo'lim mudiri","—","active","Erkak","mar 04, 1975","jan 15, 2008"],
+    ["C00477","YM","Yuriy","Mozjuxin","Bolalar Reanimatsiya va intensiv terapiya bulimi","Bolalar anesteziolog-reanimatologi","Nodira Saidova","active","Erkak","jul 21, 1986","apr 09, 2016"],
+    ["C00345","DS","Dilnoza","Saidova","Gepatologiya bo'limi","Hamshira","Dilshod Rahmonov","active","Ayol","sep 27, 1993","oct 30, 2020"],
+    ["C00388","RT","Rustam","To'xtayev","Otorinolaringologiya reanimatsiya","Shifokor laborant","Otabek Nazarov","probation","Erkak","dec 14, 1998","apr 01, 2025"],
+    ["C00512","MX","Mohira","Xolmatova","Bolalar Reanimatsiya va intensiv terapiya bulimi","Hamshira","Gulnora Tosheva","active","Ayol","may 05, 1994","jul 07, 2021"],
+    ["C00299","AB","Aziza","Boltayeva","Dorixona","Farmatsevt","Bekzod Qodirov","active","Ayol","feb 19, 1990","aug 12, 2018"],
+    ["C00444","ST","Sherzod","Tolipov","Gastroenterologiya bo'limi","Shifokor-bakteriolog","Nodira Saidova","leave","Erkak","nov 08, 1984","mar 17, 2014"],
+  ];
+
+  BARS_RAW = [["Kadrlar bo'limi",4],["Umumiy bo'lim",7],["Bakteriologik lab.",11],["Fizioterapiya",17],["Radiologiya",23],["Nevrologiya",28],["Gastroenterologiya",30],["Jarroxlik reanim.",31],["Chaqaloqlar pat.",34],["Gepatologiya",46],["2-jarroxlik",60],["Otorinolaringol.",126]];
+
+  BIRTH_RAW = [["GT","Gulnora Tosheva","Allergologiya bo'limi","18 may"],["YM","Yuriy Mozjuxin","Bolalar Reanimatsiya bulimi","20 may"],["AR","Aziz Rahimov","Jarroxlik reanimatsiya","22 may"],["ZH","Zarina Hamidova","1-Umumiy pediatriya","25 may"],["FT","Farrux Tursunov","2-jarroxlik bo'limi","28 may"]];
+
+  LEAVE_RAW = [
+    ["annual","—","apr 01, 2026 [09:30] – apr 30, 2026","—","paid","Dilshod Rahmonov","rejected"],
+    ["annual","Yillik mehnat ta'tili","apr 01, 2026 – apr 30, 2026","30","paid","Dilshod Rahmonov","approved"],
+    ["sick","Vaqtinchalik mehnatga layoqatsizlik","mar 10, 2026 – mar 14, 2026","5","paid","Nodira Saidova","approved"],
+    ["annual","Qo'shimcha ta'til kunlari","jun 01, 2026 – jun 07, 2026","7","unpaid","Dilshod Rahmonov","pending"],
+  ];
+
+  ASSESS_RAW = [
+    ["Moxira Karimova","may 14, 2026","Dilshod Rahmonov","Nodira Saidova","100.00","Nevrologiya bo'limi"],
+    ["Gulnora Tosheva","may 14, 2026","Dilshod Rahmonov","Nodira Saidova","98.75","Allergologiya bo'limi"],
+    ["Zarina Hamidova","may 13, 2026","Gulnora Tosheva","Nodira Saidova","100.00","1-Umumiy pediatriya bo'limi"],
+    ["Malika Yo'ldosheva","may 13, 2026","Gulnora Tosheva","Nodira Saidova","98.75","Gastroenterologiya bo'limi"],
+    ["Dilnoza Saidova","may 12, 2026","Dilshod Rahmonov","Nodira Saidova","100.00","Gepatologiya bo'limi"],
+    ["Mohira Xolmatova","may 12, 2026","Gulnora Tosheva","Nodira Saidova","98.75","Bolalar Reanimatsiya bulimi"],
+    ["Kamola Abdullayeva","may 11, 2026","Dilshod Rahmonov","Nodira Saidova","97.50","Chaqaloqlar patologiyasi bo'limi"],
+    ["Shaxnoza Ismoilova","may 11, 2026","Dilshod Rahmonov","Nodira Saidova","97.50","Fizioterapiya bo'limi"],
+    ["Nigora Mirzayeva","may 10, 2026","Gulnora Tosheva","Nodira Saidova","97.50","Umumiy pediatriya-2"],
+    ["Aziza Boltayeva","may 10, 2026","Bekzod Qodirov","Nodira Saidova","98.75","Dorixona"],
+    ["Sardor Aliyev","may 09, 2026","Bekzod Qodirov","Nodira Saidova","96.25","Bakteriologik laboratoriya bo'limi"],
+    ["Ulug'bek Sodiqov","may 09, 2026","Bekzod Qodirov","Nodira Saidova","96.25","Klinik-diagnostik laboratoriya bo'limi"],
+  ];
+
+  COMP_UZ = [
+    { t: "Aseptika va antiseptika qoidalariga rioya qilish", items: ["Qo'l gigienasiga rioya qilish va himoya vositalaridan to'g'ri foydalanish","Antiseptik vositalarni to'g'ri va kerakli miqdorda qo'llash","Aseptika/antiseptika qoidalari buzilganda favqulodda choralar ko'rish"], s: 100 },
+    { t: "Markazning ichki mehnat qoidalariga va bo'lim ichki tartib talablariga rioya qilish", items: ["Ishga o'z vaqtida kelish va ish davomida ish joyini tark etmaslik","Ish joyida tashqi ko'rinish (forma, gigiena) talablariga javob berish","Ish vaqtida telefonda shaxsiy suhbatlarga yo'l qo'ymaslik"], s: 100 },
+    { t: "Bemorlar bilan muloqot va parvarish sifati", items: ["Bemorlarga e'tiborli va xushmuomala munosabatda bo'lish","Bemor holatini muntazam kuzatib borish va hujjatlashtirish","Shifokor ko'rsatmalarini o'z vaqtida bajarish"], s: 95 },
+    { t: "Tibbiy hujjatlarni yuritish", items: ["Hujjatlarni to'liq va o'z vaqtida to'ldirish","Ma'lumotlarni aniq va xatosiz kiritish"], s: 97.5 },
+  ];
+  COMP_EN = [
+    { t: "Compliance with aseptic and antiseptic rules", items: ["Hand hygiene and correct use of protective equipment","Proper and adequate use of antiseptic agents","Emergency measures when aseptic rules are breached"], s: 100 },
+    { t: "Compliance with internal labor and departmental regulations", items: ["Arriving on time and not leaving the workplace during shifts","Meeting appearance standards (uniform, hygiene)","No personal phone calls during working hours"], s: 100 },
+    { t: "Quality of patient communication and care", items: ["Attentive and courteous attitude toward patients","Regular monitoring and documentation of patient status","Timely execution of physician instructions"], s: 95 },
+    { t: "Medical documentation", items: ["Complete and timely completion of records","Accurate and error-free data entry"], s: 97.5 },
+  ];
+
+  SHIFTS_RAW = [
+    ["SH0239","Chaqaloqlar patologiyasi reanimatsiya bo'limi","approved","Dilshod Rahmonov"],
+    ["SH0238","Oy kuniga yetmay tug'ilgan chaqaloqlarni parvarishlash bo'limi","approved","Nodira Saidova"],
+    ["SH0237","Bolalar Reanimatsiya va intensiv terapiya bulimi","approved","Nodira Saidova"],
+    ["SH0236","1-Umumiy pediatriya bo'limi","approved","Gulnora Tosheva"],
+    ["SH0235","Gepatologiya bo'limi","approved","Dilshod Rahmonov"],
+    ["SH0234","Fizioterapiya bo'limi","approved","Dilshod Rahmonov"],
+    ["SH0233","Gastroenterologiya bo'limi","approved","Gulnora Tosheva"],
+    ["SH0232","Markazlashtirilgan sterilizatsiya bo'limi","approved","Bekzod Qodirov"],
+    ["SH0231","Jarroxlik reanimatsiya bo'limi","approved","Nodira Saidova"],
+    ["SH0230","Allergologiya bo'limi","approved","Dilshod Rahmonov"],
+    ["SH0229","Umumiy pediatriya-2","approved","Gulnora Tosheva"],
+    ["SH0228","2-jarroxlik bo'limi","approved","Bekzod Qodirov"],
+    ["SH0227","Kardiorevmotologiya bo'limi","approved","Nodira Saidova"],
+    ["SH0226","Chaqaloqlar patologiyasi bo'limi","approved","Dilshod Rahmonov"],
+    ["SH0225","Kichik yoshdagi bolalar patologiyasi bo'limi","pending","Gulnora Tosheva"],
+    ["SH0224","Otorinolaringologiya bo'limi","approved","Otabek Nazarov"],
+    ["SH0223","Maslahat-tashxis poliklinika","approved","Nodira Saidova"],
+    ["SH0222","Bakteriologik laboratoriya bo'limi","approved","Bekzod Qodirov"],
+  ];
+
+  STR = {
+    uz: {
+      brand: "Kadrlar", brandSub: "HR boshqaruv tizimi", adminRole: "Tizim administratori",
+      rail: { hr: "KADRLAR", reports: "HISOBOTLAR" },
+      sec: { dash: "VOSITALAR PANELI", company: "KOMPANIYASI", eval: "ISH FAOLIYATINI BAHOLASH" },
+      nav: { workSchedule: "Ish grafigi", employees: "Xodimlar ro'yxati", supervisorStruct: "Nazoratchi strukturasi", orgStruct: "Tashkilot strukturasi", shifts: "Smena jadvallari", leave: "Izn so'rovi", attendance: "Davomat hisoboti", assessments: "Oddiy attestatsiyalar" },
+      titles: { dashboard: "Ish grafigi", employees: "Xodimlar ro'yxati", supervisorStruct: "Nazoratchi strukturasi", orgStruct: "Tashkilot strukturasi", shifts: "Smena jadvallari", leave: "Izn so'rovi", attendance: "Davomat hisoboti", assessments: "Oddiy attestatsiyalar", assessmentDetail: "Baholash" },
+      search: "Qidirish...", allDepts: "Barcha bo'limlar", noResults: "Natija topilmadi",
+      dash: { today: "seshanba 19 may 2026", country: "Uzbekistan", clouds: "Bulutli", mail: "E-pochta manzili", mailNone: "Mavjud emas", unread: "O'qilmagan yangi pochta xabari", birthday: "Tug'ilgan kun", birthdaySub: "Yaqinlashib kelayotgan tug'ilgan kunlar", scheduleStatus: "Ish grafigi holat kesimida (SHO)", empByDept: "Xodimlar bo'limlar kesimida", totalDepts: "Jami bo'limlar", notFilledList: "To'ldirilmagan bo'limlar ro'yxati", total: "Jami", totalRow: "Jami" },
+      st: { active: "Ishlamoqda", leave: "Ta'tilda", probation: "Sinov muddati", approved: "Ma'qullandi", submitted: "Topshirildi", notCreated: "Yaratilmagan", rejected: "Rad etildi", pending: "Kutilmoqda", pendingApproval: "Ma'qullov kutilmoqda" },
+      stat: { totalDepts: "Jami bo'limlar", filled: "To'ldirilganlar", approvedC: "Tasdiqlangan", notFilled: "To'ldirilmaganlar", waiting: "Kutilmoqda", departments: "Bo'limlar" },
+      emp: { action: "Harakat", name: "Ismi", surname: "Familiyasi", dept: "Bo'lim", pos: "Lavozim", sup: "Nazoratchi", status: "Holat" },
+      prof: { profile: "Xodim profili", leaveReq: "Izn so'rovi", activities: "Faoliyatlar", assess: "Oddiy attestatsiyalar", incidents: "Hodisalar", empInfo: "Xodim ma'lumotlari", employmentInfo: "Bandlik ma'lumotlari", code: "Xodim kodi", gender: "Jinsi", nameF: "Ismi", phone: "Telefon raqami", surnameF: "Familiyasi", email: "E-pochta manzili", dob: "Tug'ilgan kun sanasi", supervisorF: "Nazoratchi", deptF: "Bo'lim", hireDate: "Ishga yollash sanasi", positionF: "Lavozim", edit: "Tahrirlash", options: "Opsiyalar", printPdf: "PDF chop etish", links: "Havolalar", actEmptyTitle: "Hozircha faoliyatlar yo'q", actEmptySub: "Yangi faoliyat yaratish uchun quyidagi tugmaga teging", actBtn: "Faoliyat yaratish" },
+      gender: { Ayol: "Ayol", Erkak: "Erkak" },
+      leave: { reason: "Sabab", desc: "Tavsifi", period: "Qachondan / Qachongacha", days: "Kunda", type: "Turi", approver: "Ma'qullovchi", status: "Holat", action: "Harakat", pdf: "PDF", leaveStatus: "Izn holati", show: "Ko'rsatish", calendar: "Taqvim", workSchedule: "Ish grafigi", annual: "Mehnat ta'tili", sick: "Kasallik ta'tili", paid: "To'langan", unpaid: "To'lanmagan" },
+      assess: { action: "Harakat", employee: "Xodim", started: "Boshlangan", startedBy: "Kim tomonidan boshlangan", reviewers: "Sharhlovchi(lar)", status: "Holat", totalScore: "Umumiy hisob", validity: "Yaroqlilik muddati", template: "Andoza", dept: "Bo'lim", period: "yan 01, 2026 – dek 31, 2026", tpl: "Nevrologiya bo'limi hamshiralarini baholash", baseDetails: "Bazaviy tafsilotlar", competencies: "Xodim kompetensiyalari", overall: "Umumiy baho", date: "Sana", templateF: "Andoza", notes: "Qaydlar", managerName: "Menejer ismi", managerComment: "Menejerning sharhi", managerScore: "Menejerning bahosi", commentHistory: "Izohlar tarixi", charsLeft: "belgi qoldi" },
+      shift: { action: "Harakat", order: "Tartib raqami", dept: "Bo'lim", status: "Holat", month: "Oy", createdBy: "Kim tomonidan yaratilgan", month26: "may 2026" },
+      org: { level: "Daraja", reset: "Qayta tiklash", deptHead: "Bo'lim mudiri" },
+      att: { title: "Davomat hisoboti", present: "Kelgan", late: "Kechikkan", absent: "Kelmagan", leaveDay: "Ta'til", employee: "Xodim", total: "Jami", legend: "Belgilar" },
+    },
+    en: {
+      brand: "Human Resources", brandSub: "HR management system", adminRole: "System administrator",
+      rail: { hr: "HR", reports: "REPORTS" },
+      sec: { dash: "DASHBOARD", company: "COMPANY", eval: "PERFORMANCE EVALUATION" },
+      nav: { workSchedule: "Dashboard", employees: "Employee list", supervisorStruct: "Supervisor structure", orgStruct: "Org structure", shifts: "Shift schedules", leave: "Leave requests", attendance: "Attendance report", assessments: "Assessments" },
+      titles: { dashboard: "Dashboard", employees: "Employee list", supervisorStruct: "Supervisor structure", orgStruct: "Org structure", shifts: "Shift schedules", leave: "Leave requests", attendance: "Attendance report", assessments: "Assessments", assessmentDetail: "Assessment" },
+      search: "Search...", allDepts: "All departments", noResults: "No results found",
+      dash: { today: "Tuesday, 19 May 2026", country: "Uzbekistan", clouds: "Clouds", mail: "Email address", mailNone: "Not available", unread: "Unread new mail messages", birthday: "Birthdays", birthdaySub: "Upcoming birthdays", scheduleStatus: "Schedule status overview", empByDept: "Employees by department", totalDepts: "Total departments", notFilledList: "Departments not filled", total: "Total", totalRow: "Total" },
+      st: { active: "Active", leave: "On leave", probation: "Probation", approved: "Approved", submitted: "Submitted", notCreated: "Not created", rejected: "Rejected", pending: "Pending", pendingApproval: "Pending approval" },
+      stat: { totalDepts: "Total departments", filled: "Filled", approvedC: "Approved", notFilled: "Not filled", waiting: "Pending", departments: "Departments" },
+      emp: { action: "Action", name: "First name", surname: "Last name", dept: "Department", pos: "Position", sup: "Supervisor", status: "Status" },
+      prof: { profile: "Employee profile", leaveReq: "Leave requests", activities: "Activities", assess: "Assessments", incidents: "Incidents", empInfo: "Employee information", employmentInfo: "Employment information", code: "Employee code", gender: "Gender", nameF: "First name", phone: "Phone number", surnameF: "Last name", email: "Email address", dob: "Date of birth", supervisorF: "Supervisor", deptF: "Department", hireDate: "Hire date", positionF: "Position", edit: "Edit", options: "Options", printPdf: "Print PDF", links: "Links", actEmptyTitle: "No activities yet", actEmptySub: "Tap the button below to create a new activity", actBtn: "Create activity" },
+      gender: { Ayol: "Female", Erkak: "Male" },
+      leave: { reason: "Reason", desc: "Description", period: "From / To", days: "Days", type: "Type", approver: "Approver", status: "Status", action: "Action", pdf: "PDF", leaveStatus: "Leave status", show: "Show", calendar: "Calendar", workSchedule: "Work schedule", annual: "Annual leave", sick: "Sick leave", paid: "Paid", unpaid: "Unpaid" },
+      assess: { action: "Action", employee: "Employee", started: "Started", startedBy: "Started by", reviewers: "Reviewer(s)", status: "Status", totalScore: "Total score", validity: "Validity period", template: "Template", dept: "Department", period: "Jan 01, 2026 – Dec 31, 2026", tpl: "Neurology dept. nurse assessment", baseDetails: "Basic details", competencies: "Employee competencies", overall: "Overall score", date: "Date", templateF: "Template", notes: "Notes", managerName: "Manager name", managerComment: "Manager comment", managerScore: "Manager score", commentHistory: "Comment history", charsLeft: "characters left" },
+      shift: { action: "Action", order: "Order #", dept: "Department", status: "Status", month: "Month", createdBy: "Created by", month26: "May 2026" },
+      org: { level: "Level", reset: "Reset", deptHead: "Department head" },
+      att: { title: "Attendance report", present: "Present", late: "Late", absent: "Absent", leaveDay: "Leave", employee: "Employee", total: "Total", legend: "Legend" },
+    },
+  };
+
+  // ---------- handlers ----------
+  go = (route) => { this.setState({ route, query: '' }); };
+  setLang = (lang) => this.setState({ lang });
+  setAccent = (th) => this.setState({ accent: th.a, accentSoft: th.s, accentRing: th.r, accentName: th.name });
+  onSearch = (e) => this.setState({ query: e.target.value });
+  onFilterDept = (e) => this.setState({ filterDept: e.target.value });
+  sortBy = (key) => this.setState(s => ({ sortKey: key, sortDir: s.sortKey === key ? -s.sortDir : 1 }));
+  openEmp = (id) => this.setState({ selectedEmp: id, route: 'profile', profileTab: 'profile' });
+  setProfileTab = (t) => this.setState({ profileTab: t });
+  openAssessment = () => this.setState({ route: 'assessmentDetail' });
+  toggleSel = (id, e) => { if (e) e.stopPropagation(); this.setState(s => ({ sel: { ...s.sel, [id]: !s.sel[id] } })); };
+  toggleAll = () => this.setState(s => {
+    const next = !s.allSel; const sel = {};
+    if (next) this.EMP_RAW.forEach(r => sel[r[0]] = true);
+    return { allSel: next, sel };
+  });
+  setOrgLevel = (e) => this.setState({ orgLevel: e.target.value });
+  setLeaveYear = (e) => this.setState({ leaveYear: e.target.value });
+
+  empObj(r) {
+    const t = this.STR[this.state.lang];
+    const email = (r[2] + '.' + r[3]).toLowerCase().replace(/[^a-z.]/g, '') + '@kpi.uz';
+    const phones = ["+998 90 123 45 67","+998 91 234 56 78","+998 93 345 67 89","+998 94 456 78 90","+998 97 567 89 01"];
+    return {
+      id: r[0], ini: r[1], name: r[2], surname: r[3], dept: r[4], pos: r[5], sup: r[6],
+      statusKey: r[7], genderKey: r[8], dob: r[9], hireDate: r[10],
+      statusLabel: t.st[r[7]], genderLabel: t.gender[r[8]],
+      email, phone: phones[r[0].charCodeAt(4) % phones.length],
+      pillStyle: this.pill(r[7]),
+    };
+  }
+  pill(key) {
+    const map = { active: ['#0f9d58', '#e7f7ee'], leave: ['#d97706', '#fdf3e3'], probation: ['#5b6270', '#eef0f3'], approved: ['#0f9d58', '#e7f7ee'], rejected: ['#dc2626', '#fdeaea'], pending: ['#d97706', '#fdf3e3'], pendingApproval: ['#d97706', '#fdf3e3'] };
+    const [c, b] = map[key] || ['#5b6270', '#eef0f3'];
+    return `display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:${c};background:${b};border-radius:8px;padding:4px 10px;white-space:nowrap;`;
+  }
+
+  navItem(key, route, badge) {
+    const t = this.STR[this.state.lang];
+    const activeRoute = this.activeNavKey();
+    const active = activeRoute === route;
+    const style = `display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;font-size:13.5px;cursor:pointer;margin-bottom:2px;transition:background .12s;font-weight:${active ? 600 : 500};color:${active ? 'var(--accent,#4f46e5)' : '#5b6270'};background:${active ? 'var(--accent-soft,#eef2ff)' : 'transparent'};`;
+    const dotStyle = `width:6px;height:6px;border-radius:50%;flex:0 0 6px;background:${active ? 'var(--accent,#4f46e5)' : '#cdd2da'};`;
+    return { label: t.nav[key], onClick: () => this.go(route), style, dotStyle, badge: badge || 0 };
+  }
+  activeNavKey() {
+    const r = this.state.route;
+    if (r === 'profile') return 'employees';
+    if (r === 'assessmentDetail') return 'assessments';
+    return r;
+  }
+
+  renderVals() {
+    const s = this.state;
+    const t = this.STR[s.lang];
+    const emp = this.empObj(this.EMP_RAW.find(r => r[0] === s.selectedEmp) || this.EMP_RAW[0]);
+
+    // nav
+    const navGroups = [
+      { label: t.sec.dash, items: [this.navItem('workSchedule', 'dashboard')] },
+      { label: t.sec.company, items: [this.navItem('employees', 'employees'), this.navItem('supervisorStruct', 'supervisorStruct'), this.navItem('orgStruct', 'orgStruct')] },
+      { label: t.sec.eval, items: [this.navItem('shifts', 'shifts'), this.navItem('leave', 'leave'), this.navItem('attendance', 'attendance'), this.navItem('assessments', 'assessments')] },
+    ];
+
+    // rail
+    const railBase = 'display:flex;flex-direction:column;align-items:center;gap:4px;width:54px;padding:9px 0;border-radius:13px;cursor:pointer;transition:all .15s;';
+    const railHRStyle = railBase + (s.route === 'dashboard' ? '' : '') + `color:#fff;background:var(--accent,#4f46e5);box-shadow:0 4px 14px var(--accent-ring,rgba(79,70,229,.4));`;
+    const railRepStyle = railBase + 'color:#6b7180;background:transparent;';
+
+    // tabs
+    const topTitles = t.titles;
+    const tabBase = 'display:flex;align-items:center;padding:9px 16px;border-radius:10px 10px 0 0;font-size:13.5px;cursor:pointer;border:1px solid transparent;border-bottom:none;margin-bottom:-1px;';
+    const tabActive = tabBase + 'background:#f4f5f8;color:var(--accent,#4f46e5);font-weight:600;border-color:#e8eaee;position:relative;z-index:2;';
+    const tabInactive = tabBase + 'background:transparent;color:#7a818c;font-weight:500;';
+    let tabs = [];
+    const r = s.route;
+    if (r === 'profile' || r === 'assessmentDetail') {
+      tabs.push({ label: t.nav.employees, closable: false, style: tabInactive, onClick: () => this.go('employees') });
+      tabs.push({ label: emp.id, closable: r !== 'assessmentDetail', style: r === 'profile' ? tabActive : tabInactive, onClick: () => this.setState({ route: 'profile' }), onClose: (e) => { e.stopPropagation(); this.go('employees'); } });
+      if (r === 'assessmentDetail') tabs.push({ label: topTitles.assessmentDetail, closable: true, style: tabActive, onClick: () => {}, onClose: (e) => { e.stopPropagation(); this.setState({ route: 'profile' }); } });
+    } else {
+      tabs.push({ label: topTitles[r] || topTitles.dashboard, closable: false, style: tabActive, onClick: () => {} });
+    }
+
+    // lang & theme
+    const langOn = 'padding:4px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:#fff;color:var(--accent,#4f46e5);box-shadow:0 1px 3px rgba(0,0,0,.08);';
+    const langOff = 'padding:4px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;color:#9aa1ad;';
+    const themes = this.THEMES.map(th => ({ name: th.name, onClick: () => this.setAccent(th), style: `width:18px;height:18px;border-radius:6px;cursor:pointer;background:${th.a};box-shadow:${s.accentName === th.name ? '0 0 0 2px #fff,0 0 0 4px ' + th.a : 'none'};transition:box-shadow .15s;` }));
+
+    // ===== dashboard =====
+    const statCards = [
+      { label: t.stat.totalDepts, value: '28', sub: t.stat.departments, color: '#2a2f3a', iconWrap: 'width:30px;height:30px;border-radius:9px;background:var(--accent-soft,#eef2ff);display:flex;align-items:center;justify-content:center;', dot: 'width:8px;height:8px;border-radius:3px;background:var(--accent,#4f46e5);' },
+      { label: t.stat.filled, value: '26', sub: t.st.approved, color: '#0f9d58', iconWrap: 'width:30px;height:30px;border-radius:9px;background:#e7f7ee;display:flex;align-items:center;justify-content:center;', dot: 'width:8px;height:8px;border-radius:3px;background:#0f9d58;' },
+      { label: t.stat.notFilled, value: '2', sub: t.st.pending, color: '#d97706', iconWrap: 'width:30px;height:30px;border-radius:9px;background:#fdf3e3;display:flex;align-items:center;justify-content:center;', dot: 'width:8px;height:8px;border-radius:3px;background:#d97706;' },
+      { label: t.assess.totalScore, value: '98.2', sub: t.st.approved, color: '#2a2f3a', iconWrap: 'width:30px;height:30px;border-radius:9px;background:var(--accent-soft,#eef2ff);display:flex;align-items:center;justify-content:center;', dot: 'width:8px;height:8px;border-radius:3px;background:var(--accent,#4f46e5);' },
+    ];
+    const birthdays = this.BIRTH_RAW.map(b => ({ ini: b[0], name: b[1], dept: b[2], date: b[3] }));
+    const maxBar = Math.max(...this.BARS_RAW.map(b => b[1]));
+    const deptBars = this.BARS_RAW.map(b => ({ name: b[0], count: b[1], barStyle: `width:100%;border-radius:7px 7px 0 0;height:${Math.max(6, Math.round(b[1] / maxBar * 100))}%;background:linear-gradient(180deg,var(--accent,#4f46e5),var(--accent,#4f46e5));opacity:${0.55 + (b[1] / maxBar) * 0.45};` }));
+
+    // ===== employees =====
+    let list = this.EMP_RAW.map(rw => this.empObj(rw));
+    if (s.filterDept !== 'all') list = list.filter(e => e.dept === s.filterDept);
+    if (s.query.trim()) {
+      const q = s.query.toLowerCase();
+      list = list.filter(e => (e.name + ' ' + e.surname + ' ' + e.dept + ' ' + e.pos + ' ' + e.id + ' ' + e.sup).toLowerCase().includes(q));
+    }
+    if (s.sortKey) {
+      list = [...list].sort((a, b) => String(a[s.sortKey]).localeCompare(String(b[s.sortKey]), undefined, { numeric: true }) * s.sortDir);
+    }
+    const avPalette = [['#eef2ff','#4f46e5'],['#e7f7ee','#0f9d58'],['#fdf3e3','#d97706'],['#f3f1ff','#7c3aed'],['#eef4ff','#2563eb'],['#fdeaf3','#db2777']];
+    const employeesView = list.map((e, i) => {
+      const [avBg, avColor] = avPalette[e.ini.charCodeAt(0) % avPalette.length];
+      const checked = !!s.sel[e.id];
+      return {
+        ...e, avBg, avColor,
+        rowStyle: `display:grid;grid-template-columns:42px 64px 1.1fr 1.1fr 1.6fr 1.5fr 1.4fr 1fr;align-items:center;padding:0 18px;height:56px;border-bottom:1px solid #f4f5f7;cursor:pointer;transition:background .1s;background:${checked ? 'var(--accent-soft,#eef2ff)' : '#fff'};`,
+        open: () => this.openEmp(e.id),
+        check: (ev) => this.toggleSel(e.id, ev),
+        checkStyle: this.checkbox(checked),
+        checkOpacity: checked ? 1 : 0,
+      };
+    });
+    const empHeaders = [
+      { key: 'name', label: t.emp.name }, { key: 'surname', label: t.emp.surname }, { key: 'dept', label: t.emp.dept },
+      { key: 'pos', label: t.emp.pos }, { key: 'sup', label: t.emp.sup }, { key: 'statusLabel', label: t.emp.status },
+    ].map(h => ({ ...h, arrow: s.sortKey === h.key ? (s.sortDir === 1 ? '▲' : '▼') : '', onClick: () => this.sortBy(h.key) }));
+    const deptOptions = this.DEPTS;
+    const rangeLabel = '1 - ' + employeesView.length;
+    const allSel = s.allSel;
+
+    // ===== leave =====
+    const leaveRows = this.LEAVE_RAW.map(l => ({
+      reason: t.leave[l[0]], desc: l[1], period: l[2], days: l[3], type: t.leave[l[4]],
+      approver: l[5], statusKey: l[6], statusLabel: t.st[l[6]], pillStyle: this.pill(l[6]),
+    }));
+
+    // ===== assessments =====
+    const assessRows = this.ASSESS_RAW.map(a => ({
+      employee: a[0], started: a[1], startedBy: a[2], reviewers: a[3], score: a[4],
+      dept: a[5], period: t.assess.period, template: t.assess.tpl,
+      statusLabel: t.st.approved, pillStyle: this.pill('approved'),
+      open: () => this.openAssessment(),
+    }));
+    const comps = (s.lang === 'uz' ? this.COMP_UZ : this.COMP_EN).map(c => ({ title: c.t, items: c.items, score: String(c.s) }));
+
+    // ===== shifts =====
+    const shiftRows = this.SHIFTS_RAW.map(sh => ({
+      code: sh[0], dept: sh[1], statusKey: sh[2], month: t.shift.month26, createdBy: sh[3],
+      statusLabel: sh[2] === 'approved' ? t.st.approved : t.st.pendingApproval,
+      dotColor: sh[2] === 'approved' ? '#0f9d58' : '#d97706',
+    }));
+
+    // ===== attendance =====
+    const attDays = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14'];
+    const attCodes = ['p','p','p','l','a','p','p','p','p','t','p','p','p','p'];
+    const attLegend = [
+      { k: 'present', c: '#0f9d58', bg: '#e7f7ee', label: t.att.present },
+      { k: 'late', c: '#d97706', bg: '#fdf3e3', label: t.att.late },
+      { k: 'absent', c: '#dc2626', bg: '#fdeaea', label: t.att.absent },
+      { k: 'leaveDay', c: '#4f46e5', bg: '#eef2ff', label: t.att.leaveDay },
+    ];
+    const attColor = { p: ['#0f9d58', '#e7f7ee'], l: ['#4f46e5', '#eef2ff'], a: ['#dc2626', '#fdeaea'], t: ['#d97706', '#fdf3e3'] };
+    const attRows = this.EMP_RAW.slice(0, 8).map((rw, ri) => {
+      const cells = attDays.map((d, di) => {
+        const code = attCodes[(di + ri) % attCodes.length];
+        const [c, bg] = attColor[code];
+        const ch = { p: '✓', l: 'T', a: '✕', t: 'K' }[code];
+        return { ch, style: `width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${c};background:${bg};` };
+      });
+      return { ini: rw[1], name: rw[2] + ' ' + rw[3], dept: rw[4], cells };
+    });
+
+    // ===== org tree =====
+    const orgNode = "background:#fff;border:1px solid #e6e9ee;border-radius:14px;padding:14px 18px;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:170px;box-shadow:0 2px 8px rgba(20,30,50,.06);";
+    const orgAvatar = "width:42px;height:42px;border-radius:50%;background:var(--accent,#4f46e5);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;margin-bottom:2px;";
+    const childAv = (bg, c) => `width:42px;height:42px;border-radius:50%;background:${bg};color:${c};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;margin-bottom:2px;`;
+    const orgChildren = [
+      { ini: 'NS', name: 'Nodira Saidova', role: 'Shifokor-bakteriolog', avStyle: childAv('#e7f7ee', '#0f9d58'), hasChildren: 1,
+        children: [
+          { ini: 'SA', role: 'Laborant-bakteriolog' }, { ini: 'US', role: 'Laborant-bakteriolog' },
+          { ini: 'FT', role: 'Sanitarka (tozalik)' }, { ini: 'KA', role: 'Laborant-bakteriolog' },
+        ] },
+      { ini: 'ON', name: 'Otabek Nazarov', role: 'Shifokor laborant', avStyle: childAv('#fdf3e3', '#d97706'), hasChildren: 0, children: [] },
+      { ini: 'BQ', name: 'Bekzod Qodirov', role: 'Bo\u2018lim mudiri', avStyle: childAv('#f3f1ff', '#7c3aed'), hasChildren: 1,
+        children: [
+          { ini: 'YM', role: 'Anesteziolog-reanimatolog' }, { ini: 'MX', role: 'Hamshira (navbatchi)' },
+          { ini: 'GT', role: 'Hamshira (navbatchi)' },
+        ] },
+    ];
+
+    // booleans
+    const route = s.route;
+    return {
+      orgNode, orgAvatar, orgChildren,
+      accent: s.accent, accentSoft: s.accentSoft, accentRing: s.accentRing,
+      t, navGroups, railHRStyle, railRepStyle,
+      goHR: () => this.go('dashboard'), goReports: () => this.go('dashboard'),
+      tabs, themes,
+      uzStyle: s.lang === 'uz' ? langOn : langOff, enStyle: s.lang === 'en' ? langOn : langOff,
+      setUz: () => this.setLang('uz'), setEn: () => this.setLang('en'),
+      isDashboard: route === 'dashboard', isEmployees: route === 'employees', isProfile: route === 'profile',
+      isLeave: route === 'leave', isAssessments: route === 'assessments', isAssessmentDetail: route === 'assessmentDetail',
+      isShifts: route === 'shifts', isSupervisorStruct: route === 'supervisorStruct', isOrgStruct: route === 'orgStruct',
+      isAttendance: route === 'attendance', isStruct: route === 'supervisorStruct' || route === 'orgStruct',
+      statCards, birthdays, deptBars,
+      query: s.query, onSearch: this.onSearch, filterDept: s.filterDept, onFilterDept: this.onFilterDept,
+      deptOptions, rangeLabel, employeesView, empHeaders, noResults: employeesView.length === 0 ? 1 : 0,
+      toggleAll: this.toggleAll, allCheckStyle: this.checkbox(allSel), allCheckOpacity: allSel ? 1 : 0,
+      emp,
+      flLabel: 'font-size:11px;font-weight:700;letter-spacing:.05em;color:#a3a9b4;text-transform:uppercase;margin-bottom:7px;',
+      flVal: 'font-size:14.5px;font-weight:600;color:#2a2f3a;',
+      profileTabs: this.profileTabsArr(t),
+      profIsInfo: s.profileTab === 'profile', profIsLeave: s.profileTab === 'leave',
+      profIsActivities: s.profileTab === 'activities', profIsAssess: s.profileTab === 'assess',
+      leaveRows, leaveYear: s.leaveYear, setLeaveYear: this.setLeaveYear,
+      assessRows, comps, orgLevel: s.orgLevel, setOrgLevel: this.setOrgLevel,
+      shiftRows, attDays, attRows, attLegend,
+      structTitle: route === 'orgStruct' ? t.nav.orgStruct : t.nav.supervisorStruct,
+    };
+  }
+
+  checkbox(on) {
+    return `width:18px;height:18px;border-radius:5px;border:1.8px solid ${on ? 'var(--accent,#4f46e5)' : '#cdd2da'};background:${on ? 'var(--accent,#4f46e5)' : '#fff'};display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .12s;`;
+  }
+  profileTabsArr(t) {
+    const order = [['profile', t.prof.profile, 0], ['leave', t.prof.leaveReq, 2], ['activities', t.prof.activities, 0], ['assess', t.prof.assess, 0], ['incidents', t.prof.incidents, 0]];
+    const base = 'padding:10px 16px;font-size:13.5px;cursor:pointer;border-radius:9px 9px 0 0;margin-bottom:-1px;position:relative;';
+    return order.map(([key, label, badge]) => {
+      const active = this.state.profileTab === key;
+      const style = base + (active ? 'background:#f4f5f8;color:var(--accent,#4f46e5);font-weight:600;border:1px solid #e8eaee;border-bottom:1px solid #f4f5f8;' : 'color:#7a818c;font-weight:500;');
+      return { label, badge, onClick: () => this.setProfileTab(key), style };
+    });
+  }
+}
+</script>
+</body>
+</html>
