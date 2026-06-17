@@ -19,6 +19,7 @@ const ShiftSchedulesPage   = lazy(() => import('@modules/shifts').then(m => ({ d
 const OrgChartPage         = lazy(() => import('@modules/org-chart').then(m => ({ default: m.OrgChartPage })))
 const AttendanceReportPage = lazy(() => import('@modules/attendance').then(m => ({ default: m.AttendanceReportPage })))
 const ProfilePage          = lazy(() => import('@modules/profile').then(m => ({ default: m.ProfilePage })))
+const OrganizationsPage    = lazy(() => import('@modules/organizations').then(m => ({ default: m.OrganizationsPage })))
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -51,6 +52,7 @@ export const router = createBrowserRouter([
           { path: 'org/structure',      element: <OrgChartPage mode="org" /> },
           { path: 'attendance',         element: <AttendanceReportPage /> },
           { path: 'profile',            element: <ProfilePage /> },
+          { path: 'organizations',      element: <OrganizationsPage /> },
         ],
       },
     ],

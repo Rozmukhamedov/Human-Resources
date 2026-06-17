@@ -72,6 +72,7 @@ function NavPanel() {
         <div style={{ marginTop: 10 }}>
           <SectionHeader label={t('sec.company')} />
           <NavItem label={t('nav.employees')} path="/employees" />
+          <NavItem label={t('nav.organizations')} path="/organizations" />
           <NavItem label={t('nav.supervisorStruct')} path="/org/supervisor" />
           <NavItem label={t('nav.orgStruct')} path="/org/structure" />
         </div>
@@ -340,6 +341,7 @@ function TopBar() {
     if (p === '/assessments')     return [{ label: t('titles.assessments'),      path: p, closable: false }]
     if (p === '/org/supervisor')  return [{ label: t('titles.supervisorStruct'), path: p, closable: false }]
     if (p === '/org/structure')   return [{ label: t('titles.orgStruct'),        path: p, closable: false }]
+    if (p === '/organizations')   return [{ label: t('titles.organizations'),    path: p, closable: false }]
     if (p === '/profile')         return [{ label: t('adminName'),               path: p, closable: false }]
     return [{ label: t('titles.dashboard'), path: '/', closable: false }]
   }

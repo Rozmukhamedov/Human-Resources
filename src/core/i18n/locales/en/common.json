@@ -14,7 +14,8 @@
     "shifts": "Shift schedules",
     "leave": "Leave requests",
     "attendance": "Attendance report",
-    "assessments": "Assessments"
+    "assessments": "Assessments",
+    "organizations": "Organizations"
   },
   "titles": {
     "dashboard": "Dashboard",
@@ -25,7 +26,8 @@
     "leave": "Leave requests",
     "attendance": "Attendance report",
     "assessments": "Assessments",
-    "assessmentDetail": "Assessment"
+    "assessmentDetail": "Assessment",
+    "organizations": "Organizations"
   },
   "search": "Search...",
   "allDepts": "All departments",

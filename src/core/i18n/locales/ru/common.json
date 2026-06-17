@@ -14,7 +14,8 @@
     "shifts": "Расписание смен",
     "leave": "Заявки на отпуск",
     "attendance": "Отчёт посещаемости",
-    "assessments": "Аттестации"
+    "assessments": "Аттестации",
+    "organizations": "Организации"
   },
   "titles": {
     "dashboard": "График работы",
@@ -25,7 +26,8 @@
     "leave": "Заявки на отпуск",
     "attendance": "Отчёт посещаемости",
     "assessments": "Аттестации",
-    "assessmentDetail": "Аттестация"
+    "assessmentDetail": "Аттестация",
+    "organizations": "Организации"
   },
   "search": "Поиск...",
   "allDepts": "Все отделы",

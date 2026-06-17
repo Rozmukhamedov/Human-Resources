@@ -6,6 +6,9 @@
 <script src="./support.js"></script>
 </head>
 <body>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" rx="20" fill="#4f46e5"/><text x="50" y="50" font-family="sans-serif" font-size="34" font-weight="800" fill="#fff" text-anchor="middle" dominant-baseline="central">KPI</text></svg>
+</template>
 <x-dc>
 <helmet>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,7 +24,9 @@
   ::-webkit-scrollbar-track{background:transparent;}
   @keyframes spin{to{transform:rotate(360deg);}}
   @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  input[type=range]{accent-color:var(--accent,#4f46e5);}
 </style>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </helmet>
 <div style="--accent:{{ accent }};--accent-soft:{{ accentSoft }};--accent-ring:{{ accentRing }};display:flex;height:100vh;width:100%;overflow:hidden;background:#eef0f3;font-family:'Public Sans',sans-serif;">
 
@@ -65,8 +70,8 @@
       </sc-for>
     </div>
 
-    <div style="padding:14px 16px;border-top:1px solid #eef0f3;display:flex;align-items:center;gap:10px;">
-      <div style="width:34px;height:34px;border-radius:50%;background:#eef1f6;display:flex;align-items:center;justify-content:center;font-weight:700;color:#6b7280;font-size:13px;">TA</div>
+    <div onClick="{{ goAccount }}" style="{{ userChipStyle }}">
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--accent,#4f46e5);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:13px;">TA</div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:13px;font-weight:600;color:#2a2f3a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Timur Aliyev</div>
         <div style="font-size:11px;color:#9aa1ad;">{{ t.adminRole }}</div>
@@ -103,11 +108,11 @@
         </sc-for>
       </div>
       <div style="width:1px;height:24px;background:#e8eaee;margin:0 4px;"></div>
-      <div style="position:relative;width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#7a818c;cursor:pointer;" style-hover="background:#f3f4f7;">
+      <div onClick="{{ goNotifications }}" style="{{ bellStyle }}">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>
         <span style="position:absolute;top:5px;right:5px;background:#ef4444;color:#fff;font-size:9px;font-weight:700;border-radius:10px;min-width:15px;height:15px;display:flex;align-items:center;justify-content:center;padding:0 3px;">7</span>
       </div>
-      <div style="width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#7a818c;cursor:pointer;" style-hover="background:#f3f4f7;">
+      <div onClick="{{ goSettings }}" style="{{ gearStyle }}">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
       </div>
     </div>
@@ -576,11 +581,12 @@
       </sc-if>
 
       <!-- ============ ORG / SUPERVISOR STRUCTURE ============ -->
-      <sc-if value="{{ isStruct }}" hint-placeholder-val="0">
+      <!-- ============ SUPERVISOR STRUCTURE (reporting tree) ============ -->
+      <sc-if value="{{ isSupervisorStruct }}" hint-placeholder-val="0">
       <div style="display:flex;flex-direction:column;height:100%;">
         <div style="display:flex;align-items:center;gap:12px;padding:14px 24px;background:#fff;border-bottom:1px solid #e8eaee;">
           <div style="width:34px;height:34px;border-radius:9px;background:#f4f5f8;display:flex;align-items:center;justify-content:center;color:#7a818c;cursor:pointer;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg></div>
-          <div style="font-weight:700;font-size:15px;color:#2a2f3a;flex:1;">{{ structTitle }}</div>
+          <div style="font-weight:700;font-size:15px;color:#2a2f3a;flex:1;">{{ t.nav.supervisorStruct }}</div>
           <select value="{{ orgLevel }}" onChange="{{ setOrgLevel }}" style="height:36px;border:1px solid #e2e5ea;border-radius:9px;padding:0 12px;font-size:13px;color:#5b6270;font-family:'Public Sans';cursor:pointer;outline:none;">
             <option value="1">{{ t.org.level }} 1</option><option value="2">{{ t.org.level }} 2</option><option value="3">{{ t.org.level }} 3</option>
           </select>
@@ -627,6 +633,50 @@
       </div>
       </sc-if>
 
+      <!-- ============ ORG STRUCTURE (department hierarchy) ============ -->
+      <sc-if value="{{ isOrgStruct }}" hint-placeholder-val="0">
+      <div style="display:flex;flex-direction:column;height:100%;">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 24px;background:#fff;border-bottom:1px solid #e8eaee;">
+          <div style="width:34px;height:34px;border-radius:9px;background:#f4f5f8;display:flex;align-items:center;justify-content:center;color:#7a818c;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg></div>
+          <div style="font-weight:700;font-size:15px;color:#2a2f3a;flex:1;">{{ t.nav.orgStruct }}</div>
+          <div style="font-size:13px;color:#8d94a0;">{{ t.org.institution }} · 28 {{ t.dash.totalDepts }}</div>
+        </div>
+        <div style="flex:1;overflow:auto;background:#eef1f6;padding:30px 24px;">
+          <!-- institution root -->
+          <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:8px;">
+            <div style="background:var(--accent,#4f46e5);color:#fff;border-radius:14px;padding:16px 30px;text-align:center;box-shadow:0 6px 18px var(--accent-ring,rgba(79,70,229,.32));">
+              <div style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:17px;">{{ t.org.institution }}</div>
+              <div style="font-size:12px;opacity:.85;margin-top:2px;">{{ t.org.director }} · Nodira Saidova</div>
+            </div>
+            <div style="width:2px;height:26px;background:#cfd6e0;"></div>
+          </div>
+          <!-- divisions as columns -->
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start;">
+            <sc-for list="{{ orgDivisions }}" as="dv" hint-placeholder-count="4">
+              <div style="background:#fff;border:1px solid #e6e9ee;border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(20,30,50,.05);">
+                <div style="padding:13px 16px;border-bottom:1px solid #f0f1f4;display:flex;align-items:center;gap:9px;border-top:3px solid {{ dv.color }};">
+                  <span style="width:10px;height:10px;border-radius:3px;background:{{ dv.color }};"></span>
+                  <div style="flex:1;"><div style="font-size:13.5px;font-weight:700;color:#1c2230;">{{ dv.name }}</div></div>
+                  <span style="font-size:11px;font-weight:700;color:#9aa1ad;background:#f1f3f6;border-radius:7px;padding:2px 8px;">{{ dv.count }}</span>
+                </div>
+                <div style="padding:8px;display:flex;flex-direction:column;gap:6px;">
+                  <sc-for list="{{ dv.depts }}" as="dp" hint-placeholder-count="4">
+                    <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:11px 12px;cursor:pointer;" style-hover="background:#f3f4f7;">
+                      <div style="font-size:12.5px;font-weight:600;color:#2a2f3a;line-height:1.35;">{{ dp.name }}</div>
+                      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+                        <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#8d94a0;"><span style="width:18px;height:18px;border-radius:50%;background:{{ dv.softBg }};color:{{ dv.color }};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;">{{ dp.ini }}</span>{{ dp.head }}</div>
+                        <span style="font-size:11px;font-weight:700;color:#5b6270;">{{ dp.count }}</span>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
       <!-- ============ ATTENDANCE ============ -->
       <sc-if value="{{ isAttendance }}" hint-placeholder-val="0">
       <div style="padding:18px 24px 40px;">
@@ -661,13 +711,339 @@
       </div>
       </sc-if>
 
+      <!-- ============ DEPARTMENTS ============ -->
+      <sc-if value="{{ isDepartments }}" hint-placeholder-val="0">
+      <div style="padding:18px 24px 40px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--accent,#4f46e5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer;box-shadow:0 3px 10px var(--accent-ring,rgba(79,70,229,.3));">+</div>
+          <div style="font-weight:700;font-size:16px;color:#2a2f3a;">{{ t.nav.departments }}</div>
+          <div style="flex:1;"></div>
+          <div style="font-size:13px;color:#8d94a0;">{{ deptCards.length }} <span style="color:#cfd4db;">/</span> 28</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+          <sc-for list="{{ deptCards }}" as="d" hint-placeholder-count="9">
+            <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;padding:18px 20px;cursor:pointer;transition:box-shadow .15s,transform .15s;" style-hover="box-shadow:0 8px 24px rgba(20,30,50,.08);transform:translateY(-2px);">
+              <div style="display:flex;align-items:flex-start;gap:12px;">
+                <div style="width:44px;height:44px;border-radius:12px;background:{{ d.iconBg }};color:{{ d.iconColor }};display:flex;align-items:center;justify-content:center;flex:0 0 44px;">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01"></path></svg>
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:14px;font-weight:700;color:#2a2f3a;line-height:1.3;">{{ d.name }}</div>
+                  <div style="font-size:12px;color:#9aa1ad;margin-top:2px;">{{ d.head }}</div>
+                </div>
+                <span style="{{ d.pillStyle }}">{{ d.statusLabel }}</span>
+              </div>
+              <div style="display:flex;gap:22px;margin-top:18px;padding-top:14px;border-top:1px solid #f4f5f7;">
+                <div><div style="font-family:'Plus Jakarta Sans';font-size:20px;font-weight:800;color:#2a2f3a;">{{ d.count }}</div><div style="font-size:11px;color:#9aa1ad;">{{ t.dept.employees }}</div></div>
+                <div><div style="font-family:'Plus Jakarta Sans';font-size:20px;font-weight:800;color:var(--accent,#4f46e5);">{{ d.score }}</div><div style="font-size:11px;color:#9aa1ad;">{{ t.dept.avgScore }}</div></div>
+                <div style="flex:1;"></div>
+                <div style="align-self:flex-end;display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:{{ d.trendColor }};"><span>{{ d.trendArrow }}</span>{{ d.trend }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ NOTIFICATIONS ============ -->
+      <sc-if value="{{ isNotifications }}" hint-placeholder-val="0">
+      <div style="padding:24px 28px 44px;max-width:840px;margin:0 auto;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+          <div style="font-weight:700;font-size:18px;color:#2a2f3a;">{{ t.notif.title }}</div>
+          <span style="background:#ef4444;color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:2px 9px;">7 {{ t.notif.new }}</span>
+          <div style="flex:1;"></div>
+          <div style="font-size:13px;font-weight:600;color:var(--accent,#4f46e5);cursor:pointer;">{{ t.notif.markAll }}</div>
+        </div>
+        <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;overflow:hidden;">
+          <sc-for list="{{ notifications }}" as="n" hint-placeholder-count="7">
+            <div style="display:flex;align-items:flex-start;gap:14px;padding:16px 20px;border-bottom:1px solid #f4f5f7;background:{{ n.bg }};cursor:pointer;" style-hover="background:#fafbfc;">
+              <div style="width:38px;height:38px;border-radius:11px;background:{{ n.iconBg }};color:{{ n.iconColor }};display:flex;align-items:center;justify-content:center;flex:0 0 38px;">{{ n.icon }}</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13.5px;color:#2a2f3a;line-height:1.45;"><span style="font-weight:700;">{{ n.actor }}</span> {{ n.text }}</div>
+                <div style="font-size:12px;color:#9aa1ad;margin-top:3px;">{{ n.time }}</div>
+              </div>
+              <sc-if value="{{ n.unread }}" hint-placeholder-val="0"><span style="width:9px;height:9px;border-radius:50%;background:var(--accent,#4f46e5);flex:0 0 9px;margin-top:6px;"></span></sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ SETTINGS ============ -->
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="0">
+      <div style="padding:24px 28px 44px;max-width:1180px;margin:0 auto;">
+        <div style="font-weight:700;font-size:18px;color:#2a2f3a;margin-bottom:18px;">{{ t.nav.settings }}</div>
+        <div style="display:grid;grid-template-columns:230px 1fr;gap:20px;">
+          <div style="display:flex;flex-direction:column;gap:3px;">
+            <sc-for list="{{ settingsNav }}" as="sn" hint-placeholder-count="5">
+              <div onClick="{{ sn.onClick }}" style="{{ sn.style }}">{{ sn.label }}</div>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:18px;">
+            <!-- general -->
+            <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;padding:22px 24px;">
+              <div style="font-weight:700;font-size:15px;color:#2a2f3a;margin-bottom:4px;">{{ t.set.general }}</div>
+              <div style="font-size:12.5px;color:#9aa1ad;margin-bottom:18px;">{{ t.set.generalSub }}</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-top:1px solid #f4f5f7;">
+                <div><div style="font-size:13.5px;font-weight:600;color:#2a2f3a;">{{ t.set.language }}</div><div style="font-size:12px;color:#9aa1ad;">{{ t.set.languageSub }}</div></div>
+                <div style="display:flex;background:#f1f3f6;border-radius:9px;padding:2px;gap:1px;"><div onClick="{{ setUz }}" style="{{ uzStyle }}">UZ</div><div onClick="{{ setEn }}" style="{{ enStyle }}">EN</div></div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-top:1px solid #f4f5f7;">
+                <div><div style="font-size:13.5px;font-weight:600;color:#2a2f3a;">{{ t.set.accent }}</div><div style="font-size:12px;color:#9aa1ad;">{{ t.set.accentSub }}</div></div>
+                <div style="display:flex;gap:8px;">
+                  <sc-for list="{{ themes }}" as="th" hint-placeholder-count="4"><div onClick="{{ th.onClick }}" title="{{ th.name }}" style="{{ th.bigStyle }}"></div></sc-for>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-top:1px solid #f4f5f7;">
+                <div><div style="font-size:13.5px;font-weight:600;color:#2a2f3a;">{{ t.set.compact }}</div><div style="font-size:12px;color:#9aa1ad;">{{ t.set.compactSub }}</div></div>
+                <div onClick="{{ toggleCompact }}" style="{{ compactToggle }}"><span style="{{ compactKnob }}"></span></div>
+              </div>
+            </div>
+            <!-- notifications prefs -->
+            <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;padding:22px 24px;">
+              <div style="font-weight:700;font-size:15px;color:#2a2f3a;margin-bottom:4px;">{{ t.set.notifPrefs }}</div>
+              <div style="font-size:12.5px;color:#9aa1ad;margin-bottom:8px;">{{ t.set.notifPrefsSub }}</div>
+              <sc-for list="{{ notifToggles }}" as="nt" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-top:1px solid #f4f5f7;">
+                  <div style="font-size:13.5px;font-weight:600;color:#2a2f3a;">{{ nt.label }}</div>
+                  <div onClick="{{ nt.onClick }}" style="{{ nt.toggle }}"><span style="{{ nt.knob }}"></span></div>
+                </div>
+              </sc-for>
+            </div>
+            <!-- danger -->
+            <div style="background:#fff;border:1px solid #f4d6d6;border-radius:16px;padding:22px 24px;">
+              <div style="font-weight:700;font-size:15px;color:#c0392b;margin-bottom:4px;">{{ t.set.security }}</div>
+              <div style="font-size:12.5px;color:#9aa1ad;margin-bottom:16px;">{{ t.set.securitySub }}</div>
+              <div style="display:flex;gap:12px;">
+                <div style="padding:10px 18px;border:1px solid #e2e5ea;border-radius:10px;font-size:13.5px;font-weight:600;color:#5b6270;cursor:pointer;" style-hover="background:#fafbfc;">{{ t.set.changePw }}</div>
+                <div style="padding:10px 18px;border:1px solid #e2e5ea;border-radius:10px;font-size:13.5px;font-weight:600;color:#5b6270;cursor:pointer;" style-hover="background:#fafbfc;">{{ t.set.twoFa }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ ACCOUNT (admin profile) ============ -->
+      <sc-if value="{{ isAccount }}" hint-placeholder-val="0">
+      <div style="padding:24px 28px 44px;max-width:1080px;margin:0 auto;">
+        <div style="background:linear-gradient(120deg,var(--accent,#4f46e5),color-mix(in srgb,var(--accent,#4f46e5) 60%,#000));border-radius:18px;padding:30px 32px;display:flex;align-items:center;gap:22px;margin-bottom:18px;">
+          <div style="width:88px;height:88px;border-radius:50%;background:rgba(255,255,255,.18);border:3px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Plus Jakarta Sans';font-size:32px;font-weight:800;flex:0 0 88px;">TA</div>
+          <div style="flex:1;">
+            <div style="font-family:'Plus Jakarta Sans';font-size:26px;font-weight:800;color:#fff;letter-spacing:-.01em;">Timur Aliyev</div>
+            <div style="font-size:14px;color:rgba(255,255,255,.85);margin-top:2px;">{{ t.adminRole }} · Kadrlar bo'limi</div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+              <span style="background:rgba(255,255,255,.2);color:#fff;font-size:12px;font-weight:600;border-radius:8px;padding:4px 12px;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d5a1bcb8a0a7fbb4b9bcacb0a395bea5bcfba0af">[email&#160;protected]</a></span>
+              <span style="background:rgba(255,255,255,.2);color:#fff;font-size:12px;font-weight:600;border-radius:8px;padding:4px 12px;">+998 90 100 20 30</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="padding:10px 22px;background:#fff;border-radius:11px;font-size:13.5px;font-weight:700;color:var(--accent,#4f46e5);cursor:pointer;text-align:center;">{{ t.prof.edit }}</div>
+            <div onClick="{{ goSettings }}" style="padding:10px 22px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);border-radius:11px;font-size:13.5px;font-weight:600;color:#fff;cursor:pointer;text-align:center;">{{ t.nav.settings }}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;">
+          <sc-for list="{{ accountStats }}" as="a" hint-placeholder-count="4">
+            <div style="background:#fff;border:1px solid #ebedf1;border-radius:14px;padding:16px 18px;"><div style="font-family:'Plus Jakarta Sans';font-size:24px;font-weight:800;color:{{ a.color }};">{{ a.value }}</div><div style="font-size:12px;color:#9aa1ad;margin-top:2px;">{{ a.label }}</div></div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:18px;">
+          <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;padding:22px 24px;">
+            <div style="font-weight:700;font-size:15px;color:#2a2f3a;margin-bottom:16px;">{{ t.account.recent }}</div>
+            <sc-for list="{{ accountActivity }}" as="ac" hint-placeholder-count="5">
+              <div style="display:flex;gap:14px;padding:11px 0;border-top:1px solid #f4f5f7;">
+                <div style="width:8px;height:8px;border-radius:50%;background:var(--accent,#4f46e5);margin-top:6px;flex:0 0 8px;"></div>
+                <div style="flex:1;"><div style="font-size:13.5px;color:#2a2f3a;">{{ ac.text }}</div><div style="font-size:12px;color:#9aa1ad;margin-top:2px;">{{ ac.time }}</div></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;padding:22px 24px;">
+            <div style="font-weight:700;font-size:15px;color:#2a2f3a;margin-bottom:16px;">{{ t.account.details }}</div>
+            <div style="display:flex;flex-direction:column;gap:16px;">
+              <div><div style="{{ flLabel }}">{{ t.account.role }}</div><div style="{{ flVal }}">{{ t.adminRole }}</div></div>
+              <div><div style="{{ flLabel }}">{{ t.prof.deptF }}</div><div style="{{ flVal }}">Kadrlar bo'limi</div></div>
+              <div><div style="{{ flLabel }}">{{ t.prof.hireDate }}</div><div style="{{ flVal }}">jan 05, 2015</div></div>
+              <div><div style="{{ flLabel }}">{{ t.account.lastLogin }}</div><div style="{{ flVal }}">jun 17, 2026 · 08:42</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ KPI SCORING ============ -->
+      <sc-if value="{{ isKpi }}" hint-placeholder-val="0">
+      <div style="padding:22px 24px 44px;max-width:1400px;margin:0 auto;">
+        <div style="display:flex;align-items:flex-end;gap:14px;margin-bottom:18px;flex-wrap:wrap;">
+          <div>
+            <div style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:22px;color:#1c2230;letter-spacing:-.01em;">{{ t.kpi.title }}</div>
+            <div style="font-size:13px;color:#8d94a0;margin-top:2px;">{{ t.kpi.subtitle }}</div>
+          </div>
+          <div style="flex:1;"></div>
+          <div onClick="{{ downloadTemplate }}" style="display:flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid #e2e5ea;border-radius:11px;font-size:13.5px;font-weight:600;color:#5b6270;cursor:pointer;background:#fff;" style-hover="background:#fafbfc;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            {{ t.kpi.downloadTemplate }}
+          </div>
+          <div onClick="{{ openImport }}" style="display:flex;align-items:center;gap:8px;padding:10px 18px;background:var(--accent,#4f46e5);border-radius:11px;font-size:13.5px;font-weight:700;color:#fff;cursor:pointer;box-shadow:0 4px 14px var(--accent-ring,rgba(79,70,229,.32));">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M12 18v-6"></path><path d="m9 15 3 3 3-3"></path></svg>
+            {{ t.kpi.importExcel }}
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;">
+          <div style="background:#fff;border:1px solid #ebedf1;border-radius:14px;padding:16px 18px;"><div style="font-size:12px;color:#8d94a0;font-weight:600;">{{ t.kpi.avgKpi }}</div><div style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:28px;color:var(--accent,#4f46e5);margin-top:6px;">{{ avgKpi }}</div></div>
+          <div style="background:#fff;border:1px solid #ebedf1;border-radius:14px;padding:16px 18px;"><div style="font-size:12px;color:#8d94a0;font-weight:600;">{{ t.kpi.evaluated }}</div><div style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:28px;color:#1c2230;margin-top:6px;">{{ evaluatedCount }}</div></div>
+          <div style="background:#fff;border:1px solid #ebedf1;border-radius:14px;padding:16px 18px;"><div style="font-size:12px;color:#8d94a0;font-weight:600;">{{ t.kpi.top }}</div><div style="font-size:15px;font-weight:700;color:#1c2230;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ topPerformer.name }} {{ topPerformer.surname }}</div><div style="font-size:12px;color:#0f9d58;font-weight:700;">{{ topPerformer.kpiText }} KPI</div></div>
+          <div style="background:#fff;border:1px solid #ebedf1;border-radius:14px;padding:16px 18px;"><div style="font-size:12px;color:#8d94a0;font-weight:600;">{{ t.kpi.below }}</div><div style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:28px;color:{{ belowColor }};margin-top:6px;">{{ belowCount }}</div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start;">
+          <!-- weights panel -->
+          <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;padding:20px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent,#4f46e5)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+              <div style="font-weight:700;font-size:14.5px;color:#1c2230;flex:1;">{{ t.kpi.weights }}</div>
+              <div onClick="{{ resetWeights }}" style="font-size:12px;font-weight:600;color:var(--accent,#4f46e5);cursor:pointer;">{{ t.kpi.reset }}</div>
+            </div>
+            <div style="font-size:12px;color:#9aa1ad;margin-bottom:16px;line-height:1.4;">{{ t.kpi.weightsSub }}</div>
+            <sc-for list="{{ weightSliders }}" as="ws" hint-placeholder-count="6">
+              <div style="margin-bottom:15px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                  <span style="font-size:13px;color:#3a4150;font-weight:600;">{{ ws.label }}</span>
+                  <span style="font-size:13px;font-weight:700;color:var(--accent,#4f46e5);">{{ ws.value }}%</span>
+                </div>
+                <input type="range" min="0" max="50" value="{{ ws.value }}" onInput="{{ ws.onInput }}" style="width:100%;cursor:pointer;" />
+              </div>
+            </sc-for>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px solid #f0f1f4;">
+              <span style="font-size:13px;color:#5b6270;font-weight:600;">{{ t.kpi.totalW }}</span>
+              <span style="{{ totalWStyle }}">{{ totalW }}%</span>
+            </div>
+          </div>
+
+          <!-- ranking table -->
+          <div style="background:#fff;border:1px solid #ebedf1;border-radius:16px;overflow:hidden;">
+            <div style="overflow-x:auto;">
+            <div style="min-width:800px;">
+            <div style="display:grid;grid-template-columns:56px 1.7fr 1.5fr repeat(6,minmax(0,1fr)) 150px 1fr;align-items:center;padding:0 16px;height:46px;background:#fafbfc;border-bottom:1px solid #f0f1f4;font-size:10.5px;font-weight:700;color:#a3a9b4;letter-spacing:.03em;text-transform:uppercase;">
+              <div>{{ t.kpi.rank }}</div>
+              <div>{{ t.kpi.employee }}</div>
+              <div>{{ t.kpi.dept }}</div>
+              <sc-for list="{{ kpiIndHeaders }}" as="ih" hint-placeholder-count="6"><div style="text-align:center;">{{ ih }}</div></sc-for>
+              <div>{{ t.kpi.kpiScore }}</div>
+              <div>{{ t.kpi.grade }}</div>
+            </div>
+            <div style="max-height:560px;overflow-y:auto;">
+              <sc-for list="{{ kpiRows }}" as="e" hint-placeholder-count="12">
+                <div style="display:grid;grid-template-columns:56px 1.7fr 1.5fr repeat(6,minmax(0,1fr)) 150px 1fr;align-items:center;padding:0 16px;height:56px;border-bottom:1px solid #f4f5f7;" style-hover="background:#fafbfc;">
+                  <div><span style="{{ e.rankStyle }}">{{ e.rank }}</span></div>
+                  <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:{{ e.avBg }};color:{{ e.avColor }};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:0 0 32px;">{{ e.ini }}</div>
+                    <div style="min-width:0;"><div style="font-size:13px;font-weight:600;color:#2a2f3a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ e.name }} {{ e.surname }}</div><sc-if value="{{ e.imported }}" hint-placeholder-val="0"><div style="font-size:10px;font-weight:700;color:var(--accent,#4f46e5);background:var(--accent-soft,#eef2ff);border-radius:5px;padding:0 5px;display:inline-block;">{{ t.kpi.imported }}</div></sc-if></div>
+                  </div>
+                  <div style="font-size:12px;color:#5b6270;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;">{{ e.dept }}</div>
+                  <sc-for list="{{ e.cells }}" as="c" hint-placeholder-count="6"><div style="text-align:center;font-size:12.5px;font-weight:600;color:{{ c.color }};">{{ c.v }}</div></sc-for>
+                  <div style="padding-right:14px;">
+                    <div style="display:flex;align-items:center;gap:8px;"><span style="font-family:'Plus Jakarta Sans';font-size:14px;font-weight:800;color:#1c2230;width:38px;">{{ e.kpiText }}</span><div style="flex:1;height:8px;background:#f1f3f6;border-radius:5px;overflow:hidden;"><div style="{{ e.barStyle }}"></div></div></div>
+                  </div>
+                  <div><span style="{{ e.pillStyle }}">{{ e.grade.label }}</span></div>
+                </div>
+              </sc-for>
+            </div>
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
       <!-- ROUTE-INSERT -->
 
     </div>
   </div>
+
+  <!-- ============ EXCEL IMPORT MODAL ============ -->
+  <sc-if value="{{ importOpen }}" hint-placeholder-val="0">
+  <div style="position:fixed;inset:0;background:rgba(16,19,28,.5);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;z-index:100;padding:24px;">
+    <div style="background:#fff;border-radius:18px;width:100%;max-width:640px;box-shadow:0 24px 70px rgba(10,15,30,.35);overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid #f0f1f4;">
+        <div style="width:38px;height:38px;border-radius:11px;background:var(--accent-soft,#eef2ff);color:var(--accent,#4f46e5);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path></svg></div>
+        <div style="font-weight:700;font-size:16px;color:#1c2230;flex:1;">{{ t.kpi.importTitle }}</div>
+        <div onClick="{{ closeImport }}" style="width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#9aa1ad;cursor:pointer;font-size:20px;" style-hover="background:#f3f4f7;">&times;</div>
+      </div>
+
+      <!-- drop step -->
+      <sc-if value="{{ importIsDrop }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:24px;">
+        <label onDrop="{{ onDrop }}" onDragOver="{{ onDragOver }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border:2px dashed #d4d8e0;border-radius:14px;padding:46px 24px;cursor:pointer;text-align:center;background:#fafbfc;">
+          <div style="width:56px;height:56px;border-radius:16px;background:var(--accent-soft,#eef2ff);color:var(--accent,#4f46e5);display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></div>
+          <div style="font-size:15px;font-weight:700;color:#2a2f3a;">{{ t.kpi.drop }}</div>
+          <div style="font-size:13px;color:#9aa1ad;">{{ t.kpi.dropSub }}</div>
+          <div style="margin-top:6px;padding:9px 20px;background:var(--accent,#4f46e5);color:#fff;border-radius:10px;font-size:13.5px;font-weight:600;">{{ t.kpi.browse }}</div>
+          <input type="file" accept=".xlsx,.xls,.csv" onChange="{{ onFileInput }}" style="display:none;" />
+        </label>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;">
+          <div style="font-size:12px;color:#a3a9b4;">{{ t.kpi.supported }}</div>
+          <div onClick="{{ downloadTemplate }}" style="font-size:12.5px;font-weight:600;color:var(--accent,#4f46e5);cursor:pointer;">{{ t.kpi.needTemplate }}</div>
+        </div>
+        <sc-if value="{{ importErrorShow }}" hint-placeholder-val="0">
+          <div style="margin-top:14px;background:#fdeaea;border:1px solid #f6cccc;color:#c0392b;border-radius:10px;padding:11px 14px;font-size:13px;">{{ importError }}</div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <!-- parsing step -->
+      <sc-if value="{{ importIsParsing }}" hint-placeholder-val="0">
+      <div style="padding:60px 24px;display:flex;flex-direction:column;align-items:center;gap:16px;">
+        <div style="width:42px;height:42px;border:3px solid #e8eaee;border-top-color:var(--accent,#4f46e5);border-radius:50%;animation:spin .8s linear infinite;"></div>
+        <div style="font-size:14px;color:#5b6270;font-weight:600;">{{ t.kpi.parsing }}</div>
+      </div>
+      </sc-if>
+
+      <!-- preview step -->
+      <sc-if value="{{ importIsPreview }}" hint-placeholder-val="0">
+      <div style="padding:20px 24px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <div style="display:flex;align-items:center;gap:8px;background:#e7f7ee;color:#0f9d58;border-radius:9px;padding:6px 12px;font-size:13px;font-weight:600;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            {{ importFileName }}
+          </div>
+          <div style="font-size:13px;color:#5b6270;"><b>{{ importRowCount }}</b> {{ t.kpi.rowsFound }} · <b>{{ importMapped }}</b> {{ t.kpi.colsMapped }}</div>
+        </div>
+        <div style="border:1px solid #eceef2;border-radius:12px;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:1.3fr 1.3fr 1.6fr repeat(6,1fr);background:#fafbfc;border-bottom:1px solid #f0f1f4;padding:9px 12px;font-size:10px;font-weight:700;color:#a3a9b4;text-transform:uppercase;letter-spacing:.03em;">
+            <div>{{ t.kpi.employee }}</div><div></div><div>{{ t.kpi.dept }}</div>
+            <sc-for list="{{ kpiIndHeaders }}" as="ih" hint-placeholder-count="6"><div style="text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ ih }}</div></sc-for>
+          </div>
+          <div style="max-height:230px;overflow-y:auto;">
+            <sc-for list="{{ importPreviewRows }}" as="r" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:1.3fr 1.3fr 1.6fr repeat(6,1fr);padding:9px 12px;border-bottom:1px solid #f4f5f7;font-size:12px;align-items:center;">
+                <div style="font-weight:600;color:#2a2f3a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:6px;">{{ r.name }}</div>
+                <div style="color:#3a4150;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:6px;">{{ r.surname }}</div>
+                <div style="color:#5b6270;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:6px;">{{ r.dept }}</div>
+                <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="6"><div style="text-align:center;color:#5b6270;font-weight:600;">{{ c }}</div></sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:18px;">
+          <div onClick="{{ closeImport }}" style="padding:10px 20px;border:1px solid #e2e5ea;border-radius:10px;font-size:13.5px;font-weight:600;color:#5b6270;cursor:pointer;" style-hover="background:#fafbfc;">{{ t.kpi.cancel }}</div>
+          <div onClick="{{ confirmImport }}" style="padding:10px 22px;background:var(--accent,#4f46e5);border-radius:10px;font-size:13.5px;font-weight:700;color:#fff;cursor:pointer;box-shadow:0 3px 10px var(--accent-ring,rgba(79,70,229,.3));">{{ t.kpi.confirm }} ({{ importRowCount }})</div>
+        </div>
+      </div>
+      </sc-if>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- toast -->
+  <sc-if value="{{ toastShow }}" hint-placeholder-val="0">
+  <div style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#10131c;color:#fff;padding:13px 22px;border-radius:12px;font-size:13.5px;font-weight:600;box-shadow:0 10px 30px rgba(10,15,30,.35);z-index:120;display:flex;align-items:center;gap:10px;">
+    <span style="width:20px;height:20px;border-radius:50%;background:#0f9d58;display:flex;align-items:center;justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+    {{ toast }}
+  </div>
+  </sc-if>
 </div>
-</x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
 class Component extends DCLogic {
   state = {
     route: 'dashboard', lang: 'uz',
@@ -676,6 +1052,10 @@ class Component extends DCLogic {
     selectedEmp: 'C00257', profileTab: 'profile',
     leaveYear: '2026', orgLevel: '1',
     filterDept: 'all', sel: {}, allSel: false,
+    compact: false, settingsSection: 'general',
+    notifPrefs: { assess: true, leave: true, shift: false, birthday: true },
+    kpiWeights: { attendance: 20, tasks: 25, care: 20, docs: 15, discipline: 10, assessment: 10 },
+    imported: [], importOpen: false, importStep: 'drop', importRows: [], importFileName: '', importError: '', toast: '',
   };
 
   THEMES = [
@@ -777,8 +1157,8 @@ class Component extends DCLogic {
       brand: "Kadrlar", brandSub: "HR boshqaruv tizimi", adminRole: "Tizim administratori",
       rail: { hr: "KADRLAR", reports: "HISOBOTLAR" },
       sec: { dash: "VOSITALAR PANELI", company: "KOMPANIYASI", eval: "ISH FAOLIYATINI BAHOLASH" },
-      nav: { workSchedule: "Ish grafigi", employees: "Xodimlar ro'yxati", supervisorStruct: "Nazoratchi strukturasi", orgStruct: "Tashkilot strukturasi", shifts: "Smena jadvallari", leave: "Izn so'rovi", attendance: "Davomat hisoboti", assessments: "Oddiy attestatsiyalar" },
-      titles: { dashboard: "Ish grafigi", employees: "Xodimlar ro'yxati", supervisorStruct: "Nazoratchi strukturasi", orgStruct: "Tashkilot strukturasi", shifts: "Smena jadvallari", leave: "Izn so'rovi", attendance: "Davomat hisoboti", assessments: "Oddiy attestatsiyalar", assessmentDetail: "Baholash" },
+      nav: { workSchedule: "Ish grafigi", employees: "Xodimlar ro'yxati", departments: "Bo'limlar", supervisorStruct: "Nazoratchi strukturasi", orgStruct: "Tashkilot strukturasi", kpi: "KPI hisoblash", shifts: "Smena jadvallari", leave: "Izn so'rovi", attendance: "Davomat hisoboti", assessments: "Oddiy attestatsiyalar", settings: "Sozlamalar" },
+      titles: { dashboard: "Ish grafigi", employees: "Xodimlar ro'yxati", departments: "Bo'limlar", supervisorStruct: "Nazoratchi strukturasi", orgStruct: "Tashkilot strukturasi", kpi: "KPI hisoblash", shifts: "Smena jadvallari", leave: "Izn so'rovi", attendance: "Davomat hisoboti", assessments: "Oddiy attestatsiyalar", assessmentDetail: "Baholash", notifications: "Bildirishnomalar", settings: "Sozlamalar", account: "Mening profilim" },
       search: "Qidirish...", allDepts: "Barcha bo'limlar", noResults: "Natija topilmadi",
       dash: { today: "seshanba 19 may 2026", country: "Uzbekistan", clouds: "Bulutli", mail: "E-pochta manzili", mailNone: "Mavjud emas", unread: "O'qilmagan yangi pochta xabari", birthday: "Tug'ilgan kun", birthdaySub: "Yaqinlashib kelayotgan tug'ilgan kunlar", scheduleStatus: "Ish grafigi holat kesimida (SHO)", empByDept: "Xodimlar bo'limlar kesimida", totalDepts: "Jami bo'limlar", notFilledList: "To'ldirilmagan bo'limlar ro'yxati", total: "Jami", totalRow: "Jami" },
       st: { active: "Ishlamoqda", leave: "Ta'tilda", probation: "Sinov muddati", approved: "Ma'qullandi", submitted: "Topshirildi", notCreated: "Yaratilmagan", rejected: "Rad etildi", pending: "Kutilmoqda", pendingApproval: "Ma'qullov kutilmoqda" },
@@ -789,15 +1169,23 @@ class Component extends DCLogic {
       leave: { reason: "Sabab", desc: "Tavsifi", period: "Qachondan / Qachongacha", days: "Kunda", type: "Turi", approver: "Ma'qullovchi", status: "Holat", action: "Harakat", pdf: "PDF", leaveStatus: "Izn holati", show: "Ko'rsatish", calendar: "Taqvim", workSchedule: "Ish grafigi", annual: "Mehnat ta'tili", sick: "Kasallik ta'tili", paid: "To'langan", unpaid: "To'lanmagan" },
       assess: { action: "Harakat", employee: "Xodim", started: "Boshlangan", startedBy: "Kim tomonidan boshlangan", reviewers: "Sharhlovchi(lar)", status: "Holat", totalScore: "Umumiy hisob", validity: "Yaroqlilik muddati", template: "Andoza", dept: "Bo'lim", period: "yan 01, 2026 – dek 31, 2026", tpl: "Nevrologiya bo'limi hamshiralarini baholash", baseDetails: "Bazaviy tafsilotlar", competencies: "Xodim kompetensiyalari", overall: "Umumiy baho", date: "Sana", templateF: "Andoza", notes: "Qaydlar", managerName: "Menejer ismi", managerComment: "Menejerning sharhi", managerScore: "Menejerning bahosi", commentHistory: "Izohlar tarixi", charsLeft: "belgi qoldi" },
       shift: { action: "Harakat", order: "Tartib raqami", dept: "Bo'lim", status: "Holat", month: "Oy", createdBy: "Kim tomonidan yaratilgan", month26: "may 2026" },
-      org: { level: "Daraja", reset: "Qayta tiklash", deptHead: "Bo'lim mudiri" },
+      org: { level: "Daraja", reset: "Qayta tiklash", deptHead: "Bo'lim mudiri", institution: "Bolalar ko'p tarmoqli markazi", director: "Bosh shifokor" },
       att: { title: "Davomat hisoboti", present: "Kelgan", late: "Kechikkan", absent: "Kelmagan", leaveDay: "Ta'til", employee: "Xodim", total: "Jami", legend: "Belgilar" },
+      dept: { employees: "Xodimlar", avgScore: "O'rtacha baho", filled: "To'ldirilgan", notFilled: "To'ldirilmagan" },
+      notif: { title: "Bildirishnomalar", new: "yangi", markAll: "Hammasini o'qilgan deb belgilash" },
+      set: { general: "Umumiy", generalSub: "Til, ko'rinish va interfeys sozlamalari", language: "Til", languageSub: "Interfeys tili", accent: "Asosiy rang", accentSub: "Ilova urg'u rangi", compact: "Ixcham ko'rinish", compactSub: "Jadvallarda zichroq qatorlar", notifPrefs: "Bildirishnoma sozlamalari", notifPrefsSub: "Qaysi hodisalar haqida xabar olishni tanlang", security: "Xavfsizlik", securitySub: "Parol va hisob himoyasi", changePw: "Parolni o'zgartirish", twoFa: "Ikki bosqichli himoya", nGeneral: "Umumiy", nNotif: "Bildirishnomalar", nSecurity: "Xavfsizlik", nIntegrations: "Integratsiyalar", nBilling: "To'lovlar" },
+      notifPrefLbl: { assess: "Yangi baholashlar", leave: "Izn so'rovlari", shift: "Smena jadvali o'zgarishlari", birthday: "Tug'ilgan kunlar" },
+      account: { recent: "So'nggi faoliyat", details: "Hisob ma'lumotlari", role: "Lavozim", lastLogin: "So'nggi kirish", manages: "Boshqaruvdagi bo'limlar", approvals: "Tasdiqlangan", pending: "Kutilmoqda", reviews: "Baholashlar" },
+      kpi: { title: "KPI hisoblash", subtitle: "Har bir xodim uchun vaznli ko'rsatkichlar bo'yicha KPI", importExcel: "Excel import", downloadTemplate: "Andoza yuklash", weights: "Ko'rsatkich vaznlari", weightsSub: "Vaznlarni o'zgartiring — KPI darhol qayta hisoblanadi", reset: "Tiklash", totalW: "Jami vazn", weightWarn: "Vaznlar yig'indisi 100% bo'lishi tavsiya etiladi", rank: "O'rin", employee: "Xodim", dept: "Bo'lim", kpiScore: "KPI ball", grade: "Daraja", avgKpi: "O'rtacha KPI", evaluated: "Baholangan", top: "Eng yuqori", below: "75 dan past", excellent: "A'lo", good: "Yaxshi", fair: "Qoniqarli", low: "Past", imported: "import",
+        ind: { attendance: "Davomat", tasks: "Vazifalar", care: "Parvarish", docs: "Hujjatlar", discipline: "Intizom", assessment: "Attestatsiya" },
+        importTitle: "Excel'dan import qilish", drop: "Faylni shu yerga tashlang", dropSub: "yoki kompyuteringizdan tanlang", browse: "Fayl tanlash", supported: ".xlsx, .xls va .csv qo'llab-quvvatlanadi", needTemplate: "Andoza kerakmi?", parsing: "O'qilmoqda...", preview: "Ko'rib chiqish", rowsFound: "ta qator topildi", colsMapped: "ustun moslashtirildi", cancel: "Bekor qilish", confirm: "Import qilish", importErr: "Faylni o'qib bo'lmadi. Andoza ustunlaridan foydalaning.", done: "xodim import qilindi" },
     },
     en: {
       brand: "Human Resources", brandSub: "HR management system", adminRole: "System administrator",
       rail: { hr: "HR", reports: "REPORTS" },
       sec: { dash: "DASHBOARD", company: "COMPANY", eval: "PERFORMANCE EVALUATION" },
-      nav: { workSchedule: "Dashboard", employees: "Employee list", supervisorStruct: "Supervisor structure", orgStruct: "Org structure", shifts: "Shift schedules", leave: "Leave requests", attendance: "Attendance report", assessments: "Assessments" },
-      titles: { dashboard: "Dashboard", employees: "Employee list", supervisorStruct: "Supervisor structure", orgStruct: "Org structure", shifts: "Shift schedules", leave: "Leave requests", attendance: "Attendance report", assessments: "Assessments", assessmentDetail: "Assessment" },
+      nav: { workSchedule: "Dashboard", employees: "Employee list", departments: "Departments", supervisorStruct: "Supervisor structure", orgStruct: "Org structure", kpi: "KPI scoring", shifts: "Shift schedules", leave: "Leave requests", attendance: "Attendance report", assessments: "Assessments", settings: "Settings" },
+      titles: { dashboard: "Dashboard", employees: "Employee list", departments: "Departments", supervisorStruct: "Supervisor structure", orgStruct: "Org structure", kpi: "KPI scoring", shifts: "Shift schedules", leave: "Leave requests", attendance: "Attendance report", assessments: "Assessments", assessmentDetail: "Assessment", notifications: "Notifications", settings: "Settings", account: "My profile" },
       search: "Search...", allDepts: "All departments", noResults: "No results found",
       dash: { today: "Tuesday, 19 May 2026", country: "Uzbekistan", clouds: "Clouds", mail: "Email address", mailNone: "Not available", unread: "Unread new mail messages", birthday: "Birthdays", birthdaySub: "Upcoming birthdays", scheduleStatus: "Schedule status overview", empByDept: "Employees by department", totalDepts: "Total departments", notFilledList: "Departments not filled", total: "Total", totalRow: "Total" },
       st: { active: "Active", leave: "On leave", probation: "Probation", approved: "Approved", submitted: "Submitted", notCreated: "Not created", rejected: "Rejected", pending: "Pending", pendingApproval: "Pending approval" },
@@ -808,8 +1196,16 @@ class Component extends DCLogic {
       leave: { reason: "Reason", desc: "Description", period: "From / To", days: "Days", type: "Type", approver: "Approver", status: "Status", action: "Action", pdf: "PDF", leaveStatus: "Leave status", show: "Show", calendar: "Calendar", workSchedule: "Work schedule", annual: "Annual leave", sick: "Sick leave", paid: "Paid", unpaid: "Unpaid" },
       assess: { action: "Action", employee: "Employee", started: "Started", startedBy: "Started by", reviewers: "Reviewer(s)", status: "Status", totalScore: "Total score", validity: "Validity period", template: "Template", dept: "Department", period: "Jan 01, 2026 – Dec 31, 2026", tpl: "Neurology dept. nurse assessment", baseDetails: "Basic details", competencies: "Employee competencies", overall: "Overall score", date: "Date", templateF: "Template", notes: "Notes", managerName: "Manager name", managerComment: "Manager comment", managerScore: "Manager score", commentHistory: "Comment history", charsLeft: "characters left" },
       shift: { action: "Action", order: "Order #", dept: "Department", status: "Status", month: "Month", createdBy: "Created by", month26: "May 2026" },
-      org: { level: "Level", reset: "Reset", deptHead: "Department head" },
+      org: { level: "Level", reset: "Reset", deptHead: "Department head", institution: "Children's Multidisciplinary Center", director: "Chief physician" },
       att: { title: "Attendance report", present: "Present", late: "Late", absent: "Absent", leaveDay: "Leave", employee: "Employee", total: "Total", legend: "Legend" },
+      dept: { employees: "Employees", avgScore: "Avg score", filled: "Filled", notFilled: "Not filled" },
+      notif: { title: "Notifications", new: "new", markAll: "Mark all as read" },
+      set: { general: "General", generalSub: "Language, appearance and interface settings", language: "Language", languageSub: "Interface language", accent: "Accent color", accentSub: "App highlight color", compact: "Compact view", compactSub: "Denser rows in tables", notifPrefs: "Notification preferences", notifPrefsSub: "Choose which events you get notified about", security: "Security", securitySub: "Password and account protection", changePw: "Change password", twoFa: "Two-factor auth", nGeneral: "General", nNotif: "Notifications", nSecurity: "Security", nIntegrations: "Integrations", nBilling: "Billing" },
+      notifPrefLbl: { assess: "New assessments", leave: "Leave requests", shift: "Shift schedule changes", birthday: "Birthdays" },
+      account: { recent: "Recent activity", details: "Account details", role: "Role", lastLogin: "Last login", manages: "Departments managed", approvals: "Approved", pending: "Pending", reviews: "Reviews" },
+      kpi: { title: "KPI scoring", subtitle: "Weighted-indicator KPI for every employee", importExcel: "Import Excel", downloadTemplate: "Download template", weights: "Indicator weights", weightsSub: "Adjust weights — KPI recalculates instantly", reset: "Reset", totalW: "Total weight", weightWarn: "Weights should ideally sum to 100%", rank: "Rank", employee: "Employee", dept: "Department", kpiScore: "KPI score", grade: "Grade", avgKpi: "Average KPI", evaluated: "Evaluated", top: "Top performer", below: "Below 75", excellent: "Excellent", good: "Good", fair: "Fair", low: "Low", imported: "imported",
+        ind: { attendance: "Attendance", tasks: "Tasks", care: "Patient care", docs: "Documentation", discipline: "Discipline", assessment: "Assessment" },
+        importTitle: "Import from Excel", drop: "Drop your file here", dropSub: "or pick one from your computer", browse: "Choose file", supported: ".xlsx, .xls and .csv supported", needTemplate: "Need a template?", parsing: "Parsing...", preview: "Preview", rowsFound: "rows found", colsMapped: "columns mapped", cancel: "Cancel", confirm: "Import", importErr: "Could not read the file. Use the template columns.", done: "employees imported" },
     },
   };
 
@@ -831,6 +1227,113 @@ class Component extends DCLogic {
   });
   setOrgLevel = (e) => this.setState({ orgLevel: e.target.value });
   setLeaveYear = (e) => this.setState({ leaveYear: e.target.value });
+  goNotifications = () => this.go('notifications');
+  goSettings = () => this.go('settings');
+  goAccount = () => this.go('account');
+  toggleCompact = () => this.setState(s => ({ compact: !s.compact }));
+  setSettingsSection = (k) => this.setState({ settingsSection: k });
+  toggleNotifPref = (k) => this.setState(s => ({ notifPrefs: { ...s.notifPrefs, [k]: !s.notifPrefs[k] } }));
+
+  // ---- KPI ----
+  KPI_KEYS = ['attendance', 'tasks', 'care', 'docs', 'discipline', 'assessment'];
+  DEFAULT_WEIGHTS = { attendance: 20, tasks: 25, care: 20, docs: 15, discipline: 10, assessment: 10 };
+  setWeight = (k, v) => this.setState(s => ({ kpiWeights: { ...s.kpiWeights, [k]: Number(v) } }));
+  resetWeights = () => this.setState({ kpiWeights: { ...this.DEFAULT_WEIGHTS } });
+  hash(str) { let h = 0; for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0; return h; }
+  scoresFor(id) {
+    const h = this.hash(id);
+    const sc = {};
+    this.KPI_KEYS.forEach((k, i) => {
+      const v = 72 + ((h >> (i * 3)) % 28) + ((h >> (i + 11)) % 4);
+      sc[k] = Math.min(100, v);
+    });
+    return sc;
+  }
+  kpiOf(scores, w) {
+    const total = this.KPI_KEYS.reduce((a, k) => a + (w[k] || 0), 0) || 1;
+    const sum = this.KPI_KEYS.reduce((a, k) => a + (scores[k] || 0) * (w[k] || 0), 0);
+    return Math.round((sum / total) * 10) / 10;
+  }
+  gradeOf(kpi, t) {
+    if (kpi >= 95) return { label: t.kpi.excellent, color: '#0f9d58', bg: '#e7f7ee' };
+    if (kpi >= 85) return { label: t.kpi.good, color: '#2563eb', bg: '#eef4ff' };
+    if (kpi >= 75) return { label: t.kpi.fair, color: '#d97706', bg: '#fdf3e3' };
+    return { label: t.kpi.low, color: '#dc2626', bg: '#fdeaea' };
+  }
+
+  // ---- Excel import ----
+  openImport = () => this.setState({ importOpen: true, importStep: 'drop', importRows: [], importFileName: '', importError: '' });
+  closeImport = () => this.setState({ importOpen: false });
+  onDragOver = (e) => { e.preventDefault(); };
+  onDrop = (e) => { e.preventDefault(); if (e.dataTransfer.files && e.dataTransfer.files[0]) this.handleFile(e.dataTransfer.files[0]); };
+  onFileInput = (e) => { if (e.target.files && e.target.files[0]) this.handleFile(e.target.files[0]); };
+  colKey(header) {
+    const h = String(header || '').toLowerCase().trim();
+    if (h.includes('famil') || h.includes('surname') || h.includes('last')) return 'surname';
+    if (h.includes('ism') || h.includes('first') || h === 'name' || h.includes('name')) return 'name';
+    if (h.includes('lavoz') || h.includes('position')) return 'pos';
+    if (h.includes('depart') || h.includes("bo'lim") || h.includes('bolim') || h.includes("bo\u2018lim")) return 'dept';
+    if (h.includes('davomat') || h.includes('attend')) return 'attendance';
+    if (h.includes('vazifa') || h.includes('task')) return 'tasks';
+    if (h.includes('parvar') || h.includes('care')) return 'care';
+    if (h.includes('hujjat') || h.includes('doc')) return 'docs';
+    if (h.includes('intizom') || h.includes('discipl')) return 'discipline';
+    if (h.includes('attest') || h.includes('assess')) return 'assessment';
+    return null;
+  }
+  handleFile(file) {
+    this.setState({ importStep: 'parsing', importFileName: file.name, importError: '' });
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const XLSX = window.XLSX;
+        const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, blankrows: false });
+        if (!aoa.length) throw new Error('empty');
+        const header = aoa[0];
+        const posMap = ['name', 'surname', 'dept', 'pos', 'attendance', 'tasks', 'care', 'docs', 'discipline', 'assessment'];
+        const map = header.map((h, i) => this.colKey(h) || posMap[i] || null);
+        const mappedCols = map.filter(Boolean).length;
+        const rows = aoa.slice(1).filter(r => r && r.length && (r[0] !== undefined && r[0] !== '')).map((r, ri) => {
+          const o = { id: 'IMP' + (ri + 1), imported: true, name: '', surname: '', dept: '', pos: '', scores: {} };
+          this.KPI_KEYS.forEach(k => o.scores[k] = 0);
+          map.forEach((key, ci) => {
+            if (!key) return;
+            const val = r[ci];
+            if (['name', 'surname', 'dept', 'pos'].includes(key)) o[key] = val == null ? '' : String(val);
+            else { const n = Number(val); o.scores[key] = isNaN(n) ? 0 : Math.max(0, Math.min(100, n)); }
+          });
+          o.ini = ((o.name[0] || '') + (o.surname[0] || '')).toUpperCase() || 'IM';
+          return o;
+        });
+        if (!rows.length) throw new Error('norows');
+        this.setState({ importRows: rows, importStep: 'preview', importMapped: mappedCols });
+      } catch (err) {
+        this.setState({ importStep: 'drop', importError: this.STR[this.state.lang].kpi.importErr });
+      }
+    };
+    reader.onerror = () => this.setState({ importStep: 'drop', importError: this.STR[this.state.lang].kpi.importErr });
+    reader.readAsArrayBuffer(file);
+  }
+  confirmImport = () => {
+    const n = this.state.importRows.length;
+    this.setState(s => ({ imported: [...s.imported, ...s.importRows], importOpen: false, route: 'kpi', toast: n + ' ' + this.STR[s.lang].kpi.done }));
+    setTimeout(() => this.setState({ toast: '' }), 3200);
+  };
+  downloadTemplate = () => {
+    const XLSX = window.XLSX;
+    const aoa = [
+      ['Ism', 'Familiya', "Bo'lim", 'Lavozim', 'Davomat', 'Vazifalar', 'Parvarish', 'Hujjatlar', 'Intizom', 'Attestatsiya'],
+      ['Moxira', 'Karimova', "Nevrologiya bo'limi", 'Katta hamshira', 98, 95, 97, 96, 100, 100],
+      ['Aziz', 'Rahimov', 'Jarroxlik reanimatsiya', 'Shifokor', 92, 90, 88, 94, 96, 91],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = aoa[0].map(() => ({ wch: 16 }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'KPI');
+    XLSX.writeFile(wb, 'kpi_import_template.xlsx');
+  };
 
   empObj(r) {
     const t = this.STR[this.state.lang];
@@ -873,8 +1376,8 @@ class Component extends DCLogic {
     // nav
     const navGroups = [
       { label: t.sec.dash, items: [this.navItem('workSchedule', 'dashboard')] },
-      { label: t.sec.company, items: [this.navItem('employees', 'employees'), this.navItem('supervisorStruct', 'supervisorStruct'), this.navItem('orgStruct', 'orgStruct')] },
-      { label: t.sec.eval, items: [this.navItem('shifts', 'shifts'), this.navItem('leave', 'leave'), this.navItem('attendance', 'attendance'), this.navItem('assessments', 'assessments')] },
+      { label: t.sec.company, items: [this.navItem('employees', 'employees'), this.navItem('departments', 'departments'), this.navItem('supervisorStruct', 'supervisorStruct'), this.navItem('orgStruct', 'orgStruct')] },
+      { label: t.sec.eval, items: [this.navItem('kpi', 'kpi'), this.navItem('shifts', 'shifts'), this.navItem('leave', 'leave'), this.navItem('attendance', 'attendance'), this.navItem('assessments', 'assessments')] },
     ];
 
     // rail
@@ -900,7 +1403,76 @@ class Component extends DCLogic {
     // lang & theme
     const langOn = 'padding:4px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:#fff;color:var(--accent,#4f46e5);box-shadow:0 1px 3px rgba(0,0,0,.08);';
     const langOff = 'padding:4px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;color:#9aa1ad;';
-    const themes = this.THEMES.map(th => ({ name: th.name, onClick: () => this.setAccent(th), style: `width:18px;height:18px;border-radius:6px;cursor:pointer;background:${th.a};box-shadow:${s.accentName === th.name ? '0 0 0 2px #fff,0 0 0 4px ' + th.a : 'none'};transition:box-shadow .15s;` }));
+    const themes = this.THEMES.map(th => ({ name: th.name, onClick: () => this.setAccent(th), style: `width:18px;height:18px;border-radius:6px;cursor:pointer;background:${th.a};box-shadow:${s.accentName === th.name ? '0 0 0 2px #fff,0 0 0 4px ' + th.a : 'none'};transition:box-shadow .15s;`, bigStyle: `width:26px;height:26px;border-radius:8px;cursor:pointer;background:${th.a};box-shadow:${s.accentName === th.name ? '0 0 0 2px #fff,0 0 0 3px ' + th.a : 'inset 0 0 0 1px rgba(0,0,0,.06)'};transition:box-shadow .15s;` }));
+
+    // ===== new pages: bell/gear/chip styles =====
+    const iconBtn = (active) => `position:relative;width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:${active ? 'var(--accent,#4f46e5)' : '#7a818c'};background:${active ? 'var(--accent-soft,#eef2ff)' : 'transparent'};`;
+    const bellStyle = iconBtn(s.route === 'notifications');
+    const gearStyle = iconBtn(s.route === 'settings');
+    const userChipStyle = `padding:14px 16px;border-top:1px solid #eef0f3;display:flex;align-items:center;gap:10px;cursor:pointer;background:${s.route === 'account' ? 'var(--accent-soft,#eef2ff)' : 'transparent'};`;
+
+    // ===== departments =====
+    const deptIconPalette = [['#eef2ff','#4f46e5'],['#e7f7ee','#0f9d58'],['#fdf3e3','#d97706'],['#f3f1ff','#7c3aed'],['#eef4ff','#2563eb'],['#fdeaf3','#db2777']];
+    const deptInfo = [
+      ['Nevrologiya bo\u2018limi','Dilshod Rahmonov',28,'98.4','filled','+2.1'],
+      ['Otorinolaringologiya bo\u2018limi','Otabek Nazarov',126,'97.2','filled','+1.4'],
+      ['2-jarroxlik bo\u2018limi','Bekzod Qodirov',60,'96.8','filled','-0.6'],
+      ['Gepatologiya bo\u2018limi','Dilshod Rahmonov',46,'99.1','filled','+3.0'],
+      ['Chaqaloqlar patologiyasi bo\u2018limi','Dilshod Rahmonov',34,'95.5','filled','+0.8'],
+      ['Jarroxlik reanimatsiya bo\u2018limi','Nodira Saidova',31,'98.0','filled','+1.2'],
+      ['Gastroenterologiya bo\u2018limi','Gulnora Tosheva',30,'97.6','filled','+0.4'],
+      ['Radiologiya bo\u2018limi','Otabek Nazarov',23,'96.0','notFilled','-1.1'],
+      ['Fizioterapiya bo\u2018limi','Dilshod Rahmonov',17,'94.2','notFilled','+0.2'],
+    ];
+    const deptCards = deptInfo.map((d, i) => {
+      const [ib, ic] = deptIconPalette[i % deptIconPalette.length];
+      const up = d[5].charAt(0) !== '-';
+      return { name: d[0], head: d[1], count: d[2], score: d[3], statusKey: d[4],
+        statusLabel: d[4] === 'filled' ? t.dept.filled : t.dept.notFilled,
+        pillStyle: this.pill(d[4] === 'filled' ? 'approved' : 'pending') + 'font-size:11px;padding:3px 9px;',
+        iconBg: ib, iconColor: ic, trend: d[5] + '%', trendColor: up ? '#0f9d58' : '#dc2626', trendArrow: up ? '\u2191' : '\u2193' };
+    });
+
+    // ===== notifications =====
+    const notifRaw = [
+      ['assess','MK','Moxira Karimova',s.lang==='uz'?"baholashni yakunladi — 100.00 ball":"completed an assessment — score 100.00",'2 daqiqa oldin',1,'#eef2ff','#4f46e5','\u2605'],
+      ['leave','AR','Aziz Rahimov',s.lang==='uz'?"yangi izn so'rovi yubordi":"submitted a new leave request",'18 daqiqa oldin',1,'#fdf3e3','#d97706','\u2709'],
+      ['shift','BQ','Bekzod Qodirov',s.lang==='uz'?"smena jadvalini tasdiqladi (SH0232)":"approved a shift schedule (SH0232)",'1 soat oldin',1,'#e7f7ee','#0f9d58','\u23F0'],
+      ['birthday','GT','Gulnora Tosheva',s.lang==='uz'?"ning tug'ilgan kuni bugun":"has a birthday today",'3 soat oldin',0,'#fdeaf3','#db2777','\u{1F382}'],
+      ['assess','ZH','Zarina Hamidova',s.lang==='uz'?"baholashni yakunladi — 100.00 ball":"completed an assessment — score 100.00",'5 soat oldin',0,'#eef2ff','#4f46e5','\u2605'],
+      ['leave','ST','Sherzod Tolipov',s.lang==='uz'?"izn so'rovi rad etildi":"leave request was rejected",'yesterday',0,'#fdeaea','#dc2626','\u2709'],
+      ['shift','NS','Nodira Saidova',s.lang==='uz'?"yangi smena jadvali yaratdi":"created a new shift schedule",'yesterday',0,'#e7f7ee','#0f9d58','\u23F0'],
+    ];
+    const notifications = notifRaw.map(n => ({ icon: n[8], iconBg: n[6], iconColor: n[7], actor: n[2], text: n[3], time: n[4], unread: n[5], bg: n[5] ? 'var(--accent-soft,#eef2ff)' : '#fff' }));
+
+    // ===== settings =====
+    const settingsNavItems = [['general', t.set.nGeneral], ['notif', t.set.nNotif], ['security', t.set.nSecurity], ['integrations', t.set.nIntegrations], ['billing', t.set.nBilling]];
+    const settingsNav = settingsNavItems.map(([k, label]) => {
+      const active = s.settingsSection === k;
+      return { label, onClick: () => this.setSettingsSection(k),
+        style: `padding:11px 14px;border-radius:10px;font-size:13.5px;cursor:pointer;font-weight:${active ? 600 : 500};color:${active ? 'var(--accent,#4f46e5)' : '#5b6270'};background:${active ? 'var(--accent-soft,#eef2ff)' : 'transparent'};` };
+    });
+    const toggleStyle = (on) => `width:42px;height:24px;border-radius:13px;cursor:pointer;display:flex;align-items:center;padding:2px;transition:background .15s;background:${on ? 'var(--accent,#4f46e5)' : '#d4d8e0'};`;
+    const knobStyle = (on) => `width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .15s;transform:translateX(${on ? '18px' : '0'});`;
+    const compactToggle = toggleStyle(s.compact);
+    const compactKnob = knobStyle(s.compact);
+    const notifToggles = ['assess', 'leave', 'shift', 'birthday'].map(k => ({ label: t.notifPrefLbl[k], onClick: () => this.toggleNotifPref(k), toggle: toggleStyle(s.notifPrefs[k]), knob: knobStyle(s.notifPrefs[k]) }));
+
+    // ===== account =====
+    const accountStats = [
+      { value: '4', label: t.account.manages, color: 'var(--accent,#4f46e5)' },
+      { value: '312', label: t.account.approvals, color: '#0f9d58' },
+      { value: '7', label: t.account.pending, color: '#d97706' },
+      { value: '1.2k', label: t.account.reviews, color: '#2a2f3a' },
+    ];
+    const accountActivity = [
+      { text: s.lang==='uz'?"Moxira Karimova baholashini tasdiqladingiz":"You approved Moxira Karimova's assessment", time: 'jun 17, 2026 · 08:51' },
+      { text: s.lang==='uz'?"Yangi xodim qo'shildi: Rustam To'xtayev":"Added new employee: Rustam To'xtayev", time: 'jun 16, 2026 · 14:20' },
+      { text: s.lang==='uz'?"SH0232 smena jadvalini tasdiqladingiz":"You approved shift schedule SH0232", time: 'jun 16, 2026 · 11:05' },
+      { text: s.lang==='uz'?"Aziz Rahimov izn so'rovini ko'rib chiqdingiz":"Reviewed Aziz Rahimov's leave request", time: 'jun 15, 2026 · 16:42' },
+      { text: s.lang==='uz'?"Tizimga kirdingiz":"Signed in to the system", time: 'jun 15, 2026 · 08:30' },
+    ];
+
 
     // ===== dashboard =====
     const statCards = [
@@ -1004,6 +1576,72 @@ class Component extends DCLogic {
         ] },
     ];
 
+    // ===== KPI scoring =====
+    const w = s.kpiWeights;
+    const totalW = this.KPI_KEYS.reduce((a, k) => a + (w[k] || 0), 0);
+    const seeded = this.EMP_RAW.map(rw => ({ id: rw[0], ini: rw[1], name: rw[2], surname: rw[3], dept: rw[4], pos: rw[5], scores: this.scoresFor(rw[0]), imported: false }));
+    const allKpiEmp = [...seeded, ...s.imported];
+    let kpiList = allKpiEmp.map(e => {
+      const kpi = this.kpiOf(e.scores, w);
+      return { ...e, kpi, grade: this.gradeOf(kpi, t) };
+    }).sort((a, b) => b.kpi - a.kpi);
+    const avgKpi = kpiList.length ? Math.round((kpiList.reduce((a, e) => a + e.kpi, 0) / kpiList.length) * 10) / 10 : 0;
+    const belowCount = kpiList.filter(e => e.kpi < 75).length;
+    const topPerformer = kpiList[0];
+    const kpiAvColors = [['#eef2ff','#4f46e5'],['#e7f7ee','#0f9d58'],['#fdf3e3','#d97706'],['#f3f1ff','#7c3aed'],['#eef4ff','#2563eb'],['#fdeaf3','#db2777']];
+    const kpiRows = kpiList.map((e, i) => {
+      const [avBg, avColor] = kpiAvColors[(e.ini.charCodeAt(0) || 65) % kpiAvColors.length];
+      const rankColors = ['#f5b301', '#9aa6b8', '#cd7f32'];
+      return {
+        ...e, rank: i + 1, avBg, avColor,
+        rankStyle: `width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:${i < 3 ? '#fff' : '#9aa1ad'};background:${i < 3 ? rankColors[i] : '#f1f3f6'};`,
+        cells: this.KPI_KEYS.map(k => ({ v: e.scores[k], color: e.scores[k] >= 90 ? '#0f9d58' : e.scores[k] >= 80 ? '#5b6270' : '#d97706' })),
+        barStyle: `height:8px;border-radius:5px;width:${e.kpi}%;background:${e.grade.color};transition:width .25s;`,
+        kpiText: e.kpi.toFixed(1),
+        pillStyle: `display:inline-flex;align-items:center;font-size:11.5px;font-weight:700;color:${e.grade.color};background:${e.grade.bg};border-radius:8px;padding:3px 10px;white-space:nowrap;`,
+      };
+    });
+    const weightSliders = this.KPI_KEYS.map(k => ({
+      key: k, label: t.kpi.ind[k], value: w[k],
+      onInput: (e) => this.setWeight(k, e.target.value),
+      pct: totalW ? Math.round((w[k] / totalW) * 100) : 0,
+    }));
+    const totalWStyle = `font-weight:800;font-size:15px;color:${totalW === 100 ? '#0f9d58' : '#d97706'};`;
+    const kpiIndHeaders = this.KPI_KEYS.map(k => t.kpi.ind[k]);
+
+    // import modal
+    const importPreviewRows = s.importRows.slice(0, 6).map(r => ({
+      name: r.name, surname: r.surname, dept: r.dept, pos: r.pos,
+      cells: this.KPI_KEYS.map(k => r.scores[k]),
+    }));
+
+    // ===== org structure (department divisions) =====
+    const orgDivisions = [
+      { name: s.lang === 'uz' ? "Klinik bo'limlar" : 'Clinical units', color: '#4f46e5', softBg: '#eef2ff', depts: [
+        { name: "Nevrologiya bo'limi", head: 'D. Rahmonov', ini: 'DR', count: 28 },
+        { name: '1-Umumiy pediatriya', head: 'G. Tosheva', ini: 'GT', count: 30 },
+        { name: 'Gastroenterologiya', head: 'G. Tosheva', ini: 'GT', count: 30 },
+        { name: 'Kardiorevmotologiya', head: 'N. Saidova', ini: 'NS', count: 22 },
+      ] },
+      { name: s.lang === 'uz' ? 'Jarrohlik va reanimatsiya' : 'Surgery & ICU', color: '#0f9d58', softBg: '#e7f7ee', depts: [
+        { name: '2-jarroxlik bo\u2018limi', head: 'B. Qodirov', ini: 'BQ', count: 60 },
+        { name: 'Jarroxlik reanimatsiya', head: 'N. Saidova', ini: 'NS', count: 31 },
+        { name: 'Bolalar reanimatsiya (RITB)', head: 'N. Saidova', ini: 'NS', count: 24 },
+      ] },
+      { name: s.lang === 'uz' ? 'Diagnostika va laboratoriya' : 'Diagnostics & labs', color: '#d97706', softBg: '#fdf3e3', depts: [
+        { name: 'Radiologiya bo\u2018limi', head: 'O. Nazarov', ini: 'ON', count: 23 },
+        { name: 'Bakteriologik laboratoriya', head: 'B. Qodirov', ini: 'BQ', count: 11 },
+        { name: 'Klinik-diagnostik lab.', head: 'B. Qodirov', ini: 'BQ', count: 14 },
+        { name: 'Maslahat-tashxis poliklinika', head: 'N. Saidova', ini: 'NS', count: 19 },
+      ] },
+      { name: s.lang === 'uz' ? "Ma'muriy va yordamchi" : 'Admin & support', color: '#7c3aed', softBg: '#f3f1ff', depts: [
+        { name: 'Kadrlar bo\u2018limi', head: 'T. Aliyev', ini: 'TA', count: 4 },
+        { name: 'Dorixona', head: 'B. Qodirov', ini: 'BQ', count: 9 },
+        { name: 'Markaz. sterilizatsiya', head: 'B. Qodirov', ini: 'BQ', count: 13 },
+        { name: 'Fizioterapiya bo\u2018limi', head: 'D. Rahmonov', ini: 'DR', count: 17 },
+      ] },
+    ].map(d => ({ ...d, count: d.depts.length }));
+
     // booleans
     const route = s.route;
     return {
@@ -1017,7 +1655,23 @@ class Component extends DCLogic {
       isDashboard: route === 'dashboard', isEmployees: route === 'employees', isProfile: route === 'profile',
       isLeave: route === 'leave', isAssessments: route === 'assessments', isAssessmentDetail: route === 'assessmentDetail',
       isShifts: route === 'shifts', isSupervisorStruct: route === 'supervisorStruct', isOrgStruct: route === 'orgStruct',
-      isAttendance: route === 'attendance', isStruct: route === 'supervisorStruct' || route === 'orgStruct',
+      isAttendance: route === 'attendance', orgDivisions, belowColor: belowCount > 0 ? '#dc2626' : '#0f9d58',
+      isDepartments: route === 'departments', isNotifications: route === 'notifications',
+      isSettings: route === 'settings', isAccount: route === 'account', isKpi: route === 'kpi',
+      kpiRows, weightSliders, totalW, totalWStyle, kpiIndHeaders,
+      avgKpi, belowCount, topPerformer, evaluatedCount: kpiList.length,
+      resetWeights: this.resetWeights,
+      openImport: this.openImport, closeImport: this.closeImport, downloadTemplate: this.downloadTemplate,
+      onDragOver: this.onDragOver, onDrop: this.onDrop, onFileInput: this.onFileInput, confirmImport: this.confirmImport,
+      importOpen: s.importOpen ? 1 : 0, importStep: s.importStep,
+      importIsDrop: s.importStep === 'drop', importIsParsing: s.importStep === 'parsing', importIsPreview: s.importStep === 'preview',
+      importFileName: s.importFileName, importError: s.importError, importErrorShow: s.importError ? 1 : 0,
+      importRowCount: s.importRows.length, importMapped: s.importMapped || 0, importPreviewRows,
+      toast: s.toast, toastShow: s.toast ? 1 : 0,
+      goNotifications: this.goNotifications, goSettings: this.goSettings, goAccount: this.goAccount,
+      bellStyle, gearStyle, userChipStyle,
+      deptCards, notifications, settingsNav, notifToggles, compactToggle, compactKnob,
+      toggleCompact: this.toggleCompact, accountStats, accountActivity,
       statCards, birthdays, deptBars,
       query: s.query, onSearch: this.onSearch, filterDept: s.filterDept, onFilterDept: this.onFilterDept,
       deptOptions, rangeLabel, employeesView, empHeaders, noResults: employeesView.length === 0 ? 1 : 0,

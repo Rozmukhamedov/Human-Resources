@@ -14,7 +14,8 @@
     "shifts": "Smena jadvallari",
     "leave": "Izn so'rovi",
     "attendance": "Davomat hisoboti",
-    "assessments": "Oddiy attestatsiyalar"
+    "assessments": "Oddiy attestatsiyalar",
+    "organizations": "Tashkilotlar"
   },
   "titles": {
     "dashboard": "Ish grafigi",
@@ -25,7 +26,8 @@
     "leave": "Izn so'rovi",
     "attendance": "Davomat hisoboti",
     "assessments": "Oddiy attestatsiyalar",
-    "assessmentDetail": "Baholash"
+    "assessmentDetail": "Baholash",
+    "organizations": "Tashkilotlar"
   },
   "search": "Qidirish...",
   "allDepts": "Barcha bo'limlar",
