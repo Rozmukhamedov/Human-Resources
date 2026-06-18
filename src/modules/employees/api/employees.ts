@@ -1,5 +1,5 @@
 import { apiRequest } from '@core/api/client'
-import type { ApiEmployee, CreateEmployeePayload, PaginatedEmployees, PaginatedPositions } from '../model/employee.types'
+import type { ApiEmployee, CreateEmployeePayload, UpdateEmployeePayload, PaginatedEmployees, PaginatedPositions } from '../model/employee.types'
 
 interface GetEmployeesParams {
   search?: string
@@ -20,6 +20,19 @@ export function createEmployee(data: CreateEmployeePayload) {
   return apiRequest<ApiEmployee>('/employees/create/', {
     method: 'POST',
     body: JSON.stringify(data),
+  })
+}
+
+export function updateEmployee(id: number, data: UpdateEmployeePayload) {
+  return apiRequest<ApiEmployee>(`/employees/${id}/update/`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+}
+
+export function deleteEmployee(id: number) {
+  return apiRequest<void>(`/employees/${id}/delete/`, {
+    method: 'DELETE',
   })
 }
 

@@ -10,23 +10,28 @@ import { EmptyState } from '@shared/ui/EmptyState/EmptyState'
 import { CreateButton, SearchInput } from '@shared/ui/TableControls'
 import { getDepartments } from '@modules/organizations/api/departments'
 import type { Department } from '@modules/organizations/model/department.types'
-import type { Employee, ApiEmployee, CreateEmployeePayload, Position } from '../model/employee.types'
-import { getEmployees, createEmployee, getPositions } from '../api/employees'
+import type { Employee, ApiEmployee, CreateEmployeePayload, UpdateEmployeePayload, Position } from '../model/employee.types'
+import { getEmployees, createEmployee, updateEmployee, deleteEmployee, getPositions } from '../api/employees'
 
 const PAGE_SIZE_OPTIONS = [10, 15, 25, 50]
-const COLS = '42px 56px 1.1fr 1.1fr 1.6fr 1.5fr 1.4fr 1fr'
+const COLS = '42px 52px 0.6fr 1.3fr 1.4fr 1.3fr 0.65fr 0.85fr 96px'
 
 function toEmployee(e: ApiEmployee): Employee {
   return {
     id: String(e.id),
+    code: e.code,
     initials: e.initials,
     firstName: e.first_name,
     lastName: e.last_name,
+    fullName: e.full_name,
+    departmentId: e.department?.id ?? null,
     departmentName: e.department?.name_uz ?? '',
-    position: e.position?.name ?? '',
-    supervisorName: e.supervisor_name ?? '',
+    positionId: e.position?.id ?? null,
+    position: e.position?.name_uz ?? '',
     status: e.status,
+    statusDisplay: e.status_display,
     gender: e.gender === 'female' ? 'Ayol' : 'Erkak',
+    genderRaw: e.gender,
     dateOfBirth: '',
     hireDate: '',
     email: '',
@@ -95,7 +100,7 @@ function SupervisorSearch({
     if (!q.trim()) { setResults([]); setOpen(false); return }
     timerRef.current = setTimeout(() => {
       getEmployees({ search: q, page_size: 20 })
-        .then(d => { setResults(d.results ?? []); setOpen(true) })
+        .then(d => { setResults(d.data ?? []); setOpen(true) })
         .catch(() => {})
     }, 280)
   }
@@ -178,7 +183,7 @@ function SupervisorSearch({
               </span>
               {emp.position && (
                 <span style={{ fontSize: 11.5, color: 'var(--text-muted, #9aa1ad)' }}>
-                  {emp.position.name}
+                  {emp.position.name_uz}
                 </span>
               )}
             </div>
@@ -205,7 +210,7 @@ function CreateEmployeeModal({
 
   useEffect(() => {
     getDepartments(1, 200).then(d => setDepts(d.data ?? [])).catch(() => {})
-    getPositions(1, 200).then(p => setPositions(p.results ?? [])).catch(() => {})
+    getPositions(1, 200).then(p => setPositions(p.data ?? [])).catch(() => {})
   }, [])
 
   const set = (key: keyof FormState, value: string | boolean) =>
@@ -339,7 +344,7 @@ function CreateEmployeeModal({
               required onFocus={focusBorder} onBlur={blurBorder}
             >
               <option value="">Lavozimni tanlang</option>
-              {positions.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              {positions.map(p => <option key={p.id} value={p.id}>{p.name_uz}</option>)}
             </select>
           </div>
 
@@ -476,6 +481,257 @@ function CreateEmployeeModal({
   )
 }
 
+function EditEmployeeModal({
+  employee,
+  onClose,
+  onSave,
+  loading,
+}: {
+  employee: Employee
+  onClose: () => void
+  onSave: (id: number, data: UpdateEmployeePayload) => Promise<void>
+  loading: boolean
+}) {
+  const [form, setForm] = useState<FormState>({
+    first_name: employee.firstName,
+    last_name: employee.lastName,
+    department: String(employee.departmentId ?? ''),
+    position: String(employee.positionId ?? ''),
+    status: employee.status,
+    gender: employee.genderRaw,
+    date_of_birth: employee.dateOfBirth,
+    hire_date: employee.hireDate,
+    phone: employee.phone,
+    email: employee.email,
+    is_head: false,
+  })
+  const [supervisor, setSupervisor] = useState<{ id: number; label: string } | null>(null)
+  const [depts, setDepts] = useState<Department[]>([])
+  const [positions, setPositions] = useState<Position[]>([])
+
+  useEffect(() => {
+    getDepartments(1, 200).then(d => setDepts(d.data ?? [])).catch(() => {})
+    getPositions(1, 200).then(p => setPositions(p.data ?? [])).catch(() => {})
+  }, [])
+
+  const set = (key: keyof FormState, value: string | boolean) =>
+    setForm(prev => ({ ...prev, [key]: value }))
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const payload: UpdateEmployeePayload = {
+      first_name: form.first_name,
+      last_name: form.last_name,
+      department: Number(form.department),
+      position: Number(form.position),
+      gender: form.gender as 'male' | 'female',
+    }
+    if (supervisor) payload.supervisor = supervisor.id
+    if (form.status) payload.status = form.status as UpdateEmployeePayload['status']
+    if (form.date_of_birth) payload.date_of_birth = form.date_of_birth
+    if (form.hire_date) payload.hire_date = form.hire_date
+    if (form.phone) payload.phone = form.phone
+    if (form.email) payload.email = form.email
+    if (form.is_head) payload.is_head = form.is_head
+    void onSave(Number(employee.id), payload)
+  }
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', boxSizing: 'border-box',
+    border: '1.5px solid var(--border-color, #e4e7ef)',
+    borderRadius: 10, padding: '9px 13px',
+    fontSize: 13.5, color: 'var(--text-primary, #2a2f3a)',
+    background: 'var(--bg-subtle, #f9fafc)',
+    outline: 'none', fontFamily: 'inherit',
+    transition: 'border-color .15s',
+  }
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: 12, fontWeight: 600,
+    color: 'var(--text-secondary, #5b6270)',
+    display: 'block', marginBottom: 5,
+  }
+
+  const focusBorder = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) =>
+    (e.target.style.borderColor = '#4f46e5')
+  const blurBorder = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) =>
+    (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        background: 'rgba(0,0,0,0.38)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        backdropFilter: 'blur(3px)',
+      }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div style={{
+        background: 'var(--surface, #fff)',
+        borderRadius: 20, width: 520,
+        maxHeight: '90vh', overflowY: 'auto',
+        boxShadow: '0 20px 60px rgba(0,0,0,.18)',
+        fontFamily: "'Public Sans', sans-serif",
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '20px 24px 16px',
+          borderBottom: '1px solid var(--border-color, #ebedf1)',
+        }}>
+          <div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-heading, #1a1f2e)' }}>
+              Xodimni tahrirlash
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted, #9aa1ad)', marginTop: 2 }}>
+              {employee.fullName} · {employee.code}
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              width: 32, height: 32, borderRadius: 8, border: 'none',
+              background: 'var(--bg-subtle, #f4f5f7)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'var(--text-secondary, #5b6270)', fontSize: 18, lineHeight: 1,
+            }}
+          >×</button>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={labelStyle}>Ism *</label>
+              <input style={inputStyle} value={form.first_name}
+                onChange={e => set('first_name', e.target.value)}
+                placeholder="Ism" maxLength={100} required
+                onFocus={focusBorder} onBlur={blurBorder} />
+            </div>
+            <div>
+              <label style={labelStyle}>Familiya *</label>
+              <input style={inputStyle} value={form.last_name}
+                onChange={e => set('last_name', e.target.value)}
+                placeholder="Familiya" maxLength={100} required
+                onFocus={focusBorder} onBlur={blurBorder} />
+            </div>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Bo'lim *</label>
+            <select style={inputStyle} value={form.department}
+              onChange={e => set('department', e.target.value)}
+              required onFocus={focusBorder} onBlur={blurBorder}>
+              <option value="">Bo'limni tanlang</option>
+              {depts.map(d => <option key={d.id} value={d.id}>{d.name_uz}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Lavozim *</label>
+            <select style={inputStyle} value={form.position}
+              onChange={e => set('position', e.target.value)}
+              required onFocus={focusBorder} onBlur={blurBorder}>
+              <option value="">Lavozimni tanlang</option>
+              {positions.map(p => <option key={p.id} value={p.id}>{p.name_uz}</option>)}
+            </select>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={labelStyle}>Jinsi *</label>
+              <select style={inputStyle} value={form.gender}
+                onChange={e => set('gender', e.target.value)}
+                required onFocus={focusBorder} onBlur={blurBorder}>
+                <option value="">Tanlang</option>
+                <option value="male">Erkak</option>
+                <option value="female">Ayol</option>
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Holat</label>
+              <select style={inputStyle} value={form.status}
+                onChange={e => set('status', e.target.value)}
+                onFocus={focusBorder} onBlur={blurBorder}>
+                <option value="">Tanlang</option>
+                <option value="active">Faol</option>
+                <option value="leave">Ta'tilda</option>
+                <option value="probation">Sinov muddati</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Rahbar</label>
+            <SupervisorSearch value={supervisor} onChange={setSupervisor} inputStyle={inputStyle} />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={labelStyle}>Tug'ilgan sana</label>
+              <input style={inputStyle} type="date" value={form.date_of_birth}
+                onChange={e => set('date_of_birth', e.target.value)}
+                onFocus={focusBorder} onBlur={blurBorder} />
+            </div>
+            <div>
+              <label style={labelStyle}>Ishga kirgan sana</label>
+              <input style={inputStyle} type="date" value={form.hire_date}
+                onChange={e => set('hire_date', e.target.value)}
+                onFocus={focusBorder} onBlur={blurBorder} />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={labelStyle}>Telefon</label>
+              <input style={inputStyle} value={form.phone}
+                onChange={e => set('phone', e.target.value)}
+                placeholder="+998 90 000 00 00" maxLength={30}
+                onFocus={focusBorder} onBlur={blurBorder} />
+            </div>
+            <div>
+              <label style={labelStyle}>Email</label>
+              <input style={inputStyle} type="email" value={form.email}
+                onChange={e => set('email', e.target.value)}
+                placeholder="email@example.com" maxLength={254}
+                onFocus={focusBorder} onBlur={blurBorder} />
+            </div>
+          </div>
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer', userSelect: 'none' }}>
+            <input type="checkbox" checked={form.is_head}
+              onChange={e => set('is_head', e.target.checked)}
+              style={{ width: 16, height: 16, accentColor: '#4f46e5', cursor: 'pointer' }} />
+            <span style={{ fontSize: 13.5, color: 'var(--text-secondary, #5b6270)', fontWeight: 500 }}>
+              Bo'lim boshlig'i
+            </span>
+          </label>
+
+          <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
+            <button type="button" onClick={onClose} disabled={loading}
+              style={{
+                flex: 1, padding: '10px 0',
+                border: '1.5px solid var(--border-color, #e4e7ef)',
+                borderRadius: 10, background: 'transparent', cursor: 'pointer',
+                fontSize: 13.5, fontWeight: 600,
+                color: 'var(--text-secondary, #5b6270)', fontFamily: 'inherit',
+              }}
+            >Bekor qilish</button>
+            <button type="submit" disabled={loading}
+              style={{
+                flex: 1, padding: '10px 0', border: 'none',
+                borderRadius: 10,
+                background: loading ? '#a5b4fc' : '#4f46e5',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                fontSize: 13.5, fontWeight: 600, color: '#fff', fontFamily: 'inherit',
+              }}
+            >{loading ? 'Saqlanmoqda...' : 'Saqlash'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 export function EmployeeListPage() {
   const { t } = useTranslation(['employees', 'common'])
   const navigate = useNavigate()
@@ -491,6 +747,8 @@ export function EmployeeListPage() {
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
+  const [editTarget, setEditTarget] = useState<Employee | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [pageSize, setPageSize] = useState(15)
 
@@ -499,8 +757,8 @@ export function EmployeeListPage() {
     setError(null)
     try {
       const data = await getEmployees({ search: query || undefined, page: p, page_size: size })
-      setEmployees((data.results ?? []).map(toEmployee))
-      setTotal(data.count ?? 0)
+      setEmployees((data.data ?? []).map(toEmployee))
+      setTotal(data.total_elements ?? 0)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load')
     } finally {
@@ -511,6 +769,32 @@ export function EmployeeListPage() {
   useEffect(() => {
     void load(page, pageSize)
   }, [load, page, pageSize])
+
+  const handleEdit = async (id: number, data: UpdateEmployeePayload) => {
+    setSaving(true)
+    try {
+      await updateEmployee(id, data)
+      setEditTarget(null)
+      await load(page, pageSize)
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Xatolik yuz berdi')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async (emp: Employee) => {
+    if (!window.confirm(`"${emp.fullName}" ni o'chirishni tasdiqlaysizmi?`)) return
+    setDeletingId(emp.id)
+    try {
+      await deleteEmployee(Number(emp.id))
+      await load(page, pageSize)
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Xatolik yuz berdi')
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   const handleCreate = async (data: CreateEmployeePayload) => {
     setSaving(true)
@@ -628,15 +912,16 @@ export function EmployeeListPage() {
           <div onClick={() => toggleAllSel(employees.map(e => e.id))} style={checkboxStyle(allSel)}>
             {allSel && <Checkmark />}
           </div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '.05em', textTransform: 'uppercase' }}>
-            {t('action')}
-          </div>
-          <SortHeader field="firstName"      label={t('name')} />
-          <SortHeader field="lastName"       label={t('surname')} />
+          <div />
+          <SortHeader field="code"           label="Kod" />
+          <SortHeader field="fullName"       label={t('name')} />
           <SortHeader field="departmentName" label={t('dept')} />
           <SortHeader field="position"       label={t('pos')} />
-          <SortHeader field="supervisorName" label={t('sup')} />
+          <SortHeader field="gender"         label="Jinsi" />
           <SortHeader field="status"         label={t('status')} />
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '.05em', textTransform: 'uppercase', textAlign: 'center' }}>
+            Amallar
+          </div>
         </div>
 
         {/* ── Rows ── */}
@@ -669,6 +954,7 @@ export function EmployeeListPage() {
           <EmptyState message={t('common:noResults')} />
         ) : filtered.map(e => {
           const hovered = hoveredId === e.id
+          const isDeleting = deletingId === e.id
           return (
             <div
               key={e.id}
@@ -682,18 +968,52 @@ export function EmployeeListPage() {
                 cursor: 'pointer',
                 background: hovered ? 'var(--bg-subtle)' : 'transparent',
                 transition: 'background .1s',
+                opacity: isDeleting ? 0.5 : 1,
               }}
             >
               <div onClick={ev => { ev.stopPropagation(); toggleSel(e.id) }} style={checkboxStyle(!!sel[e.id])}>
                 {sel[e.id] && <Checkmark />}
               </div>
               <EmployeeAvatar initials={e.initials} size={34} />
-              <Cell bold>{e.firstName}</Cell>
-              <Cell>{e.lastName}</Cell>
+              <Cell muted>{e.code}</Cell>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 1, overflow: 'hidden' }}>
+                <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-heading)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {e.fullName}
+                </span>
+              </div>
               <Cell>{e.departmentName}</Cell>
               <Cell>{e.position}</Cell>
-              <Cell>{e.supervisorName}</Cell>
-              <div><StatusBadge statusKey={e.status} label={t(`common:status.${e.status}`)} /></div>
+              <Cell>{e.gender}</Cell>
+              <div><StatusBadge statusKey={e.status} label={e.statusDisplay} /></div>
+              <div
+                onClick={ev => ev.stopPropagation()}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
+              >
+                <ActionBtn
+                  title="Tahrirlash"
+                  color="#4f46e5"
+                  onClick={() => setEditTarget(e)}
+                  disabled={isDeleting}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </ActionBtn>
+                <ActionBtn
+                  title="O'chirish"
+                  color="#ef4444"
+                  onClick={() => void handleDelete(e)}
+                  disabled={isDeleting}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                    <path d="M10 11v6M14 11v6" />
+                    <path d="M9 6V4h6v2" />
+                  </svg>
+                </ActionBtn>
+              </div>
             </div>
           )
         })}
@@ -755,6 +1075,14 @@ export function EmployeeListPage() {
           loading={saving}
         />
       )}
+      {editTarget && (
+        <EditEmployeeModal
+          employee={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSave={handleEdit}
+          loading={saving}
+        />
+      )}
     </div>
   )
 }
@@ -769,15 +1097,50 @@ function Checkmark() {
   )
 }
 
-function Cell({ children, bold }: { children: React.ReactNode; bold?: boolean }) {
+function Cell({ children, bold, muted }: { children: React.ReactNode; bold?: boolean; muted?: boolean }) {
   return (
     <div style={{
-      fontSize: 13.5, fontWeight: bold ? 600 : 400,
-      color: bold ? 'var(--text-heading)' : 'var(--text-secondary)',
+      fontSize: muted ? 12 : 13.5,
+      fontWeight: bold ? 600 : 400,
+      color: bold ? 'var(--text-heading)' : muted ? 'var(--text-muted)' : 'var(--text-secondary)',
       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: 8,
+      fontFamily: muted ? 'monospace' : undefined,
     }}>
       {children}
     </div>
+  )
+}
+
+function ActionBtn({
+  children, title, color, onClick, disabled,
+}: {
+  children: React.ReactNode
+  title: string
+  color: string
+  onClick: () => void
+  disabled?: boolean
+}) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        width: 30, height: 30, borderRadius: 7, border: 'none',
+        background: hovered ? `${color}18` : 'transparent',
+        color: hovered ? color : 'var(--text-muted)',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'background .12s, color .12s',
+        flexShrink: 0,
+        opacity: disabled ? 0.4 : 1,
+      }}
+    >
+      {children}
+    </button>
   )
 }
 

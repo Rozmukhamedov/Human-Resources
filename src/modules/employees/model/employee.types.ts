@@ -3,14 +3,19 @@ export type Gender = 'Ayol' | 'Erkak'
 
 export interface Employee {
   id: string
+  code: string
   initials: string
   firstName: string
   lastName: string
+  fullName: string
+  departmentId: number | null
   departmentName: string
+  positionId: number | null
   position: string
-  supervisorName: string
   status: EmployeeStatus
+  statusDisplay: string
   gender: Gender
+  genderRaw: ApiGender
   dateOfBirth: string
   hireDate: string
   email: string
@@ -18,6 +23,8 @@ export interface Employee {
 }
 
 export type ApiGender = 'male' | 'female'
+
+export type UpdateEmployeePayload = Partial<CreateEmployeePayload>
 
 export interface CreateEmployeePayload {
   first_name: string
@@ -41,29 +48,32 @@ export interface ApiEmployee {
   last_name: string
   full_name: string
   initials: string
-  department: { id: number; name_uz: string; name_en: string } | null
-  position: { id: number; name: string } | null
-  supervisor_name: string | null
+  department: { id: number; name_uz: string; name_en: string; division: null; head_name: string; created_at: string } | null
+  position: { id: number; name_uz: string; name_en: string } | null
   status: EmployeeStatus
   status_display: string
   gender: ApiGender
 }
 
 export interface PaginatedEmployees {
-  count: number
   next: string | null
   previous: string | null
-  results: ApiEmployee[]
+  total_elements: number
+  page_size: number
+  from: number
+  to: number
+  data: ApiEmployee[]
 }
 
 export interface Position {
   id: number
-  name: string
+  name_uz: string
+  name_en: string
 }
 
 export interface PaginatedPositions {
-  count: number
   next: string | null
   previous: string | null
-  results: Position[]
+  total_elements: number
+  data: Position[]
 }
