@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useUIStore } from '@core/store/uiStore'
 import { SectionHeader } from '@shared/ui/SectionHeader/SectionHeader'
+import { ToastContainer } from '@shared/ui/Toast/ToastContainer'
 import UZ from 'country-flag-icons/react/3x2/UZ'
 import GB from 'country-flag-icons/react/3x2/GB'
 import RU from 'country-flag-icons/react/3x2/RU'
@@ -411,6 +412,7 @@ export function AppLayout() {
           </Suspense>
         </div>
       </div>
+      <ToastContainer />
     </div>
   )
 }

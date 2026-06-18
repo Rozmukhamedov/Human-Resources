@@ -1,8 +1,18 @@
 import { tokenStorage } from './tokenStorage'
+import { useToastStore } from '@core/store/toastStore'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string
 
 type FetchOptions = RequestInit & { _retry?: boolean }
+
+function showErrorToast(status: number, body: string) {
+  const { addToast } = useToastStore.getState()
+  if (status === 404) {
+    addToast({ type: 'error', title: 'Не найдено (404)', message: 'Запрашиваемый ресурс не найден' })
+  } else if (status >= 500) {
+    addToast({ type: 'error', title: `Ошибка сервера (${status})`, message: body || 'Внутренняя ошибка сервера' })
+  }
+}
 
 async function refreshAccessToken(): Promise<string | null> {
   const refresh = tokenStorage.getRefresh()
@@ -39,7 +49,11 @@ export async function apiRequest<T>(path: string, options: FetchOptions = {}): P
     if (newAccess) {
       headers['Authorization'] = `Bearer ${newAccess}`
       const retryRes = await fetch(`${BASE_URL}${path}`, { ...options, headers, _retry: true } as FetchOptions)
-      if (!retryRes.ok) throw new Error(`HTTP ${retryRes.status}`)
+      if (!retryRes.ok) {
+        const retryText = await retryRes.text()
+        showErrorToast(retryRes.status, retryText)
+        throw new Error(`HTTP ${retryRes.status}`)
+      }
       return retryRes.json() as Promise<T>
     }
     throw new Error('Unauthorized')
@@ -47,6 +61,7 @@ export async function apiRequest<T>(path: string, options: FetchOptions = {}): P
 
   if (!res.ok) {
     const errorText = await res.text()
+    showErrorToast(res.status, errorText)
     throw new Error(errorText || `HTTP ${res.status}`)
   }
 
