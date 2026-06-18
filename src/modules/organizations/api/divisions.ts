@@ -1,10 +1,10 @@
 import { apiRequest } from '@core/api/client'
 import type { Division, DivisionPayload, PaginatedDivisions } from '../model/division.types'
 
-export function getDivisions(page = 1, pageSize = 12) {
-  return apiRequest<PaginatedDivisions>(
-    `/employees/divisions/?page=${page}&page_size=${pageSize}`
-  )
+export function getDivisions(page = 1, pageSize = 12, search?: string) {
+  const params = new URLSearchParams({ page: String(page), page_size: String(pageSize) })
+  if (search) params.set('search', search)
+  return apiRequest<PaginatedDivisions>(`/employees/divisions/?${params.toString()}`)
 }
 
 export function createDivision(data: DivisionPayload) {

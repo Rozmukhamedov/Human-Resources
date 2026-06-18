@@ -1,1 +1,1 @@
-{ "title": "Attendance report", "present": "Present", "late": "Late", "absent": "Absent", "leaveDay": "Leave", "employee": "Employee", "total": "Total", "legend": "Legend" }
+{ "title": "Attendance report", "present": "Present", "late": "Late", "absent": "Absent", "leaveDay": "Leave", "employee": "Employee", "total": "Total", "legend": "Legend", "export": "Export", "save": "Save", "saving": "Saving..." }

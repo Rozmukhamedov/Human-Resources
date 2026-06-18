@@ -1,16 +1,27 @@
 export type AttendanceCode = 'p' | 'l' | 'a' | 't'
 
-export interface AttendanceCell {
+export interface AttendanceDayRecord {
   day: number
-  code: AttendanceCode
+  status: AttendanceCode
 }
 
-export interface AttendanceRow {
-  employeeId: string
-  employeeName: string
-  initials: string
-  departmentName: string
-  cells: AttendanceCell[]
+export interface AttendanceEmployee {
+  id: number
+  code: string
+  full_name: string
+  department_name: string
+  position_name: string
+  attendance: AttendanceDayRecord[]
+}
+
+export interface PaginatedAttendance {
+  next: string | null
+  previous: string | null
+  total_elements: number
+  page_size: number
+  from: number
+  to: number
+  data: AttendanceEmployee[]
 }
 
 export interface AttendanceRecord {
@@ -24,13 +35,6 @@ export interface AttendanceRecord {
   check_in: string | null
   check_out: string | null
   note: string
-}
-
-export interface PaginatedAttendance {
-  count: number
-  next: string | null
-  previous: string | null
-  results: AttendanceRecord[]
 }
 
 export interface CreateAttendancePayload {

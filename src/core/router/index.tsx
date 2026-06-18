@@ -9,19 +9,22 @@ const EmployeeListPage     = lazy(() => import('@modules/employees').then(m => (
 const EmployeeProfilePage  = lazy(() => import('@modules/employees').then(m => ({ default: m.EmployeeProfilePage })))
 const ProfileTab           = lazy(() => import('@modules/employees').then(m => ({ default: m.ProfileTab })))
 const LeaveTab             = lazy(() => import('@modules/employees').then(m => ({ default: m.LeaveTab })))
-const ActivitiesTab        = lazy(() => import('@modules/employees').then(m => ({ default: m.ActivitiesTab })))
+// const ActivitiesTab        = lazy(() => import('@modules/employees').then(m => ({ default: m.ActivitiesTab })))
 const AssessmentsTab       = lazy(() => import('@modules/employees').then(m => ({ default: m.AssessmentsTab })))
-const IncidentsTab         = lazy(() => import('@modules/employees').then(m => ({ default: m.IncidentsTab })))
+// const IncidentsTab         = lazy(() => import('@modules/employees').then(m => ({ default: m.IncidentsTab })))
 const LeaveRequestsPage    = lazy(() => import('@modules/leave').then(m => ({ default: m.LeaveRequestsPage })))
 const AssessmentsPage          = lazy(() => import('@modules/assessments').then(m => ({ default: m.AssessmentsPage })))
 const AssessmentDetailPage     = lazy(() => import('@modules/assessments').then(m => ({ default: m.AssessmentDetailPage })))
 const AssessmentTemplatesPage  = lazy(() => import('@modules/assessments').then(m => ({ default: m.AssessmentTemplatesPage })))
-const ShiftSchedulesPage   = lazy(() => import('@modules/shifts').then(m => ({ default: m.ShiftSchedulesPage })))
+// const ShiftSchedulesPage   = lazy(() => import('@modules/shifts').then(m => ({ default: m.ShiftSchedulesPage })))
 const OrgChartPage         = lazy(() => import('@modules/org-chart').then(m => ({ default: m.OrgChartPage })))
 const AttendanceReportPage = lazy(() => import('@modules/attendance').then(m => ({ default: m.AttendanceReportPage })))
 const ProfilePage          = lazy(() => import('@modules/profile').then(m => ({ default: m.ProfilePage })))
 const DepartmentsPage      = lazy(() => import('@modules/organizations').then(m => ({ default: m.DepartmentsPage })))
+const DepartmentDetailPage = lazy(() => import('@modules/organizations').then(m => ({ default: m.DepartmentDetailPage })))
 const DivisionsPage        = lazy(() => import('@modules/organizations').then(m => ({ default: m.DivisionsPage })))
+const KpiPage              = lazy(() => import('@modules/kpi').then(m => ({ default: m.KpiPage })))
+const HolidaysPage         = lazy(() => import('@modules/kpi').then(m => ({ default: m.HolidaysPage })))
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -41,22 +44,25 @@ export const router = createBrowserRouter([
               { index: true,           element: <Navigate to="profile" replace /> },
               { path: 'profile',       element: <ProfileTab /> },
               { path: 'leave',         element: <LeaveTab /> },
-              { path: 'activities',    element: <ActivitiesTab /> },
+              // { path: 'activities',    element: <ActivitiesTab /> },
               { path: 'assessments',   element: <AssessmentsTab /> },
-              { path: 'incidents',     element: <IncidentsTab /> },
+              // { path: 'incidents',     element: <IncidentsTab /> },
             ],
           },
           { path: 'leave',              element: <LeaveRequestsPage /> },
           { path: 'assessments',                   element: <AssessmentsPage /> },
           { path: 'assessments/:id',             element: <AssessmentDetailPage /> },
           { path: 'assessments/templates',        element: <AssessmentTemplatesPage /> },
-          { path: 'shifts',             element: <ShiftSchedulesPage /> },
+          // { path: 'shifts',             element: <ShiftSchedulesPage /> },
           { path: 'org/supervisor',     element: <OrgChartPage mode="supervisor" /> },
           { path: 'org/structure',      element: <OrgChartPage mode="org" /> },
           { path: 'attendance',         element: <AttendanceReportPage /> },
           { path: 'profile',            element: <ProfilePage /> },
           { path: 'departments',        element: <DepartmentsPage /> },
+          { path: 'departments/:id',   element: <DepartmentDetailPage /> },
           { path: 'divisions',          element: <DivisionsPage /> },
+          { path: 'kpi',               element: <KpiPage /> },
+          { path: 'kpi/holidays',      element: <HolidaysPage /> },
         ],
       },
     ],

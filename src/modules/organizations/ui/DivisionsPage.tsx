@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Division, DivisionPayload } from '../model/division.types'
 import { getDivisions, createDivision, updateDivision, deleteDivision } from '../api/divisions'
@@ -440,6 +440,9 @@ export function DivisionsPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [searchInput, setSearchInput] = useState('')
+  const [search, setSearch] = useState('')
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [modal, setModal] = useState<{ open: boolean; division: Division | null }>({
     open: false, division: null,
@@ -449,11 +452,11 @@ export function DivisionsPage() {
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
-  const load = useCallback(async (p: number) => {
+  const load = useCallback(async (p: number, q: string) => {
     setLoading(true)
     setError(null)
     try {
-      const data = await getDivisions(p, PAGE_SIZE)
+      const data = await getDivisions(p, PAGE_SIZE, q || undefined)
       setDivisions(data.data ?? [])
       setTotal(data.total_elements ?? 0)
     } catch (e) {
@@ -464,8 +467,18 @@ export function DivisionsPage() {
   }, [])
 
   useEffect(() => {
-    void load(page)
-  }, [page, load])
+    void load(page, search)
+  }, [page, search, load])
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    setSearchInput(val)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      setSearch(val)
+      setPage(1)
+    }, 350)
+  }
 
   const handleSave = async (data: DivisionPayload) => {
     setSaving(true)
@@ -475,7 +488,7 @@ export function DivisionsPage() {
         setDivisions(prev => prev.map(d => d.id === updated.id ? updated : d))
       } else {
         await createDivision(data)
-        await load(page)
+        await load(page, search)
       }
       setModal({ open: false, division: null })
     } catch (e) {
@@ -494,7 +507,7 @@ export function DivisionsPage() {
       if (divisions.length === 1 && page > 1) {
         setPage(p => p - 1)
       } else {
-        await load(page)
+        await load(page, search)
       }
     } catch (e) {
       alert((e as Error).message || 'Xatolik yuz berdi')
@@ -521,6 +534,32 @@ export function DivisionsPage() {
             {t('div.total', { count: total })}
           </div>
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ position: 'relative' }}>
+            <svg
+              width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="var(--text-muted, #9aa1ad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+            >
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input
+              type="text"
+              value={searchInput}
+              onChange={handleSearchChange}
+              placeholder={t('common:search')}
+              style={{
+                height: 36, paddingLeft: 32, paddingRight: 12,
+                border: '1.5px solid var(--border-color, #e4e7ef)',
+                borderRadius: 10, background: 'var(--surface, #fff)',
+                fontSize: 13.5, color: 'var(--text-primary, #2a2f3a)',
+                outline: 'none', fontFamily: 'inherit', width: 220,
+                boxSizing: 'border-box', transition: 'border-color .15s',
+              }}
+              onFocus={e => (e.target.style.borderColor = '#4f46e5')}
+              onBlur={e => (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')}
+            />
+          </div>
         <button
           onClick={() => setModal({ open: true, division: null })}
           style={{
@@ -547,6 +586,7 @@ export function DivisionsPage() {
           </svg>
           {t('div.addBtn')}
         </button>
+        </div>
       </div>
 
       {loading ? (
@@ -555,7 +595,7 @@ export function DivisionsPage() {
         <div style={{ textAlign: 'center', padding: '60px 0', color: '#ef4444', fontSize: 14 }}>
           <div style={{ marginBottom: 12 }}>{error}</div>
           <button
-            onClick={() => void load(page)}
+            onClick={() => void load(page, search)}
             style={{
               padding: '8px 20px', borderRadius: 9, border: 'none',
               background: '#4f46e5', color: '#fff', cursor: 'pointer',

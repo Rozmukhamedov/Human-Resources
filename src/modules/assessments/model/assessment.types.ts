@@ -19,10 +19,14 @@ export interface Competency {
 
 export interface AssessmentList {
   id: number
+  employee: number
   employee_name: string
   employee_code: string
+  template: number
   template_name: string
+  department: number
   department_name: string
+  started_by: number
   started_by_name: string
   reviewer_names: string[]
   started_date: string
@@ -31,13 +35,17 @@ export interface AssessmentList {
   total_score: string | null
   validity_from: string | null
   validity_to: string | null
+  notes?: string | null
 }
 
 export interface PaginatedAssessments {
-  count: number
+  total_elements: number
+  page_size: number
+  from: number
+  to: number
   next: string | null
   previous: string | null
-  results: AssessmentList[]
+  data: AssessmentList[]
 }
 
 export interface AssessmentPayload {

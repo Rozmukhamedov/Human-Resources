@@ -18,6 +18,10 @@ export function getAssessments(params: GetAssessmentsParams = {}) {
   return apiRequest<PaginatedAssessments>(`/assessments/${qs ? `?${qs}` : ''}`)
 }
 
+export function getAssessmentDetail(id: number) {
+  return apiRequest<AssessmentList>(`/assessments/${id}/`)
+}
+
 export function createAssessment(data: AssessmentPayload) {
   return apiRequest<AssessmentList>('/assessments/create/', {
     method: 'POST',
@@ -25,9 +29,15 @@ export function createAssessment(data: AssessmentPayload) {
   })
 }
 
-export function updateAssessment(id: number, data: AssessmentPayload) {
+export function updateAssessment(id: number, data: Partial<AssessmentPayload>) {
   return apiRequest<AssessmentList>(`/assessments/${id}/update/`, {
-    method: 'PUT',
+    method: 'PATCH',
     body: JSON.stringify(data),
+  })
+}
+
+export function deleteAssessment(id: number) {
+  return apiRequest<void>(`/assessments/${id}/delete/`, {
+    method: 'DELETE',
   })
 }

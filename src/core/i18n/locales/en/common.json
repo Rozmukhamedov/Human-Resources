@@ -19,7 +19,9 @@
     "assessmentTemplates": "Assessment templates",
     "organizations": "Organizations",
     "departments": "Departments",
-    "divisions": "Divisions"
+    "divisions": "Divisions",
+    "kpi": "KPI scoring",
+    "holidays": "Holidays"
   },
   "titles": {
     "dashboard": "Dashboard",
@@ -34,11 +36,20 @@
     "assessmentTemplates": "Assessment templates",
     "organizations": "Organizations",
     "departments": "Departments",
-    "divisions": "Divisions"
+    "divisions": "Divisions",
+    "kpi": "KPI scoring",
+    "holidays": "Holidays"
   },
   "search": "Search...",
   "allDepts": "All departments",
   "noResults": "No results found",
+  "error": "An error occurred",
+  "logout": "Log out",
+  "notifications": {
+    "title": "Notifications",
+    "markAll": "Mark all as read",
+    "seeAll": "See all"
+  },
   "status": {
     "active": "Active",
     "leave": "On leave",
@@ -95,5 +106,85 @@
     "divCount": "{{count}} divisions",
     "deptCount": "{{count}} depts",
     "empCount": "{{count}} employees"
+  },
+  "kpi": {
+    "title": "KPI scoring",
+    "subtitle": "Weighted-indicator KPI for every employee",
+    "importExcel": "Import Excel",
+    "downloadTemplate": "Download template",
+    "weights": "Indicator weights",
+    "weightsSub": "Adjust weights — KPI recalculates instantly",
+    "reset": "Reset",
+    "totalW": "Total weight",
+    "rank": "Rank",
+    "employee": "Employee",
+    "dept": "Department",
+    "kpiScore": "KPI score",
+    "grade": "Grade",
+    "avgKpi": "Average KPI",
+    "evaluated": "Evaluated",
+    "top": "Top performer",
+    "below": "Below 75",
+    "excellent": "Excellent",
+    "good": "Good",
+    "fair": "Fair",
+    "low": "Low",
+    "imported": "imported",
+    "ind": {
+      "attendance": "Attendance",
+      "tasks": "Tasks",
+      "care": "Patient care",
+      "docs": "Documentation",
+      "discipline": "Discipline",
+      "assessment": "Assessment"
+    },
+    "importTitle": "Import from Excel",
+    "drop": "Drop your file here",
+    "dropSub": "or pick one from your computer",
+    "browse": "Choose file",
+    "supported": ".xlsx, .xls and .csv supported",
+    "needTemplate": "Need a template?",
+    "parsing": "Parsing...",
+    "rowsFound": "rows found",
+    "colsMapped": "columns mapped",
+    "cancel": "Cancel",
+    "confirm": "Import",
+    "importErr": "Could not read the file. Use the template columns.",
+    "done": "employees imported",
+    "saveWeights": "Save weights",
+    "weightsSaved": "Weights saved",
+    "monthSub": "{{year}} · Month {{month}}"
+  },
+  "holidays": {
+    "title": "Holidays",
+    "total": "Total {{count}} holidays",
+    "addBtn": "Add holiday",
+    "retry": "Retry",
+    "notFound": "No holidays found",
+    "filterYearAll": "All years",
+    "filterMonthAll": "All months",
+    "colDate": "Date",
+    "colName": "Name",
+    "colActions": "Actions",
+    "modal": {
+      "addTitle": "Add holiday",
+      "editTitle": "Edit holiday",
+      "addSub": "Enter holiday details",
+      "editSub": "Update holiday details",
+      "dateLabel": "Date",
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. New Year's Day",
+      "cancel": "Cancel",
+      "save": "Save",
+      "add": "Add",
+      "loading": "Saving..."
+    },
+    "delete": {
+      "title": "Delete holiday",
+      "confirm": "Are you sure you want to delete «{{name}}»? This action cannot be undone.",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleting": "Deleting..."
+    }
   }
 }

@@ -19,7 +19,9 @@
     "assessmentTemplates": "Шаблоны аттестации",
     "organizations": "Организации",
     "departments": "Отделы",
-    "divisions": "Подразделения"
+    "divisions": "Подразделения",
+    "kpi": "Расчёт KPI",
+    "holidays": "Праздничные дни"
   },
   "titles": {
     "dashboard": "График работы",
@@ -34,11 +36,20 @@
     "assessmentTemplates": "Шаблоны аттестации",
     "organizations": "Организации",
     "departments": "Отделы",
-    "divisions": "Подразделения"
+    "divisions": "Подразделения",
+    "kpi": "Расчёт KPI",
+    "holidays": "Праздничные дни"
   },
   "search": "Поиск...",
   "allDepts": "Все отделы",
   "noResults": "Ничего не найдено",
+  "error": "Произошла ошибка",
+  "logout": "Выйти",
+  "notifications": {
+    "title": "Уведомления",
+    "markAll": "Отметить все прочитанными",
+    "seeAll": "Посмотреть все"
+  },
   "status": {
     "active": "Работает",
     "leave": "В отпуске",
@@ -95,5 +106,85 @@
     "divCount": "{{count}} подразделений",
     "deptCount": "{{count}} отд.",
     "empCount": "{{count}} сотрудников"
+  },
+  "kpi": {
+    "title": "Расчёт KPI",
+    "subtitle": "KPI по взвешенным показателям для каждого сотрудника",
+    "importExcel": "Импорт Excel",
+    "downloadTemplate": "Скачать шаблон",
+    "weights": "Веса показателей",
+    "weightsSub": "Измените веса — KPI пересчитается мгновенно",
+    "reset": "Сбросить",
+    "totalW": "Общий вес",
+    "rank": "Место",
+    "employee": "Сотрудник",
+    "dept": "Отдел",
+    "kpiScore": "Балл KPI",
+    "grade": "Оценка",
+    "avgKpi": "Средний KPI",
+    "evaluated": "Оценено",
+    "top": "Лучший",
+    "below": "Ниже 75",
+    "excellent": "Отлично",
+    "good": "Хорошо",
+    "fair": "Удовлетворительно",
+    "low": "Низкий",
+    "imported": "импорт",
+    "ind": {
+      "attendance": "Посещаемость",
+      "tasks": "Задачи",
+      "care": "Уход за пациентами",
+      "docs": "Документация",
+      "discipline": "Дисциплина",
+      "assessment": "Аттестация"
+    },
+    "importTitle": "Импорт из Excel",
+    "drop": "Перетащите файл сюда",
+    "dropSub": "или выберите с компьютера",
+    "browse": "Выбрать файл",
+    "supported": "Поддерживаются .xlsx, .xls и .csv",
+    "needTemplate": "Нужен шаблон?",
+    "parsing": "Обработка...",
+    "rowsFound": "строк найдено",
+    "colsMapped": "столбцов сопоставлено",
+    "cancel": "Отмена",
+    "confirm": "Импортировать",
+    "importErr": "Не удалось прочитать файл. Используйте колонки шаблона.",
+    "done": "сотрудников импортировано",
+    "saveWeights": "Сохранить",
+    "weightsSaved": "Веса сохранены",
+    "monthSub": "{{year}} · {{month}}-й месяц"
+  },
+  "holidays": {
+    "title": "Праздничные дни",
+    "total": "Всего {{count}} праздников",
+    "addBtn": "Добавить праздник",
+    "retry": "Повторить",
+    "notFound": "Праздники не найдены",
+    "filterYearAll": "Все годы",
+    "filterMonthAll": "Все месяцы",
+    "colDate": "Дата",
+    "colName": "Название",
+    "colActions": "Действия",
+    "modal": {
+      "addTitle": "Добавить праздник",
+      "editTitle": "Редактировать праздник",
+      "addSub": "Введите данные праздника",
+      "editSub": "Обновите данные праздника",
+      "dateLabel": "Дата",
+      "nameLabel": "Название",
+      "namePlaceholder": "Например: Новый год",
+      "cancel": "Отмена",
+      "save": "Сохранить",
+      "add": "Добавить",
+      "loading": "Сохранение..."
+    },
+    "delete": {
+      "title": "Удалить праздник",
+      "confirm": "Вы уверены, что хотите удалить «{{name}}»? Это действие нельзя отменить.",
+      "cancel": "Отмена",
+      "delete": "Удалить",
+      "deleting": "Удаление..."
+    }
   }
 }

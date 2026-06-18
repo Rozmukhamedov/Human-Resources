@@ -1,5 +1,5 @@
 import { apiRequest } from '@core/api/client'
-import type { Department, DepartmentDetail, CreateDepartmentPayload, PaginatedDepartments } from '../model/department.types'
+import type { Department, DepartmentDetail, DepartmentDetailFull, CreateDepartmentPayload, PaginatedDepartments } from '../model/department.types'
 
 export function getDepartments(page = 1, pageSize = 10) {
   return apiRequest<PaginatedDepartments>(
@@ -9,6 +9,10 @@ export function getDepartments(page = 1, pageSize = 10) {
 
 export function getDepartment(id: number) {
   return apiRequest<DepartmentDetail>(`/employees/departments/${id}/`)
+}
+
+export function getDepartmentDetail(id: number) {
+  return apiRequest<DepartmentDetailFull>(`/employees/departments/${id}/`)
 }
 
 export function createDepartment(data: CreateDepartmentPayload) {

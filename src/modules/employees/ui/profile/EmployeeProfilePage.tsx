@@ -8,7 +8,7 @@ import type { ApiEmployee } from '../../model/employee.types'
 
 export type EmployeeProfileContext = { emp: ApiEmployee }
 
-const TABS = ['profile', 'leave', 'activities', 'assessments', 'incidents'] as const
+const TABS = ['profile', 'leave', /* 'activities', */ 'assessments', /* 'incidents' */] as const
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -73,9 +73,9 @@ export function EmployeeProfilePage() {
   const tabLabels: Record<string, string> = {
     profile:     t('profile.profile'),
     leave:       t('profile.leaveReq'),
-    activities:  t('profile.activities'),
+    // activities:  t('profile.activities'),
     assessments: t('profile.assess'),
-    incidents:   t('profile.incidents'),
+    // incidents:   t('profile.incidents'),
   }
 
   if (loading) {

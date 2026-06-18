@@ -2,6 +2,7 @@
   "action": "Action", "employee": "Employee", "started": "Started",
   "startedBy": "Started by", "reviewers": "Reviewer(s)",
   "status": "Status", "totalScore": "Total score", "validity": "Validity period",
+  "validityFrom": "Validity from", "validityTo": "Validity to",
   "template": "Template", "dept": "Department",
   "period": "Jan 01, 2026 – Dec 31, 2026",
   "tpl": "Neurology dept. nurse assessment",
@@ -9,5 +10,27 @@
   "overall": "Overall score", "date": "Date", "notes": "Notes",
   "managerName": "Manager name", "managerComment": "Manager comment",
   "managerScore": "Manager score", "commentHistory": "Comment history",
-  "charsLeft": "characters left"
+  "charsLeft": "characters left",
+  "modal": {
+    "addTitle": "Create assessment",
+    "editTitle": "Edit assessment",
+    "addSub": "Fill in the assessment details",
+    "editSub": "Update the assessment details",
+    "selectEmployee": "Select employee...",
+    "selectTemplate": "Select template...",
+    "selectDepartment": "Select department...",
+    "selectStartedBy": "Select employee...",
+    "requiredFields": "Please select Employee, Template, Department and Started by",
+    "cancel": "Cancel",
+    "save": "Save",
+    "add": "Create",
+    "loading": "Saving..."
+  },
+  "delete": {
+    "title": "Delete assessment",
+    "confirm": "Are you sure you want to delete the assessment for {{name}}? This action cannot be undone.",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleting": "Deleting..."
+  }
 }

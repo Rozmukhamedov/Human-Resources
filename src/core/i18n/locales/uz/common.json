@@ -19,7 +19,9 @@
     "assessmentTemplates": "Baholash shablonlari",
     "organizations": "Tashkilotlar",
     "departments": "Bo'limlar",
-    "divisions": "Bo'linmalar"
+    "divisions": "Bo'linmalar",
+    "kpi": "KPI hisoblash",
+    "holidays": "Dam olish kunlari"
   },
   "titles": {
     "dashboard": "Ish grafigi",
@@ -34,11 +36,20 @@
     "assessmentTemplates": "Baholash shablonlari",
     "organizations": "Tashkilotlar",
     "departments": "Bo'limlar",
-    "divisions": "Bo'linmalar"
+    "divisions": "Bo'linmalar",
+    "kpi": "KPI hisoblash",
+    "holidays": "Dam olish kunlari"
   },
   "search": "Qidirish...",
   "allDepts": "Barcha bo'limlar",
   "noResults": "Natija topilmadi",
+  "error": "Xatolik yuz berdi",
+  "logout": "Chiqish",
+  "notifications": {
+    "title": "Bildirishnomalar",
+    "markAll": "Barchasini o'qildi",
+    "seeAll": "Barchasini ko'rish"
+  },
   "status": {
     "active": "Ishlamoqda",
     "leave": "Ta'tilda",
@@ -95,5 +106,85 @@
     "divCount": "{{count}} ta bo'linma",
     "deptCount": "{{count}} ta bo'lim",
     "empCount": "{{count}} ta xodim"
+  },
+  "kpi": {
+    "title": "KPI hisoblash",
+    "subtitle": "Har bir xodim uchun vaznli ko'rsatkichlar bo'yicha KPI",
+    "importExcel": "Excel import",
+    "downloadTemplate": "Andoza yuklash",
+    "weights": "Ko'rsatkich vaznlari",
+    "weightsSub": "Vaznlarni o'zgartiring — KPI darhol qayta hisoblanadi",
+    "reset": "Tiklash",
+    "totalW": "Jami vazn",
+    "rank": "O'rin",
+    "employee": "Xodim",
+    "dept": "Bo'lim",
+    "kpiScore": "KPI ball",
+    "grade": "Daraja",
+    "avgKpi": "O'rtacha KPI",
+    "evaluated": "Baholangan",
+    "top": "Eng yuqori",
+    "below": "75 dan past",
+    "excellent": "A'lo",
+    "good": "Yaxshi",
+    "fair": "Qoniqarli",
+    "low": "Past",
+    "imported": "import",
+    "ind": {
+      "attendance": "Davomat",
+      "tasks": "Vazifalar",
+      "care": "Parvarish",
+      "docs": "Hujjatlar",
+      "discipline": "Intizom",
+      "assessment": "Attestatsiya"
+    },
+    "importTitle": "Excel'dan import qilish",
+    "drop": "Faylni shu yerga tashlang",
+    "dropSub": "yoki kompyuteringizdan tanlang",
+    "browse": "Fayl tanlash",
+    "supported": ".xlsx, .xls va .csv qo'llab-quvvatlanadi",
+    "needTemplate": "Andoza kerakmi?",
+    "parsing": "O'qilmoqda...",
+    "rowsFound": "ta qator topildi",
+    "colsMapped": "ustun moslashtirildi",
+    "cancel": "Bekor qilish",
+    "confirm": "Import qilish",
+    "importErr": "Faylni o'qib bo'lmadi. Andoza ustunlaridan foydalaning.",
+    "done": "xodim import qilindi",
+    "saveWeights": "Saqlash",
+    "weightsSaved": "Vaznlar saqlandi",
+    "monthSub": "{{year}} · {{month}}-oy"
+  },
+  "holidays": {
+    "title": "Dam olish kunlari",
+    "total": "Jami {{count}} ta dam olish kuni",
+    "addBtn": "Qo'shish",
+    "retry": "Qayta urinish",
+    "notFound": "Dam olish kunlari topilmadi",
+    "filterYearAll": "Barcha yillar",
+    "filterMonthAll": "Barcha oylar",
+    "colDate": "Sana",
+    "colName": "Nomi",
+    "colActions": "Amallar",
+    "modal": {
+      "addTitle": "Dam olish kuni qo'shish",
+      "editTitle": "Dam olish kunini tahrirlash",
+      "addSub": "Dam olish kuni ma'lumotlarini kiriting",
+      "editSub": "Ma'lumotlarni yangilang",
+      "dateLabel": "Sana",
+      "nameLabel": "Nomi",
+      "namePlaceholder": "Masalan: Yangi yil",
+      "cancel": "Bekor qilish",
+      "save": "Saqlash",
+      "add": "Qo'shish",
+      "loading": "Saqlanmoqda..."
+    },
+    "delete": {
+      "title": "Dam olish kunini o'chirish",
+      "confirm": "«{{name}}»ni o'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi.",
+      "cancel": "Bekor qilish",
+      "delete": "O'chirish",
+      "deleting": "O'chirilmoqda..."
+    }
   }
 }

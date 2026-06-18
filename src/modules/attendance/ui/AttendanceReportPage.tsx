@@ -2,8 +2,18 @@ import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EmployeeAvatar } from '@shared/ui/EmployeeAvatar/EmployeeAvatar'
 import { SearchInput } from '@shared/ui/TableControls'
-import type { AttendanceCode, AttendanceRecord } from '../model/attendance.types'
-import { getAttendance } from '../api/attendance'
+import type { AttendanceCode, AttendanceEmployee, CreateAttendancePayload } from '../model/attendance.types'
+import { getAttendance, bulkCreateAttendance } from '../api/attendance'
+import { getDepartments } from '@modules/organizations/api/departments'
+import type { Department } from '@modules/organizations/model/department.types'
+import { getHolidays } from '@modules/kpi/api/holidays'
+
+const CODE_TO_STATUS: Record<AttendanceCode, string> = {
+  p: 'present',
+  l: 'late',
+  a: 'absent',
+  t: 'leave',
+}
 
 const CODE_META: Record<AttendanceCode, { color: string; bg: string; label: string }> = {
   p: { color: '#0f9d58', bg: '#e7f7ee', label: 'present' },
@@ -12,16 +22,39 @@ const CODE_META: Record<AttendanceCode, { color: string; bg: string; label: stri
   t: { color: '#4f46e5', bg: '#eef2ff', label: 'leaveDay' },
 }
 
+const CYCLE: (AttendanceCode | null)[] = [null, 'p', 'l', 'a', 't']
+
+function nextCode(current: AttendanceCode | null): AttendanceCode | null {
+  const idx = CYCLE.indexOf(current)
+  return CYCLE[(idx + 1) % CYCLE.length]
+}
+
+function isWeekend(year: number, month: number, day: number): boolean {
+  const dow = new Date(year, month - 1, day).getDay()
+  return dow === 0 || dow === 6
+}
+
 function getInitials(name: string) {
   return name.split(' ').map(p => p[0] ?? '').join('').toUpperCase().slice(0, 2)
 }
 
-interface GridRow {
-  employeeId: string
-  employeeName: string
-  initials: string
-  departmentName: string
-  cells: (AttendanceCode | null)[]
+function CellIcon({ code }: { code: AttendanceCode }) {
+  if (code === 'p') return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  )
+  if (code === 'a') return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  )
+  if (code === 'l') return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+    </svg>
+  )
+  return <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0 }}>T</span>
 }
 
 function StatCard({ count, label, color, bg }: { count: number; label: string; color: string; bg: string }) {
@@ -39,6 +72,7 @@ function StatCard({ count, label, color, bg }: { count: number; label: string; c
 }
 
 function ExportButton() {
+  const { t } = useTranslation('attendance')
   const [hovered, setHovered] = useState(false)
   return (
     <button
@@ -59,83 +93,120 @@ function ExportButton() {
         <polyline points="7 10 12 15 17 10"/>
         <line x1="12" y1="15" x2="12" y2="3"/>
       </svg>
-      Export
+      {t('export')}
     </button>
   )
 }
 
 export function AttendanceReportPage() {
   const { t } = useTranslation(['attendance', 'common'])
+  const now = new Date()
   const [search, setSearch] = useState('')
   const [hoveredId, setHoveredId] = useState<string | null>(null)
-  const [records, setRecords] = useState<AttendanceRecord[]>([])
+  const [rows, setRows] = useState<AttendanceEmployee[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [selectedMonth, setSelectedMonth] = useState(() => {
-    const now = new Date()
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-  })
+  const [year, setYear] = useState(now.getFullYear())
+  const [month, setMonth] = useState(now.getMonth() + 1)
+  const [departments, setDepartments] = useState<Department[]>([])
+  const [selectedDepartment, setSelectedDepartment] = useState<number | ''>('')
+  const [overrides, setOverrides] = useState<Record<string, AttendanceCode | null>>({})
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  // day number → holiday name
+  const [holidayMap, setHolidayMap] = useState<Map<number, string>>(new Map())
+
+  useEffect(() => {
+    getDepartments(1, 100).then(res => setDepartments(res.data)).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    getHolidays(1, 100, year, month)
+      .then(res => {
+        const map = new Map<number, string>()
+        for (const h of res.data ?? []) {
+          const d = new Date(h.date)
+          if (d.getFullYear() === year && d.getMonth() + 1 === month) {
+            map.set(d.getDate(), h.name)
+          }
+        }
+        setHolidayMap(map)
+      })
+      .catch(() => setHolidayMap(new Map()))
+  }, [year, month])
 
   const fetchData = useCallback(async () => {
     setLoading(true)
     setError(null)
+    setOverrides({})
     try {
-      const data = await getAttendance({ search: search || undefined, page_size: 500 })
-      const raw = data as unknown
-      console.log('[Attendance] API response:', raw)
-      const list = Array.isArray(raw)
-        ? (raw as AttendanceRecord[])
-        : Array.isArray((raw as { results?: AttendanceRecord[] }).results)
-          ? (raw as { results: AttendanceRecord[] }).results
-          : []
-      setRecords(list)
+      const data = await getAttendance({
+        year,
+        month,
+        search: search || undefined,
+        department: selectedDepartment || undefined,
+        page_size: 100,
+      })
+      setRows(data.data ?? [])
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load attendance')
+      setError(e instanceof Error ? e.message : t('common:error'))
     } finally {
       setLoading(false)
     }
-  }, [search])
+  }, [year, month, search, selectedDepartment])
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  const [year, month] = selectedMonth.split('-').map(Number)
   const daysInMonth = new Date(year, month, 0).getDate()
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
+  const workingDays = days.filter(d => !isWeekend(year, month, d) && !holidayMap.has(d)).length
+  const selectedMonthStr = `${year}-${String(month).padStart(2, '0')}`
 
-  const employeeMap = new Map<number, GridRow>()
-  ;(records ?? [])
-    .filter(r => {
-      const d = new Date(r.date)
-      return d.getFullYear() === year && d.getMonth() + 1 === month
-    })
-    .forEach(record => {
-      const day = new Date(record.date).getDate()
-      if (!employeeMap.has(record.employee)) {
-        employeeMap.set(record.employee, {
-          employeeId: String(record.employee),
-          employeeName: record.employee_name,
-          initials: getInitials(record.employee_name),
-          departmentName: record.department_name,
-          cells: Array(daysInMonth).fill(null),
-        })
-      }
-      const row = employeeMap.get(record.employee)!
-      if (day >= 1 && day <= daysInMonth) {
-        row.cells[day - 1] = record.status
-      }
-    })
+  const getCellCode = (employeeId: number, day: number, attendanceMap: Map<number, AttendanceCode>): AttendanceCode | null => {
+    const key = `${employeeId}-${day}`
+    if (key in overrides) return overrides[key]
+    return attendanceMap.get(day) ?? null
+  }
 
-  const allRows = Array.from(employeeMap.values())
-  const q = search.trim().toLowerCase()
-  const filtered = q
-    ? allRows.filter(r =>
-        r.employeeName.toLowerCase().includes(q) ||
-        r.departmentName.toLowerCase().includes(q),
-      )
-    : allRows
+  const handleCellClick = (employeeId: number, day: number, current: AttendanceCode | null) => {
+    if (isWeekend(year, month, day) || holidayMap.has(day)) return
+    const key = `${employeeId}-${day}`
+    setOverrides(prev => ({ ...prev, [key]: nextCode(current) }))
+  }
+
+  const handleSave = async () => {
+    const payload: CreateAttendancePayload[] = []
+    for (const [key, code] of Object.entries(overrides)) {
+      if (!code) continue
+      const [empId, day] = key.split('-').map(Number)
+      payload.push({
+        employee: empId,
+        date: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+        status: CODE_TO_STATUS[code] as CreateAttendancePayload['status'],
+      })
+    }
+    if (payload.length === 0) return
+    setSaving(true)
+    setSaveError(null)
+    try {
+      await bulkCreateAttendance(payload)
+      setOverrides({})
+      await fetchData()
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : t('common:error'))
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const totals = { p: 0, l: 0, a: 0, t: 0 }
-  allRows.forEach(row => row.cells.forEach(code => { if (code) totals[code]++ }))
+  rows.forEach(row => {
+    const attendanceMap = new Map(row.attendance.map(a => [a.day, a.status]))
+    days.forEach(d => {
+      const code = getCellCode(row.id, d, attendanceMap)
+      if (code) totals[code]++
+    })
+  })
 
   const monthLabel = new Date(year, month - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })
 
@@ -146,7 +217,7 @@ export function AttendanceReportPage() {
         {/* ── Header ── */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 10,
-          padding: '13px 20px', borderBottom: '1px solid var(--border-color)',
+          padding: '13px 20px', borderBottom: '1px solid var(--border-color)', flexWrap: 'wrap',
         }}>
           <span style={{
             fontFamily: "'Plus Jakarta Sans'", fontWeight: 700, fontSize: 16,
@@ -155,10 +226,28 @@ export function AttendanceReportPage() {
             {t('title')}
           </span>
           <SearchInput value={search} onChange={setSearch} placeholder={t('common:search')} width={200} />
+          <select
+            value={selectedDepartment}
+            onChange={e => setSelectedDepartment(e.target.value ? Number(e.target.value) : '')}
+            style={{
+              height: 36, border: '1.5px solid var(--border-color)',
+              borderRadius: 10, background: 'var(--bg-subtle)',
+              padding: '0 12px', fontSize: 13, color: 'var(--text-secondary)',
+              cursor: 'pointer', outline: 'none', flexShrink: 0,
+            }}
+          >
+            <option value="">{t('common:allDepts')}</option>
+            {departments.map(d => (
+              <option key={d.id} value={d.id}>{d.name_uz}</option>
+            ))}
+          </select>
           <input
             type="month"
-            value={selectedMonth}
-            onChange={e => setSelectedMonth(e.target.value)}
+            value={selectedMonthStr}
+            onChange={e => {
+              const [y, m] = e.target.value.split('-').map(Number)
+              if (y && m) { setYear(y); setMonth(m) }
+            }}
             style={{
               height: 36, border: '1.5px solid var(--border-color)',
               borderRadius: 10, background: 'var(--bg-subtle)',
@@ -168,7 +257,30 @@ export function AttendanceReportPage() {
           />
           <div style={{ flex: 1 }} />
           <ExportButton />
+          {Object.values(overrides).some(v => v !== null) && (
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                height: 36, padding: '0 16px', borderRadius: 10,
+                background: saving ? '#6366f1aa' : '#6366f1',
+                border: 'none',
+                color: '#fff', fontSize: 13, fontWeight: 600,
+                cursor: saving ? 'not-allowed' : 'pointer',
+                transition: 'background .12s',
+                flexShrink: 0,
+              }}
+            >
+              {saving ? t('saving', 'Saving...') : t('save', 'Save')}
+            </button>
+          )}
         </div>
+        {saveError && (
+          <div style={{ padding: '10px 20px', color: '#dc2626', fontSize: 13, background: '#fdeaea', borderBottom: '1px solid #fca5a5' }}>
+            {saveError}
+          </div>
+        )}
 
         {/* ── Stats bar ── */}
         <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)' }}>
@@ -207,14 +319,19 @@ export function AttendanceReportPage() {
                   }}>
                     {t('employee')}
                   </th>
-                  {days.map(d => (
-                    <th key={d} style={{
-                      padding: '10px 6px', textAlign: 'center', fontSize: 11,
-                      fontWeight: 700, color: 'var(--text-muted)', minWidth: 38,
-                    }}>
-                      {d}
-                    </th>
-                  ))}
+                  {days.map(d => {
+                    const weekend = isWeekend(year, month, d)
+                    const holiday = holidayMap.get(d)
+                    return (
+                      <th key={d} title={holiday} style={{
+                        padding: '10px 6px', textAlign: 'center', fontSize: 11,
+                        fontWeight: 700, minWidth: 38,
+                        color: weekend ? '#dc2626' : holiday ? '#d97706' : 'var(--text-muted)',
+                      }}>
+                        {d}
+                      </th>
+                    )
+                  })}
                   <th style={{
                     padding: '10px 16px', textAlign: 'center', fontSize: 11,
                     fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '.06em',
@@ -226,19 +343,21 @@ export function AttendanceReportPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.length === 0 ? (
+                {rows.length === 0 ? (
                   <tr>
                     <td colSpan={days.length + 2} style={{ padding: '48px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
                       {t('common:noResults')}
                     </td>
                   </tr>
-                ) : filtered.map(row => {
-                  const presentCount = row.cells.filter(c => c === 'p').length
-                  const hovered = hoveredId === row.employeeId
+                ) : rows.map(row => {
+                  const initials = getInitials(row.full_name)
+                  const hovered = hoveredId === String(row.id)
+                  const attendanceMap = new Map(row.attendance.map(a => [a.day, a.status]))
+                  const presentCount = days.filter(d => !isWeekend(year, month, d) && !holidayMap.has(d) && getCellCode(row.id, d, attendanceMap) === 'p').length
                   return (
                     <tr
-                      key={row.employeeId}
-                      onMouseEnter={() => setHoveredId(row.employeeId)}
+                      key={row.id}
+                      onMouseEnter={() => setHoveredId(String(row.id))}
                       onMouseLeave={() => setHoveredId(null)}
                       style={{ borderBottom: '1px solid var(--border-color)', transition: 'background .1s' }}
                     >
@@ -250,36 +369,64 @@ export function AttendanceReportPage() {
                         transition: 'background .1s',
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <EmployeeAvatar initials={row.initials} size={32} fontSize={11} />
+                          <EmployeeAvatar initials={initials} size={32} fontSize={11} />
                           <div>
-                            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)' }}>{row.employeeName}</div>
-                            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{row.departmentName}</div>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)' }}>{row.full_name}</div>
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{row.department_name}</div>
                           </div>
                         </div>
                       </td>
-                      {row.cells.map((code, ci) => {
+                      {days.map(d => {
+                        const weekend = isWeekend(year, month, d)
+                        const holidayName = holidayMap.get(d)
+                        const disabled = weekend || !!holidayName
+                        const code = getCellCode(row.id, d, attendanceMap)
                         const meta = code ? CODE_META[code] : null
                         return (
-                          <td key={ci} style={{
-                            padding: '7px 4px', textAlign: 'center',
-                            background: hovered ? 'var(--bg-subtle)' : 'transparent',
-                            transition: 'background .1s',
-                          }}>
-                            {meta ? (
+                          <td
+                            key={d}
+                            onClick={() => handleCellClick(row.id, d, code)}
+                            title={holidayName}
+                            style={{
+                              padding: '7px 4px', textAlign: 'center',
+                              background: weekend
+                                ? 'rgba(220,38,38,.04)'
+                                : holidayName
+                                  ? 'rgba(217,119,6,.04)'
+                                  : hovered ? 'var(--bg-subtle)' : 'transparent',
+                              transition: 'background .1s',
+                              cursor: disabled ? 'default' : 'pointer',
+                              userSelect: 'none',
+                            }}
+                          >
+                            {weekend ? (
+                              <div style={{
+                                width: 32, height: 32, borderRadius: 10,
+                                background: 'rgba(220,38,38,.08)',
+                                margin: '0 auto',
+                              }} />
+                            ) : holidayName ? (
+                              <div style={{
+                                width: 32, height: 32, borderRadius: 10,
+                                background: 'rgba(217,119,6,.12)',
+                                margin: '0 auto',
+                              }} />
+                            ) : meta ? (
                               <div title={t(meta.label)} style={{
-                                width: 30, height: 30, borderRadius: 8,
+                                width: 32, height: 32, borderRadius: 10,
                                 background: meta.bg, color: meta.color,
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: 11, fontWeight: 700, margin: '0 auto',
-                                textTransform: 'uppercase', letterSpacing: '.02em',
+                                margin: '0 auto',
+                                transition: 'background .12s',
                               }}>
-                                {code}
+                                <CellIcon code={code!} />
                               </div>
                             ) : (
                               <div style={{
-                                width: 30, height: 30, borderRadius: 8,
+                                width: 32, height: 32, borderRadius: 10,
                                 background: 'var(--bg-subtle)',
                                 margin: '0 auto',
+                                transition: 'background .12s',
                               }} />
                             )}
                           </td>
@@ -292,7 +439,7 @@ export function AttendanceReportPage() {
                         background: hovered ? 'var(--bg-subtle)' : 'transparent',
                         transition: 'background .1s',
                       }}>
-                        {presentCount}
+                        {presentCount}<span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: 12 }}>/{workingDays}</span>
                       </td>
                     </tr>
                   )
@@ -313,12 +460,11 @@ export function AttendanceReportPage() {
           {(Object.entries(CODE_META) as [AttendanceCode, typeof CODE_META[AttendanceCode]][]).map(([code, meta]) => (
             <div key={code} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
               <div style={{
-                width: 26, height: 26, borderRadius: 7,
+                width: 26, height: 26, borderRadius: 8,
                 background: meta.bg, color: meta.color,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
               }}>
-                {code}
+                <CellIcon code={code} />
               </div>
               <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500 }}>{t(meta.label)}</span>
             </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { Department, CreateDepartmentPayload } from '../model/department.types'
 import type { Division } from '../model/division.types'
 import {
@@ -37,10 +38,12 @@ function DeptCard({
   dept,
   onEdit,
   onDelete,
+  onView,
 }: {
   dept: Department
   onEdit: (d: Department) => void
   onDelete: (d: Department) => void
+  onView: (d: Department) => void
 }) {
   const [hovered, setHovered] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -48,6 +51,7 @@ function DeptCard({
 
   return (
     <div
+      onClick={() => !menuOpen && onView(dept)}
       style={{
         background: 'var(--surface, #fff)',
         border: '1px solid var(--border-color, #ebedf1)',
@@ -60,6 +64,7 @@ function DeptCard({
         boxShadow: hovered ? '0 6px 20px rgba(0,0,0,.09)' : 'none',
         borderColor: hovered ? '#c8cdd8' : 'var(--border-color, #ebedf1)',
         position: 'relative',
+        cursor: 'pointer',
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setMenuOpen(false) }}
@@ -90,7 +95,7 @@ function DeptCard({
         </div>
 
         {/* Actions menu */}
-        <div style={{ position: 'relative', flexShrink: 0 }}>
+        <div style={{ position: 'relative', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
           <button
             onClick={() => setMenuOpen(v => !v)}
             style={{
@@ -421,6 +426,7 @@ function Spinner() {
 }
 
 export function DepartmentsPage() {
+  const navigate = useNavigate()
   const [departments, setDepartments] = useState<Department[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -586,6 +592,7 @@ export function DepartmentsPage() {
                 dept={dept}
                 onEdit={d => void handleEdit(d)}
                 onDelete={d => setDeleteTarget(d)}
+                onView={d => navigate(`/departments/${d.id}`)}
               />
             ))}
           </div>

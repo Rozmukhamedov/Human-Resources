@@ -84,11 +84,13 @@ function NavPanel() {
         </div>
         <div style={{ marginTop: 10 }}>
           <SectionHeader label={t('sec.eval')} />
-          <NavItem label={t('nav.shifts')} path="/shifts" />
+          {/* <NavItem label={t('nav.shifts')} path="/shifts" /> */}
           <NavItem label={t('nav.leave')} path="/leave" />
           <NavItem label={t('nav.attendance')} path="/attendance" />
           <NavItem label={t('nav.assessments')} path="/assessments" excludes={['/assessments/templates']} />
           <NavItem label={t('nav.assessmentTemplates')} path="/assessments/templates" />
+          <NavItem label={t('nav.kpi')} path="/kpi" excludes={['/kpi/holidays']} />
+          <NavItem label={t('nav.holidays')} path="/kpi/holidays" />
         </div>
       </div>
 
@@ -113,7 +115,7 @@ function NavPanel() {
           onClick={handleLogout}
           onMouseEnter={() => setLogoutHovered(true)}
           onMouseLeave={() => setLogoutHovered(false)}
-          title="Chiqish"
+          title={t('logout')}
           style={{ width: 28, height: 28, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: logoutHovered ? '#fee2e2' : 'transparent', color: logoutHovered ? '#ef4444' : 'var(--text-muted)', transition: 'background .12s, color .12s' }}
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -218,6 +220,7 @@ const NOTIF_ICON: Record<string, React.ReactNode> = {
 }
 
 function NotificationBell() {
+  const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState(NOTIFICATIONS)
   const ref = useRef<HTMLDivElement>(null)
@@ -254,13 +257,13 @@ function NotificationBell() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 10px', borderBottom: '1px solid var(--border-color)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-heading)' }}>Bildirishnomalar</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-heading)' }}>{t('notifications.title')}</span>
               {unreadCount > 0 && (
                 <span style={{ background: 'var(--accent)', color: '#fff', fontSize: 10, fontWeight: 700, borderRadius: 99, padding: '1px 6px' }}>{unreadCount}</span>
               )}
             </div>
             {unreadCount > 0 && (
-              <span onClick={markAllRead} style={{ fontSize: 11, color: 'var(--accent)', cursor: 'pointer', fontWeight: 600 }}>Barchasini o'qildi</span>
+              <span onClick={markAllRead} style={{ fontSize: 11, color: 'var(--accent)', cursor: 'pointer', fontWeight: 600 }}>{t('notifications.markAll')}</span>
             )}
           </div>
 
@@ -292,7 +295,7 @@ function NotificationBell() {
           </div>
 
           <div style={{ padding: '10px 16px', textAlign: 'center' }}>
-            <span style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, cursor: 'pointer' }}>Barchasini ko'rish</span>
+            <span style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, cursor: 'pointer' }}>{t('notifications.seeAll')}</span>
           </div>
         </div>
       )}
@@ -353,6 +356,8 @@ function TopBar() {
     if (p === '/org/structure')   return [{ label: t('titles.orgStruct'),        path: p, closable: false }]
     if (p === '/departments')     return [{ label: t('titles.departments'),      path: p, closable: false }]
     if (p === '/divisions')       return [{ label: t('titles.divisions'),        path: p, closable: false }]
+    if (p === '/kpi')             return [{ label: t('titles.kpi'),              path: p, closable: false }]
+    if (p === '/kpi/holidays')    return [{ label: t('titles.holidays'),         path: p, closable: false }]
     if (p === '/profile')         return [{ label: t('adminName'),               path: p, closable: false }]
     return [{ label: t('titles.dashboard'), path: '/', closable: false }]
   }
