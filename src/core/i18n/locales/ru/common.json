@@ -4,6 +4,7 @@
   "adminRole": "Системный администратор",
   "adminName": "Timur Aliyev",
   "adminInitials": "TA",
+  "loading": "Загрузка...",
   "rail": { "hr": "КАДРЫ", "reports": "ОТЧЁТЫ" },
   "sec": { "dash": "ПАНЕЛЬ ИНСТРУМЕНТОВ", "company": "КОМПАНИЯ", "eval": "ОЦЕНКА ДЕЯТЕЛЬНОСТИ" },
   "nav": {
@@ -15,8 +16,10 @@
     "leave": "Заявки на отпуск",
     "attendance": "Отчёт посещаемости",
     "assessments": "Аттестации",
+    "assessmentTemplates": "Шаблоны аттестации",
     "organizations": "Организации",
-    "departments": "Отделы"
+    "departments": "Отделы",
+    "divisions": "Подразделения"
   },
   "titles": {
     "dashboard": "График работы",
@@ -28,8 +31,10 @@
     "attendance": "Отчёт посещаемости",
     "assessments": "Аттестации",
     "assessmentDetail": "Аттестация",
+    "assessmentTemplates": "Шаблоны аттестации",
     "organizations": "Организации",
-    "departments": "Отделы"
+    "departments": "Отделы",
+    "divisions": "Подразделения"
   },
   "search": "Поиск...",
   "allDepts": "Все отделы",
@@ -46,5 +51,49 @@
     "pendingApproval": "Ожидает утверждения"
   },
   "gender": { "Ayol": "Женский", "Erkak": "Мужской" },
-  "actions": { "edit": "Редактировать", "options": "Опции", "printPdf": "Печать PDF", "create": "Создать" }
+  "actions": { "edit": "Редактировать", "options": "Опции", "printPdf": "Печать PDF", "create": "Создать" },
+  "div": {
+    "title": "Подразделения",
+    "total": "Всего {{count}} подразделений",
+    "colName": "Название подразделения",
+    "colColor": "Цвет",
+    "colOrder": "Порядок",
+    "colDepts": "Отделы",
+    "colActions": "Действия",
+    "noDepts": "Отделы отсутствуют",
+    "notFound": "Подразделения не найдены",
+    "addBtn": "Создать",
+    "retry": "Повторить",
+    "modal": {
+      "addTitle": "Добавить подразделение",
+      "editTitle": "Редактировать подразделение",
+      "addSub": "Введите данные подразделения",
+      "editSub": "Обновите данные",
+      "nameUz": "Название (UZ)",
+      "nameEn": "Название (EN)",
+      "colorLabel": "Цвет",
+      "orderLabel": "Номер по порядку",
+      "cancel": "Отменить",
+      "save": "Сохранить",
+      "add": "Добавить",
+      "loading": "Загрузка..."
+    },
+    "delete": {
+      "title": "Удалить подразделение",
+      "confirm": "Вы уверены, что хотите удалить «{{name}}»? Это действие нельзя отменить.",
+      "cancel": "Отменить",
+      "delete": "Удалить",
+      "deleting": "Удаление..."
+    },
+    "deptCount": "{{count}} отделов"
+  },
+  "orgChart": {
+    "loading": "Загрузка...",
+    "reset": "Сбросить",
+    "hint": "Перетащите для панорамирования · Прокрутите для масштабирования",
+    "organization": "Организация",
+    "divCount": "{{count}} подразделений",
+    "deptCount": "{{count}} отд.",
+    "empCount": "{{count}} сотрудников"
+  }
 }

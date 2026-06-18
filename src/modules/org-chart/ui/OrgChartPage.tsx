@@ -1,12 +1,90 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { orgRoot } from '@data/orgTree'
-import type { OrgNode } from '@modules/org-chart/model/org.types'
+import i18n from '@core/i18n'
+import type { OrgNode, OrgStructureDivision, SupervisorNode } from '@modules/org-chart/model/org.types'
+import { getOrgStructure, getSupervisorTree } from '@modules/org-chart/api/orgChart'
 
 const LINE = '#dde1e9'
 const VH = 30
 const MIN_ZOOM = 0.2
 const MAX_ZOOM = 2.5
+
+function safeHexToRgba(hex: string, alpha: number): string {
+  const clean = hex.replace('#', '')
+  if (!/^[0-9a-fA-F]{6}$/.test(clean)) return `rgba(79,70,229,${alpha})`
+  const r = parseInt(clean.slice(0, 2), 16)
+  const g = parseInt(clean.slice(2, 4), 16)
+  const b = parseInt(clean.slice(4, 6), 16)
+  return `rgba(${r},${g},${b},${alpha})`
+}
+
+function transformOrgData(divisions: OrgStructureDivision[], lang: string): OrgNode {
+  const getName = (d: { name_uz: string; name_en: string }) =>
+    lang === 'uz' ? d.name_uz : d.name_en
+
+  return {
+    id: 'root',
+    initials: 'ORG',
+    name: i18n.t('common:orgChart.organization'),
+    role: i18n.t('common:orgChart.divCount', { count: divisions.length }),
+    avatarBg: 'rgba(79,70,229,0.12)',
+    avatarColor: '#4f46e5',
+    children: divisions.map(div => ({
+      id: String(div.id),
+      initials: getName(div).slice(0, 2).toUpperCase(),
+      name: getName(div),
+      role: i18n.t('common:orgChart.deptCount', { count: div.department_count }),
+      avatarBg: safeHexToRgba(div.color, 0.15),
+      avatarColor: /^#[0-9a-fA-F]{6}$/.test(div.color) ? div.color : '#4f46e5',
+      children: div.departments.map(dep => ({
+        id: String(dep.id),
+        initials: dep.head_initials ?? getName(dep).slice(0, 2).toUpperCase(),
+        name: getName(dep),
+        role: i18n.t('common:orgChart.empCount', { count: dep.employee_count }),
+        avatarBg: '#f0f1f5',
+        avatarColor: '#4a5568',
+      })),
+    })),
+  }
+}
+
+const AVATAR_PALETTE = [
+  { bg: '#e8f0fe', color: '#4f46e5' },
+  { bg: '#ede9fe', color: '#7c3aed' },
+  { bg: '#d1fae5', color: '#059669' },
+  { bg: '#fef3c7', color: '#d97706' },
+  { bg: '#fce7f3', color: '#db2777' },
+  { bg: '#fee2e2', color: '#dc2626' },
+]
+
+function transformSupervisorNode(node: SupervisorNode, lang: string): OrgNode {
+  const { bg, color } = AVATAR_PALETTE[node.id % AVATAR_PALETTE.length]
+  const role = lang === 'uz'
+    ? node.position_uz
+    : (node.position_en || node.position_uz)
+  return {
+    id: String(node.id),
+    initials: node.initials,
+    name: node.full_name,
+    role,
+    avatarBg: bg,
+    avatarColor: color,
+    children: node.children.map(child => transformSupervisorNode(child, lang)),
+  }
+}
+
+function transformSupervisorData(nodes: SupervisorNode[], lang: string): OrgNode {
+  if (nodes.length === 1) return transformSupervisorNode(nodes[0], lang)
+  return {
+    id: 'root',
+    initials: 'ORG',
+    name: i18n.t('common:orgChart.organization'),
+    role: '',
+    avatarBg: '#e8f0fe',
+    avatarColor: '#4f46e5',
+    children: nodes.map(n => transformSupervisorNode(n, lang)),
+  }
+}
 
 const STYLES = `
   .org-card {
@@ -139,7 +217,7 @@ function OrgNodeCard({ node, isRoot = false }: { node: OrgNode; isRoot?: boolean
 interface Props { mode: 'supervisor' | 'org' }
 
 export function OrgChartPage({ mode }: Props) {
-  const { t } = useTranslation(['orgChart', 'common'])
+  const { t, i18n } = useTranslation(['orgChart', 'common'])
   const title = mode === 'supervisor'
     ? t('common:titles.supervisorStruct')
     : t('common:titles.orgStruct')
@@ -147,6 +225,9 @@ export function OrgChartPage({ mode }: Props) {
   const [zoom, setZoom] = useState(0.85)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
+  const [orgData, setOrgData] = useState<OrgNode | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
   const dragging = useRef(false)
   const lastMouse = useRef({ x: 0, y: 0 })
@@ -195,6 +276,21 @@ export function OrgChartPage({ mode }: Props) {
     setIsDragging(false)
   }, [])
 
+  useEffect(() => {
+    setLoading(true)
+    setFetchError(null)
+    setOrgData(null)
+    const promise = mode === 'org'
+      ? getOrgStructure().then(data => transformOrgData(data, i18n.language))
+      : getSupervisorTree().then(data => transformSupervisorData(data, i18n.language))
+    promise
+      .then(setOrgData)
+      .catch(err => setFetchError(err.message))
+      .finally(() => setLoading(false))
+  }, [mode, i18n.language])
+
+  const rootNode = orgData
+
   const zoomIn  = () => setZoom(z => Math.min(MAX_ZOOM, z + 0.15))
   const zoomOut = () => setZoom(z => Math.max(MIN_ZOOM, z - 0.15))
   const reset   = () => { setZoom(0.85); setPan({ x: 0, y: 0 }) }
@@ -222,7 +318,7 @@ export function OrgChartPage({ mode }: Props) {
           </span>
           <button className="zoom-btn" onClick={zoomOut} title="Zoom out" style={{ fontSize: 20 }}>−</button>
           <div style={{ width: 1, height: 20, background: '#e8eaee', margin: '0 2px' }} />
-          <button className="reset-btn" onClick={reset}>Reset</button>
+          <button className="reset-btn" onClick={reset}>{t('common:orgChart.reset')}</button>
         </div>
       </div>
 
@@ -243,19 +339,33 @@ export function OrgChartPage({ mode }: Props) {
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseUp}
       >
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: `translate(calc(-50% + ${pan.x}px), calc(-50% + ${pan.y}px)) scale(${zoom})`,
-            transformOrigin: 'center center',
-            userSelect: 'none',
-            pointerEvents: isDragging ? 'none' : 'auto',
-          }}
-        >
-          <OrgNodeCard node={orgRoot} isRoot />
-        </div>
+        {loading && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ color: '#8794a8', fontSize: 14 }}>{t('common:orgChart.loading')}</div>
+          </div>
+        )}
+
+        {fetchError && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ color: '#ef4444', fontSize: 14 }}>{fetchError}</div>
+          </div>
+        )}
+
+        {!loading && !fetchError && rootNode && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: `translate(calc(-50% + ${pan.x}px), calc(-50% + ${pan.y}px)) scale(${zoom})`,
+              transformOrigin: 'center center',
+              userSelect: 'none',
+              pointerEvents: isDragging ? 'none' : 'auto',
+            }}
+          >
+            <OrgNodeCard node={rootNode} isRoot />
+          </div>
+        )}
 
         {/* Hint */}
         {!isDragging && (
@@ -273,7 +383,7 @@ export function OrgChartPage({ mode }: Props) {
             whiteSpace: 'nowrap',
             opacity: 0.85,
           }}>
-            Drag to pan · Scroll to zoom
+            {t('common:orgChart.hint')}
           </div>
         )}
       </div>

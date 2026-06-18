@@ -159,7 +159,7 @@ export function KpiPage() {
               else if (key === 'dept') departmentName = r[ci] ?? ''
               else if (key in scores) {
                 const n = Number(r[ci])
-                ;(scores as Record<string, number>)[key] = isNaN(n) ? 0 : Math.max(0, Math.min(100, n))
+                ;(scores as unknown as Record<string, number>)[key] = isNaN(n) ? 0 : Math.max(0, Math.min(100, n))
               }
             })
             return {

@@ -1,16 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
-import type { Department, CreateDepartmentPayload } from '../model/department.types'
-import type { Division } from '../model/division.types'
+import type { AssessmentTemplate, AssessmentTemplatePayload } from '../model/assessmentTemplate.types'
 import {
-  getDepartments,
-  getDepartment,
-  createDepartment,
-  updateDepartment,
-  deleteDepartment,
-} from '../api/departments'
-import { getDivisions } from '../api/divisions'
+  getAssessmentTemplates,
+  createAssessmentTemplate,
+  updateAssessmentTemplate,
+  deleteAssessmentTemplate,
+} from '../api/assessmentTemplates'
 
-const PAGE_SIZE = 12
+const PAGE_SIZE = 20
 
 const COLORS = [
   { bg: '#ede9fe', color: '#7c3aed' },
@@ -23,28 +20,38 @@ const COLORS = [
 
 const getColor = (id: number) => COLORS[Math.abs(id) % COLORS.length]
 
-function BuildingIcon({ color }: { color: string }) {
+function TemplateIcon({ color }: { color: string }) {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="18" height="18" rx="2"/>
-      <path d="M9 22V12h6v10"/>
-      <path d="M9 7h1M14 7h1M9 12h1M14 12h1"/>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+      <polyline points="10 9 9 9 8 9"/>
     </svg>
   )
 }
 
-function DeptCard({
-  dept,
+function formatDate(iso: string) {
+  try {
+    return new Date(iso).toLocaleDateString('uz-UZ', { year: 'numeric', month: 'short', day: 'numeric' })
+  } catch {
+    return iso
+  }
+}
+
+function TemplateCard({
+  template,
   onEdit,
   onDelete,
 }: {
-  dept: Department
-  onEdit: (d: Department) => void
-  onDelete: (d: Department) => void
+  template: AssessmentTemplate
+  onEdit: (t: AssessmentTemplate) => void
+  onDelete: (t: AssessmentTemplate) => void
 }) {
   const [hovered, setHovered] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const c = getColor(dept.id)
+  const c = getColor(template.id)
 
   return (
     <div
@@ -55,7 +62,7 @@ function DeptCard({
         padding: '18px 20px 16px',
         display: 'flex',
         flexDirection: 'column',
-        gap: 14,
+        gap: 12,
         transition: 'box-shadow .15s, border-color .15s',
         boxShadow: hovered ? '0 6px 20px rgba(0,0,0,.09)' : 'none',
         borderColor: hovered ? '#c8cdd8' : 'var(--border-color, #ebedf1)',
@@ -64,16 +71,15 @@ function DeptCard({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setMenuOpen(false) }}
     >
-      {/* Top row */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
           <div style={{
             width: 40, height: 40, borderRadius: 11,
             background: c.bg,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0,
           }}>
-            <BuildingIcon color={c.color} />
+            <TemplateIcon color={c.color} />
           </div>
           <div style={{ minWidth: 0 }}>
             <div style={{
@@ -81,15 +87,14 @@ function DeptCard({
               color: 'var(--text-heading, #1a1f2e)', lineHeight: 1.3,
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
-              {dept.name_uz}
+              {template.name_uz}
             </div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted, #9aa1ad)', marginTop: 2 }}>
-              {dept.head_name || '—'}
+            <div style={{ fontSize: 12, color: 'var(--text-muted, #9aa1ad)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {template.name_en || '—'}
             </div>
           </div>
         </div>
 
-        {/* Actions menu */}
         <div style={{ position: 'relative', flexShrink: 0 }}>
           <button
             onClick={() => setMenuOpen(v => !v)}
@@ -111,7 +116,7 @@ function DeptCard({
               borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,.12)', minWidth: 130, overflow: 'hidden',
             }}>
               <div
-                onClick={() => { setMenuOpen(false); onEdit(dept) }}
+                onClick={() => { setMenuOpen(false); onEdit(template) }}
                 style={{
                   padding: '9px 14px', fontSize: 13, cursor: 'pointer',
                   color: 'var(--text-primary, #2a2f3a)',
@@ -127,7 +132,7 @@ function DeptCard({
                 Tahrirlash
               </div>
               <div
-                onClick={() => { setMenuOpen(false); onDelete(dept) }}
+                onClick={() => { setMenuOpen(false); onDelete(template) }}
                 style={{
                   padding: '9px 14px', fontSize: 13, cursor: 'pointer',
                   color: '#ef4444',
@@ -147,39 +152,49 @@ function DeptCard({
         </div>
       </div>
 
-      {/* Count */}
-      <div>
+      {template.description && (
         <div style={{
-          fontSize: 26, fontWeight: 800,
-          color: 'var(--text-heading, #1a1f2e)',
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-          letterSpacing: '-.02em', lineHeight: 1.1,
+          fontSize: 12.5, color: 'var(--text-secondary, #5b6270)',
+          lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box',
+          WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
         }}>
-          {dept.employee_count}
+          {template.description}
         </div>
-        <div style={{ fontSize: 11.5, color: 'var(--text-muted, #9aa1ad)', marginTop: 3 }}>Xodimlar</div>
+      )}
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 }}>
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 5,
+          background: c.bg, borderRadius: 7, padding: '4px 9px',
+        }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: c.color }}>
+            {template.competencies.length}
+          </span>
+          <span style={{ fontSize: 11.5, color: c.color }}>kompetensiya</span>
+        </div>
+        <div style={{ fontSize: 11.5, color: 'var(--text-muted, #9aa1ad)' }}>
+          {formatDate(template.created_at)}
+        </div>
       </div>
     </div>
   )
 }
 
 interface ModalProps {
-  dept: Department | null
-  divisionId?: number | null
+  template: AssessmentTemplate | null
   onClose: () => void
-  onSave: (data: CreateDepartmentPayload) => Promise<void>
+  onSave: (data: AssessmentTemplatePayload) => Promise<void>
   loading: boolean
-  divisions: Division[]
 }
 
-function DeptModal({ dept, divisionId, onClose, onSave, loading, divisions }: ModalProps) {
-  const [form, setForm] = useState<CreateDepartmentPayload>(() =>
-    dept
-      ? { name_uz: dept.name_uz, name_en: dept.name_en, division: divisionId ?? null }
-      : { name_uz: '', name_en: '', division: null }
+function TemplateModal({ template, onClose, onSave, loading }: ModalProps) {
+  const [form, setForm] = useState<AssessmentTemplatePayload>(() =>
+    template
+      ? { name_uz: template.name_uz, name_en: template.name_en, description: template.description }
+      : { name_uz: '', name_en: '', description: '' }
   )
 
-  const set = <K extends keyof CreateDepartmentPayload>(key: K, value: CreateDepartmentPayload[K]) =>
+  const set = <K extends keyof AssessmentTemplatePayload>(key: K, value: AssessmentTemplatePayload[K]) =>
     setForm(prev => ({ ...prev, [key]: value }))
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -227,10 +242,10 @@ function DeptModal({ dept, divisionId, onClose, onSave, loading, divisions }: Mo
         }}>
           <div>
             <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-heading, #1a1f2e)' }}>
-              {dept ? "Bo'limni tahrirlash" : "Yangi bo'lim qo'shish"}
+              {template ? 'Shablonni tahrirlash' : 'Yangi shablon qo\'shish'}
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-muted, #9aa1ad)', marginTop: 2 }}>
-              {dept ? "Ma'lumotlarni yangilang" : "Bo'lim ma'lumotlarini kiriting"}
+              {template ? 'Ma\'lumotlarni yangilang' : 'Shablon ma\'lumotlarini kiriting'}
             </div>
           </div>
           <button
@@ -246,12 +261,12 @@ function DeptModal({ dept, divisionId, onClose, onSave, loading, divisions }: Mo
 
         <form onSubmit={handleSubmit} style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label style={labelStyle}>Bo'lim nomi (UZ) *</label>
+            <label style={labelStyle}>Nomi (UZ) *</label>
             <input
               style={inputStyle}
               value={form.name_uz}
               onChange={e => set('name_uz', e.target.value)}
-              placeholder="Masalan: Kardiologiya bo'limi"
+              placeholder="Masalan: Rahbarlik kompetensiyalari"
               required
               onFocus={e => (e.target.style.borderColor = '#4f46e5')}
               onBlur={e => (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')}
@@ -259,31 +274,27 @@ function DeptModal({ dept, divisionId, onClose, onSave, loading, divisions }: Mo
           </div>
 
           <div>
-            <label style={labelStyle}>Bo'lim nomi (EN)</label>
+            <label style={labelStyle}>Nomi (EN)</label>
             <input
               style={inputStyle}
-              value={form.name_en ?? ''}
+              value={form.name_en}
               onChange={e => set('name_en', e.target.value)}
-              placeholder="e.g. Cardiology Department"
+              placeholder="e.g. Leadership Competencies"
               onFocus={e => (e.target.style.borderColor = '#4f46e5')}
               onBlur={e => (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')}
             />
           </div>
 
           <div>
-            <label style={labelStyle}>Bo'lim (Division)</label>
-            <select
-              style={{ ...inputStyle, appearance: 'none' }}
-              value={form.division ?? ''}
-              onChange={e => set('division', e.target.value ? Number(e.target.value) : null)}
+            <label style={labelStyle}>Tavsif</label>
+            <textarea
+              style={{ ...inputStyle, minHeight: 90, resize: 'vertical' }}
+              value={form.description}
+              onChange={e => set('description', e.target.value)}
+              placeholder="Shablon haqida qisqacha ma'lumot..."
               onFocus={e => (e.target.style.borderColor = '#4f46e5')}
               onBlur={e => (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')}
-            >
-              <option value="">— Tanlang —</option>
-              {divisions.map(d => (
-                <option key={d.id} value={d.id}>{d.name_uz}</option>
-              ))}
-            </select>
+            />
           </div>
 
           <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
@@ -318,7 +329,7 @@ function DeptModal({ dept, divisionId, onClose, onSave, loading, divisions }: Mo
               onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = '#4338ca' }}
               onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = '#4f46e5' }}
             >
-              {loading ? 'Yuklanmoqda...' : dept ? 'Saqlash' : "Qo'shish"}
+              {loading ? 'Yuklanmoqda...' : template ? 'Saqlash' : 'Qo\'shish'}
             </button>
           </div>
         </form>
@@ -328,12 +339,12 @@ function DeptModal({ dept, divisionId, onClose, onSave, loading, divisions }: Mo
 }
 
 function DeleteConfirm({
-  dept,
+  template,
   onClose,
   onConfirm,
   loading,
 }: {
-  dept: Department
+  template: AssessmentTemplate
   onClose: () => void
   onConfirm: () => Promise<void>
   loading: boolean
@@ -366,10 +377,10 @@ function DeleteConfirm({
           </svg>
         </div>
         <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-heading, #1a1f2e)', marginBottom: 8 }}>
-          Bo'limni o'chirish
+          Shablonni o'chirish
         </div>
         <div style={{ fontSize: 13.5, color: 'var(--text-secondary, #5b6270)', lineHeight: 1.6, marginBottom: 24 }}>
-          <strong>{dept.name_uz}</strong> bo'limini o'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi.
+          <strong>{template.name_uz}</strong> shablonini o'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi.
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button
@@ -420,19 +431,52 @@ function Spinner() {
   )
 }
 
-export function DepartmentsPage() {
-  const [departments, setDepartments] = useState<Department[]>([])
+function PagerBtn({
+  children,
+  onClick,
+  active,
+  disabled,
+}: {
+  children: React.ReactNode
+  onClick: () => void
+  active?: boolean
+  disabled?: boolean
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        width: 34, height: 34, borderRadius: 8,
+        border: '1.5px solid',
+        borderColor: active ? '#4f46e5' : 'var(--border-color, #e4e7ef)',
+        background: active ? '#4f46e5' : 'var(--surface, #fff)',
+        color: active ? '#fff' : disabled ? 'var(--text-muted, #9aa1ad)' : 'var(--text-primary, #2a2f3a)',
+        fontSize: 13, fontWeight: active ? 700 : 400,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        opacity: disabled ? 0.45 : 1,
+        transition: 'all .12s',
+        fontFamily: 'inherit',
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
+export function AssessmentTemplatesPage() {
+  const [templates, setTemplates] = useState<AssessmentTemplate[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
-  const [divisions, setDivisions] = useState<Division[]>([])
 
-  const [modal, setModal] = useState<{ open: boolean; dept: Department | null; divisionId?: number | null }>({
-    open: false, dept: null,
+  const [modal, setModal] = useState<{ open: boolean; template: AssessmentTemplate | null }>({
+    open: false, template: null,
   })
-  const [deleteTarget, setDeleteTarget] = useState<Department | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<AssessmentTemplate | null>(null)
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
@@ -440,8 +484,8 @@ export function DepartmentsPage() {
     setLoading(true)
     setError(null)
     try {
-      const data = await getDepartments(p, PAGE_SIZE)
-      setDepartments(data.data ?? [])
+      const data = await getAssessmentTemplates(p, PAGE_SIZE)
+      setTemplates(data.data ?? [])
       setTotal(data.total_elements ?? 0)
     } catch (e) {
       setError((e as Error).message || 'Xatolik yuz berdi')
@@ -454,29 +498,17 @@ export function DepartmentsPage() {
     void load(page)
   }, [page, load])
 
-  useEffect(() => {
-    getDivisions(1, 100).then(res => setDivisions(res.data ?? [])).catch(() => {})
-  }, [])
-
-  const handleEdit = async (dept: Department) => {
-    try {
-      const detail = await getDepartment(dept.id)
-      setModal({ open: true, dept, divisionId: detail.division?.id ?? null })
-    } catch {
-      setModal({ open: true, dept, divisionId: null })
-    }
-  }
-
-  const handleSave = async (data: CreateDepartmentPayload) => {
+  const handleSave = async (data: AssessmentTemplatePayload) => {
     setSaving(true)
     try {
-      if (modal.dept) {
-        await updateDepartment(modal.dept.id, data)
+      if (modal.template) {
+        const updated = await updateAssessmentTemplate(modal.template.id, data)
+        setTemplates(prev => prev.map(t => t.id === updated.id ? updated : t))
       } else {
-        await createDepartment(data)
+        await createAssessmentTemplate(data)
+        await load(page)
       }
-      await load(page)
-      setModal({ open: false, dept: null })
+      setModal({ open: false, template: null })
     } catch (e) {
       alert((e as Error).message || 'Xatolik yuz berdi')
     } finally {
@@ -488,9 +520,9 @@ export function DepartmentsPage() {
     if (!deleteTarget) return
     setSaving(true)
     try {
-      await deleteDepartment(deleteTarget.id)
+      await deleteAssessmentTemplate(deleteTarget.id)
       setDeleteTarget(null)
-      if (departments.length === 1 && page > 1) {
+      if (templates.length === 1 && page > 1) {
         setPage(p => p - 1)
       } else {
         await load(page)
@@ -504,7 +536,6 @@ export function DepartmentsPage() {
 
   return (
     <div style={{ padding: '18px 24px 40px', fontFamily: "'Public Sans', sans-serif" }}>
-      {/* Page header */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         marginBottom: 20,
@@ -515,14 +546,14 @@ export function DepartmentsPage() {
             color: 'var(--text-heading, #1a1f2e)',
             fontFamily: "'Plus Jakarta Sans', sans-serif",
           }}>
-            Bo'limlar
+            Baholash shablonlari
           </div>
           <div style={{ fontSize: 12.5, color: 'var(--text-muted, #9aa1ad)', marginTop: 2 }}>
-            Jami {total} ta bo'lim
+            Jami {total} ta shablon
           </div>
         </div>
         <button
-          onClick={() => setModal({ open: true, dept: null })}
+          onClick={() => setModal({ open: true, template: null })}
           style={{
             display: 'flex', alignItems: 'center', gap: 7,
             padding: '9px 18px', borderRadius: 10, border: 'none',
@@ -549,14 +580,10 @@ export function DepartmentsPage() {
         </button>
       </div>
 
-      {/* Content */}
       {loading ? (
         <Spinner />
       ) : error ? (
-        <div style={{
-          textAlign: 'center', padding: '60px 0',
-          color: '#ef4444', fontSize: 14,
-        }}>
+        <div style={{ textAlign: 'center', padding: '60px 0', color: '#ef4444', fontSize: 14 }}>
           <div style={{ marginBottom: 12 }}>{error}</div>
           <button
             onClick={() => void load(page)}
@@ -569,28 +596,27 @@ export function DepartmentsPage() {
             Qayta urinish
           </button>
         </div>
-      ) : departments.length === 0 ? (
+      ) : templates.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted, #9aa1ad)', fontSize: 14 }}>
-          Bo'limlar topilmadi
+          Shablonlar topilmadi
         </div>
       ) : (
         <>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
             gap: 16,
           }}>
-            {departments.map(dept => (
-              <DeptCard
-                key={dept.id}
-                dept={dept}
-                onEdit={d => void handleEdit(d)}
-                onDelete={d => setDeleteTarget(d)}
+            {templates.map(t => (
+              <TemplateCard
+                key={t.id}
+                template={t}
+                onEdit={tmpl => setModal({ open: true, template: tmpl })}
+                onDelete={tmpl => setDeleteTarget(tmpl)}
               />
             ))}
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -636,58 +662,22 @@ export function DepartmentsPage() {
       )}
 
       {modal.open && (
-        <DeptModal
-          dept={modal.dept}
-          divisionId={modal.divisionId}
-          onClose={() => setModal({ open: false, dept: null })}
+        <TemplateModal
+          template={modal.template}
+          onClose={() => setModal({ open: false, template: null })}
           onSave={handleSave}
           loading={saving}
-          divisions={divisions}
         />
       )}
 
       {deleteTarget && (
         <DeleteConfirm
-          dept={deleteTarget}
+          template={deleteTarget}
           onClose={() => setDeleteTarget(null)}
           onConfirm={handleDelete}
           loading={saving}
         />
       )}
     </div>
-  )
-}
-
-function PagerBtn({
-  children,
-  onClick,
-  active,
-  disabled,
-}: {
-  children: React.ReactNode
-  onClick: () => void
-  active?: boolean
-  disabled?: boolean
-}) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        width: 34, height: 34, borderRadius: 8,
-        border: '1.5px solid',
-        borderColor: active ? '#4f46e5' : 'var(--border-color, #e4e7ef)',
-        background: active ? '#4f46e5' : 'var(--surface, #fff)',
-        color: active ? '#fff' : disabled ? 'var(--text-muted, #9aa1ad)' : 'var(--text-primary, #2a2f3a)',
-        fontSize: 13, fontWeight: active ? 700 : 400,
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        opacity: disabled ? 0.45 : 1,
-        transition: 'all .12s',
-        fontFamily: 'inherit',
-      }}
-    >
-      {children}
-    </button>
   )
 }

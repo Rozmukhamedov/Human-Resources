@@ -3,11 +3,16 @@ import { Outlet, useNavigate, useLocation, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useUIStore } from '@core/store/uiStore'
 import { SectionHeader } from '@shared/ui/SectionHeader/SectionHeader'
+import UZ from 'country-flag-icons/react/3x2/UZ'
+import GB from 'country-flag-icons/react/3x2/GB'
+import RU from 'country-flag-icons/react/3x2/RU'
 
-function NavItem({ label, path, badge }: { label: string; path: string; badge?: number }) {
+function NavItem({ label, path, badge, excludes }: { label: string; path: string; badge?: number; excludes?: string[] }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const active = location.pathname === path || (path !== '/' && location.pathname.startsWith(path))
+  const active =
+    (location.pathname === path || (path !== '/' && location.pathname.startsWith(path + '/')))
+    && !(excludes?.some(ex => location.pathname === ex || location.pathname.startsWith(ex + '/')))
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -71,9 +76,9 @@ function NavPanel() {
         </div>
         <div style={{ marginTop: 10 }}>
           <SectionHeader label={t('sec.company')} />
-          <NavItem label={t('nav.employees')} path="/employees" />
+          <NavItem label={t('nav.divisions')} path="/divisions" />
           <NavItem label={t('nav.departments')} path="/departments" />
-          <NavItem label={t('nav.organizations')} path="/organizations" />
+          <NavItem label={t('nav.employees')} path="/employees" />
           <NavItem label={t('nav.supervisorStruct')} path="/org/supervisor" />
           <NavItem label={t('nav.orgStruct')} path="/org/structure" />
         </div>
@@ -82,7 +87,8 @@ function NavPanel() {
           <NavItem label={t('nav.shifts')} path="/shifts" />
           <NavItem label={t('nav.leave')} path="/leave" />
           <NavItem label={t('nav.attendance')} path="/attendance" />
-          <NavItem label={t('nav.assessments')} path="/assessments" />
+          <NavItem label={t('nav.assessments')} path="/assessments" excludes={['/assessments/templates']} />
+          <NavItem label={t('nav.assessmentTemplates')} path="/assessments/templates" />
         </div>
       </div>
 
@@ -117,10 +123,12 @@ function NavPanel() {
   )
 }
 
+const FLAG_COMPONENTS = { uz: UZ, en: GB, ru: RU } as const
+
 const LANGS = [
-  { code: 'uz', label: 'O\'zbekcha', flag: '🇺🇿' },
-  { code: 'en', label: 'English',   flag: '🇬🇧' },
-  { code: 'ru', label: 'Русский',   flag: '🇷🇺' },
+  { code: 'uz', label: 'O\'zbekcha' },
+  { code: 'en', label: 'English'   },
+  { code: 'ru', label: 'Русский'   },
 ] as const
 
 function LangSelect() {
@@ -157,7 +165,7 @@ function LangSelect() {
           fontSize: 12, fontWeight: 600, color: 'var(--text-primary)',
         }}
       >
-        <span style={{ fontSize: 15 }}>{current.flag}</span>
+        {(() => { const Flag = FLAG_COMPONENTS[current.code]; return <Flag style={{ width: 20, height: 14, borderRadius: 2 }} /> })()}
         <span>{current.code.toUpperCase()}</span>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}><polyline points="6 9 12 15 18 9"/></svg>
       </div>
@@ -181,7 +189,7 @@ function LangSelect() {
               onMouseEnter={(e) => { if (l.code !== lang) (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-subtle)' }}
               onMouseLeave={(e) => { if (l.code !== lang) (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
             >
-              <span style={{ fontSize: 16 }}>{l.flag}</span>
+              {(() => { const Flag = FLAG_COMPONENTS[l.code]; return <Flag style={{ width: 22, height: 15, borderRadius: 2 }} /> })()}
               <span>{l.label}</span>
               {l.code === lang && (
                 <svg style={{ marginLeft: 'auto' }} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -339,11 +347,12 @@ function TopBar() {
     if (p === '/leave')           return [{ label: t('titles.leave'),            path: p, closable: false }]
     if (p === '/shifts')          return [{ label: t('titles.shifts'),           path: p, closable: false }]
     if (p === '/attendance')      return [{ label: t('titles.attendance'),       path: p, closable: false }]
-    if (p === '/assessments')     return [{ label: t('titles.assessments'),      path: p, closable: false }]
+    if (p === '/assessments')           return [{ label: t('titles.assessments'),         path: p, closable: false }]
+    if (p === '/assessments/templates') return [{ label: t('titles.assessmentTemplates'), path: p, closable: false }]
     if (p === '/org/supervisor')  return [{ label: t('titles.supervisorStruct'), path: p, closable: false }]
     if (p === '/org/structure')   return [{ label: t('titles.orgStruct'),        path: p, closable: false }]
-    if (p === '/organizations')   return [{ label: t('titles.organizations'),    path: p, closable: false }]
     if (p === '/departments')     return [{ label: t('titles.departments'),      path: p, closable: false }]
+    if (p === '/divisions')       return [{ label: t('titles.divisions'),        path: p, closable: false }]
     if (p === '/profile')         return [{ label: t('adminName'),               path: p, closable: false }]
     return [{ label: t('titles.dashboard'), path: '/', closable: false }]
   }
@@ -381,13 +390,14 @@ function TopBar() {
 }
 
 export function AppLayout() {
+  const { t } = useTranslation('common')
   return (
     <div style={{ display: 'flex', height: '100vh', width: '100%', overflow: 'hidden', background: 'var(--bg-base)', fontFamily: "'Public Sans', sans-serif" }}>
       <NavPanel />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, background: 'var(--bg-content)' }}>
         <TopBar />
         <div style={{ flex: 1, overflowY: 'auto' }}>
-          <Suspense fallback={<div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>Yuklanmoqda...</div>}>
+          <Suspense fallback={<div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>{t('loading')}</div>}>
             <Outlet />
           </Suspense>
         </div>

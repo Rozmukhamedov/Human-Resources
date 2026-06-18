@@ -16,8 +16,15 @@ interface Props<T> {
   onRowClick?: (row: T) => void
   headerRight?: ReactNode
   emptyText?: string
+  loading?: boolean
   paginated?: boolean
   defaultPageSize?: number
+  /** Server-side pagination — pass these to take over paging controls */
+  serverSide?: boolean
+  totalCount?: number
+  page?: number
+  pageSize?: number
+  onPageChange?: (page: number) => void
 }
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50]
@@ -77,31 +84,48 @@ function PageBtn({
 export function DataTable<T>({
   title,
   columns,
-  rows,
+  rows = [],
   rowKey,
   onRowClick,
   headerRight,
   emptyText = '—',
+  loading = false,
   paginated = false,
   defaultPageSize = 10,
+  serverSide = false,
+  totalCount,
+  page: controlledPage,
+  pageSize: controlledPageSize,
+  onPageChange,
 }: Props<T>) {
   const [hoveredKey, setHoveredKey] = useState<string | number | null>(null)
-  const [page, setPage] = useState(1)
+  const [internalPage, setInternalPage] = useState(1)
   const [pageSize, setPageSize] = useState(defaultPageSize)
 
-  // Reset to page 1 when filtered rows count changes
-  useEffect(() => {
-    setPage(1)
-  }, [rows.length])
+  const isServerSide = serverSide && onPageChange != null
 
-  const totalPages = paginated ? Math.max(1, Math.ceil(rows.length / pageSize)) : 1
+  const page = isServerSide ? (controlledPage ?? 1) : internalPage
+  const effectivePageSize = isServerSide ? (controlledPageSize ?? pageSize) : pageSize
+  const totalItems = isServerSide ? (totalCount ?? rows.length) : rows.length
+
+  // Reset to page 1 when filtered rows count changes (client-side only)
+  useEffect(() => {
+    if (!isServerSide) setInternalPage(1)
+  }, [rows.length, isServerSide])
+
+  const totalPages = paginated ? Math.max(1, Math.ceil(totalItems / effectivePageSize)) : 1
   const safePage = Math.min(page, totalPages)
-  const displayRows = paginated
-    ? rows.slice((safePage - 1) * pageSize, safePage * pageSize)
+  const displayRows = paginated && !isServerSide
+    ? rows.slice((safePage - 1) * effectivePageSize, safePage * effectivePageSize)
     : rows
 
-  const from = rows.length === 0 ? 0 : (safePage - 1) * pageSize + 1
-  const to = Math.min(safePage * pageSize, rows.length)
+  const from = totalItems === 0 ? 0 : (safePage - 1) * effectivePageSize + 1
+  const to = Math.min(safePage * effectivePageSize, totalItems)
+
+  const handlePageChange = (p: number) => {
+    if (isServerSide) onPageChange?.(p)
+    else setInternalPage(p)
+  }
 
   return (
     <div style={{
@@ -135,7 +159,7 @@ export function DataTable<T>({
         </div>
       )}
 
-      <div style={{ overflowX: 'auto' }}>
+      <div style={{ overflowX: 'auto', opacity: loading ? 0.5 : 1, transition: 'opacity .15s' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: 'var(--bg-subtle)', borderBottom: '1px solid var(--border-color)' }}>
@@ -160,7 +184,13 @@ export function DataTable<T>({
             </tr>
           </thead>
           <tbody>
-            {displayRows.length === 0 ? (
+            {loading && displayRows.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length} style={{ padding: '48px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
+                  Loading...
+                </td>
+              </tr>
+            ) : displayRows.length === 0 ? (
               <tr>
                 <td
                   colSpan={columns.length}
@@ -221,32 +251,34 @@ export function DataTable<T>({
         }}>
           {/* Left: page size + count */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                Rows per page:
-              </span>
-              <select
-                value={pageSize}
-                onChange={e => { setPageSize(Number(e.target.value)); setPage(1) }}
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: 'var(--text-primary)',
-                  background: 'var(--bg-subtle)',
-                  border: '1.5px solid var(--border-color)',
-                  borderRadius: 7,
-                  padding: '4px 8px',
-                  cursor: 'pointer',
-                  outline: 'none',
-                }}
-              >
-                {PAGE_SIZE_OPTIONS.map(n => (
-                  <option key={n} value={n}>{n}</option>
-                ))}
-              </select>
-            </div>
+            {!isServerSide && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                  Rows per page:
+                </span>
+                <select
+                  value={pageSize}
+                  onChange={e => { setPageSize(Number(e.target.value)); setInternalPage(1) }}
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: 'var(--text-primary)',
+                    background: 'var(--bg-subtle)',
+                    border: '1.5px solid var(--border-color)',
+                    borderRadius: 7,
+                    padding: '4px 8px',
+                    cursor: 'pointer',
+                    outline: 'none',
+                  }}
+                >
+                  {PAGE_SIZE_OPTIONS.map(n => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <span style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-              {from}–{to} of {rows.length}
+              {from}–{to} of {totalItems}
             </span>
           </div>
 
@@ -260,7 +292,7 @@ export function DataTable<T>({
                   </svg>
                 }
                 disabled={safePage === 1}
-                onClick={() => setPage(p => Math.max(1, p - 1))}
+                onClick={() => handlePageChange(Math.max(1, safePage - 1))}
               />
               {getPageNumbers(safePage, totalPages).map((n, i) =>
                 n === '...'
@@ -272,7 +304,7 @@ export function DataTable<T>({
                       key={n}
                       label={n}
                       active={n === safePage}
-                      onClick={() => setPage(n as number)}
+                      onClick={() => handlePageChange(n as number)}
                     />
                   )
               )}
@@ -283,7 +315,7 @@ export function DataTable<T>({
                   </svg>
                 }
                 disabled={safePage === totalPages}
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                onClick={() => handlePageChange(Math.min(totalPages, safePage + 1))}
               />
             </div>
           )}

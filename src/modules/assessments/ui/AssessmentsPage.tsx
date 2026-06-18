@@ -1,58 +1,93 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { assessments } from '@data/assessments'
 import { StatusBadge } from '@shared/ui/StatusBadge/StatusBadge'
 import { DataTable } from '@shared/ui/DataTable/DataTable'
 import { CreateButton, SearchInput, ActionButton } from '@shared/ui/TableControls'
 import type { Column } from '@shared/ui/DataTable/DataTable'
-import type { Assessment } from '../model/assessment.types'
+import type { AssessmentList } from '../model/assessment.types'
+import { getAssessments } from '../api/assessments'
+
+const PAGE_SIZE = 10
 
 export function AssessmentsPage() {
   const { t } = useTranslation(['assessments', 'common'])
   const navigate = useNavigate()
+
+  const [rows, setRows] = useState<AssessmentList[]>([])
+  const [count, setCount] = useState(0)
+  const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const q = search.trim().toLowerCase()
-  const filtered = q
-    ? assessments.filter(
-        a =>
-          a.employeeName.toLowerCase().includes(q) ||
-          a.departmentName.toLowerCase().includes(q) ||
-          a.startedBy.toLowerCase().includes(q) ||
-          a.reviewer.toLowerCase().includes(q),
-      )
-    : assessments
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const columns: Column<Assessment>[] = [
+  const load = useCallback(async (p: number, s: string) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await getAssessments({ page: p, page_size: PAGE_SIZE, search: s || undefined })
+      setRows(data.results)
+      setCount(data.count)
+    } catch (e) {
+      setError((e as Error).message || 'Error')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void load(page, search)
+  }, [page, load])
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value)
+    if (searchTimer.current) clearTimeout(searchTimer.current)
+    searchTimer.current = setTimeout(() => {
+      setPage(1)
+      void load(1, value)
+    }, 400)
+  }
+
+  const columns: Column<AssessmentList>[] = [
     {
       key: 'employee',
       header: t('employee'),
       render: (row) => (
         <span style={{ fontWeight: 600, color: 'var(--text-heading)' }}>
-          {row.employeeName}
+          {row.employee_name}
         </span>
+      ),
+    },
+    {
+      key: 'template',
+      header: t('template', 'Template'),
+      render: (row) => (
+        <span style={{ color: 'var(--text-secondary)' }}>{row.template_name}</span>
       ),
     },
     {
       key: 'started',
       header: t('started'),
       render: (row) => (
-        <span style={{ color: 'var(--text-secondary)' }}>{row.startedDate}</span>
+        <span style={{ color: 'var(--text-secondary)' }}>{row.started_date}</span>
       ),
     },
     {
       key: 'startedBy',
       header: t('startedBy'),
       render: (row) => (
-        <span style={{ color: 'var(--text-secondary)' }}>{row.startedBy}</span>
+        <span style={{ color: 'var(--text-secondary)' }}>{row.started_by_name}</span>
       ),
     },
     {
       key: 'reviewers',
       header: t('reviewers'),
       render: (row) => (
-        <span style={{ color: 'var(--text-secondary)' }}>{row.reviewer}</span>
+        <span style={{ color: 'var(--text-secondary)' }}>
+          {row.reviewer_names.join(', ') || '—'}
+        </span>
       ),
     },
     {
@@ -61,7 +96,7 @@ export function AssessmentsPage() {
       align: 'center',
       render: (row) => (
         <span style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: 13.5 }}>
-          {row.totalScore}
+          {row.total_score ?? '—'}
         </span>
       ),
     },
@@ -74,7 +109,18 @@ export function AssessmentsPage() {
           color: 'var(--text-secondary)', display: 'block',
           maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
-          {row.departmentName}
+          {row.department_name}
+        </span>
+      ),
+    },
+    {
+      key: 'validity',
+      header: t('validity'),
+      render: (row) => (
+        <span style={{ color: 'var(--text-secondary)' }}>
+          {row.validity_from && row.validity_to
+            ? `${row.validity_from} – ${row.validity_to}`
+            : '—'}
         </span>
       ),
     },
@@ -82,14 +128,7 @@ export function AssessmentsPage() {
       key: 'status',
       header: t('status'),
       render: (row) => (
-        <StatusBadge statusKey={row.status} label={t(`common:status.${row.status}`)} />
-      ),
-    },
-    {
-      key: 'validity',
-      header: t('validity'),
-      render: () => (
-        <span style={{ color: 'var(--text-secondary)' }}>{t('period')}</span>
+        <StatusBadge statusKey={row.status} label={row.status_display} />
       ),
     },
     {
@@ -107,19 +146,27 @@ export function AssessmentsPage() {
 
   return (
     <div style={{ padding: '18px 24px 40px' }}>
+      {error && (
+        <div style={{ marginBottom: 12, color: '#ef4444', fontSize: 13 }}>{error}</div>
+      )}
       <DataTable
         title={t('common:titles.assessments')}
         columns={columns}
-        rows={filtered}
+        rows={rows}
         rowKey={(row) => row.id}
         onRowClick={(row) => navigate(`/assessments/${row.id}`)}
+        loading={loading}
         paginated
-        defaultPageSize={10}
+        serverSide
+        totalCount={count}
+        page={page}
+        pageSize={PAGE_SIZE}
+        onPageChange={setPage}
         headerRight={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <SearchInput
               value={search}
-              onChange={setSearch}
+              onChange={handleSearchChange}
               placeholder={t('common:search')}
             />
             <CreateButton label={t('common:actions.create')} />

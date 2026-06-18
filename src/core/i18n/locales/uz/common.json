@@ -4,6 +4,7 @@
   "adminRole": "Tizim administratori",
   "adminName": "Timur Aliyev",
   "adminInitials": "TA",
+  "loading": "Yuklanmoqda...",
   "rail": { "hr": "KADRLAR", "reports": "HISOBOTLAR" },
   "sec": { "dash": "VOSITALAR PANELI", "company": "KOMPANIYASI", "eval": "ISH FAOLIYATINI BAHOLASH" },
   "nav": {
@@ -15,8 +16,10 @@
     "leave": "Izn so'rovi",
     "attendance": "Davomat hisoboti",
     "assessments": "Oddiy attestatsiyalar",
+    "assessmentTemplates": "Baholash shablonlari",
     "organizations": "Tashkilotlar",
-    "departments": "Bo'limlar"
+    "departments": "Bo'limlar",
+    "divisions": "Bo'linmalar"
   },
   "titles": {
     "dashboard": "Ish grafigi",
@@ -28,8 +31,10 @@
     "attendance": "Davomat hisoboti",
     "assessments": "Oddiy attestatsiyalar",
     "assessmentDetail": "Baholash",
+    "assessmentTemplates": "Baholash shablonlari",
     "organizations": "Tashkilotlar",
-    "departments": "Bo'limlar"
+    "departments": "Bo'limlar",
+    "divisions": "Bo'linmalar"
   },
   "search": "Qidirish...",
   "allDepts": "Barcha bo'limlar",
@@ -46,5 +51,49 @@
     "pendingApproval": "Ma'qullov kutilmoqda"
   },
   "gender": { "Ayol": "Ayol", "Erkak": "Erkak" },
-  "actions": { "edit": "Tahrirlash", "options": "Opsiyalar", "printPdf": "PDF chop etish", "create": "Yaratish" }
+  "actions": { "edit": "Tahrirlash", "options": "Opsiyalar", "printPdf": "PDF chop etish", "create": "Yaratish" },
+  "div": {
+    "title": "Bo'linmalar",
+    "total": "Jami {{count}} ta bo'linma",
+    "colName": "Bo'linma nomi",
+    "colColor": "Rang",
+    "colOrder": "Tartib",
+    "colDepts": "Bo'limlar",
+    "colActions": "Amallar",
+    "noDepts": "Bo'limlar mavjud emas",
+    "notFound": "Bo'linmalar topilmadi",
+    "addBtn": "Yaratish",
+    "retry": "Qayta urinish",
+    "modal": {
+      "addTitle": "Yangi bo'linma qo'shish",
+      "editTitle": "Bo'linmani tahrirlash",
+      "addSub": "Bo'linma ma'lumotlarini kiriting",
+      "editSub": "Ma'lumotlarni yangilang",
+      "nameUz": "Nomi (UZ)",
+      "nameEn": "Nomi (EN)",
+      "colorLabel": "Rang",
+      "orderLabel": "Tartib raqami",
+      "cancel": "Bekor qilish",
+      "save": "Saqlash",
+      "add": "Qo'shish",
+      "loading": "Yuklanmoqda..."
+    },
+    "delete": {
+      "title": "Bo'linmani o'chirish",
+      "confirm": "«{{name}}» bo'linmani o'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi.",
+      "cancel": "Bekor qilish",
+      "delete": "O'chirish",
+      "deleting": "O'chirilmoqda..."
+    },
+    "deptCount": "{{count}} ta bo'lim"
+  },
+  "orgChart": {
+    "loading": "Yuklanmoqda...",
+    "reset": "Tiklash",
+    "hint": "Suring · Masshtablash uchun aylantiring",
+    "organization": "Tashkilot",
+    "divCount": "{{count}} ta bo'linma",
+    "deptCount": "{{count}} ta bo'lim",
+    "empCount": "{{count}} ta xodim"
+  }
 }

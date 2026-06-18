@@ -1,6 +1,14 @@
-import type { ShiftSchedule } from '@modules/shifts/model/shift.types'
+import type { ShiftStatus } from '@modules/shifts/model/shift.types'
 
-export const shiftSchedules: ShiftSchedule[] = [
+export interface LocalShiftSchedule {
+  id: string
+  departmentName: string
+  status: ShiftStatus
+  month: string
+  createdBy: string
+}
+
+export const shiftSchedules: LocalShiftSchedule[] = [
   { id: 'SH0239', departmentName: "Chaqaloqlar patologiyasi reanimatsiya bo'limi",              status: 'approved', month: 'may 2026', createdBy: 'Dilshod Rahmonov' },
   { id: 'SH0238', departmentName: "Oy kuniga yetmay tug'ilgan chaqaloqlarni parvarishlash bo'limi", status: 'approved', month: 'may 2026', createdBy: 'Nodira Saidova'  },
   { id: 'SH0237', departmentName: 'Bolalar Reanimatsiya va intensiv terapiya bulimi',            status: 'approved', month: 'may 2026', createdBy: 'Nodira Saidova'  },
