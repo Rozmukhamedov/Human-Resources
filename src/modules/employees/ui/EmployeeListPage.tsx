@@ -1,15 +1,17 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Select } from '@mantine/core'
 import { useTranslation } from 'react-i18next'
-import { departments } from '@data/departments'
 import { useEmployeeFilterStore } from '@modules/employees/model/employeeFilterStore'
 import { useUIStore } from '@core/store/uiStore'
 import { EmployeeAvatar } from '@shared/ui/EmployeeAvatar/EmployeeAvatar'
 import { StatusBadge } from '@shared/ui/StatusBadge/StatusBadge'
 import { EmptyState } from '@shared/ui/EmptyState/EmptyState'
 import { CreateButton, SearchInput } from '@shared/ui/TableControls'
-import { getDepartments } from '@modules/organizations/api/departments'
+import { getDepartments, createDepartment } from '@modules/organizations/api/departments'
+import { getDivisions } from '@modules/organizations/api/divisions'
 import type { Department } from '@modules/organizations/model/department.types'
+import type { Division } from '@modules/organizations/model/division.types'
 import type { Employee, ApiEmployee, CreateEmployeePayload, UpdateEmployeePayload, Position } from '../model/employee.types'
 import { getEmployees, createEmployee, updateEmployee, deleteEmployee, getPositions } from '../api/employees'
 
@@ -28,6 +30,8 @@ function toEmployee(e: ApiEmployee): Employee {
     departmentName: e.department?.name_uz ?? '',
     positionId: e.position?.id ?? null,
     position: e.position?.name_uz ?? '',
+    supervisorId: e.supervisor?.id ?? null,
+    supervisorName: e.supervisor?.full_name ?? '',
     status: e.status,
     statusDisplay: e.status_display,
     gender: e.gender === 'female' ? 'Ayol' : 'Erkak',
@@ -78,6 +82,7 @@ function SupervisorSearch({
   onChange: (v: { id: number; label: string } | null) => void
   inputStyle: React.CSSProperties
 }) {
+  const { t } = useTranslation('employees')
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<ApiEmployee[]>([])
   const [open, setOpen] = useState(false)
@@ -141,7 +146,7 @@ function SupervisorSearch({
           onChange={handleInput}
           onFocus={() => { setFocused(true); if (results.length) setOpen(true) }}
           onBlur={() => setFocused(false)}
-          placeholder="Rahbarni qidiring..."
+          placeholder={t('form.searchSupervisor')}
           autoComplete="off"
         />
         {value && (
@@ -194,6 +199,158 @@ function SupervisorSearch({
   )
 }
 
+function CreateDeptInlineModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void
+  onCreated: (dept: Department) => void
+}) {
+  const { t } = useTranslation('employees')
+  const [nameUz, setNameUz] = useState('')
+  const [nameEn, setNameEn] = useState('')
+  const [divisionId, setDivisionId] = useState<string>('')
+  const [divisions, setDivisions] = useState<Division[]>([])
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    getDivisions(1, 200).then(d => setDivisions(d.data ?? [])).catch(() => {})
+  }, [])
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', boxSizing: 'border-box',
+    border: '1.5px solid var(--border-color, #e4e7ef)',
+    borderRadius: 10, padding: '9px 13px',
+    fontSize: 13.5, color: 'var(--text-primary, #2a2f3a)',
+    background: 'var(--bg-subtle, #f9fafc)',
+    outline: 'none', fontFamily: 'inherit',
+  }
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: 12, fontWeight: 600,
+    color: 'var(--text-secondary, #5b6270)',
+    display: 'block', marginBottom: 5,
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      const dept = await createDepartment({
+        name_uz: nameUz,
+        name_en: nameEn || undefined,
+        division: divisionId ? Number(divisionId) : undefined,
+      })
+      onCreated(dept)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Xatolik yuz berdi')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1002,
+        background: 'rgba(0,0,0,0.45)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}
+      onClick={e => { e.stopPropagation(); if (e.target === e.currentTarget) onClose() }}
+    >
+      <div style={{
+        background: 'var(--surface, #fff)',
+        borderRadius: 16, width: 400,
+        boxShadow: '0 20px 60px rgba(0,0,0,.22)',
+        fontFamily: "'Public Sans', sans-serif",
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '16px 20px', borderBottom: '1px solid var(--border-color, #ebedf1)',
+        }}>
+          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-heading, #1a1f2e)' }}>
+            {t('deptModal.title')}
+          </span>
+          <button
+            onClick={onClose}
+            style={{
+              width: 28, height: 28, borderRadius: 7, border: 'none',
+              background: 'var(--bg-subtle, #f4f5f7)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'var(--text-secondary, #5b6270)', fontSize: 16, lineHeight: 1,
+            }}
+          >×</button>
+        </div>
+        <form onSubmit={handleSubmit} style={{ padding: '16px 20px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div>
+            <label style={labelStyle}>{t('deptModal.nameUz')} *</label>
+            <input
+              style={inputStyle}
+              value={nameUz}
+              onChange={e => setNameUz(e.target.value)}
+              placeholder="Masalan: IT bo'lim"
+              required
+              autoFocus
+              onFocus={e => (e.target.style.borderColor = '#4f46e5')}
+              onBlur={e => (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')}
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>{t('deptModal.nameEn')}</label>
+            <input
+              style={inputStyle}
+              value={nameEn}
+              onChange={e => setNameEn(e.target.value)}
+              placeholder="e.g. IT Department"
+              onFocus={e => (e.target.style.borderColor = '#4f46e5')}
+              onBlur={e => (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')}
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>{t('deptModal.division')}</label>
+            <select
+              style={{ ...inputStyle, cursor: 'pointer', appearance: 'auto' }}
+              value={divisionId}
+              onChange={e => setDivisionId(e.target.value)}
+              onFocus={e => (e.target.style.borderColor = '#4f46e5')}
+              onBlur={e => (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')}
+            >
+              <option value="">{t('deptModal.selectDivision')}</option>
+              {divisions.map(div => (
+                <option key={div.id} value={String(div.id)}>
+                  {div.name_uz}{div.name_en ? ` / ${div.name_en}` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+            <button
+              type="button" onClick={onClose} disabled={saving}
+              style={{
+                flex: 1, padding: '9px 0',
+                border: '1.5px solid var(--border-color, #e4e7ef)',
+                borderRadius: 9, background: 'transparent', cursor: 'pointer',
+                fontSize: 13.5, fontWeight: 600,
+                color: 'var(--text-secondary, #5b6270)', fontFamily: 'inherit',
+              }}
+            >{t('deptModal.cancel')}</button>
+            <button
+              type="submit" disabled={saving}
+              style={{
+                flex: 1, padding: '9px 0', border: 'none',
+                borderRadius: 9, background: saving ? '#a5b4fc' : '#4f46e5',
+                cursor: saving ? 'not-allowed' : 'pointer',
+                fontSize: 13.5, fontWeight: 600, color: '#fff', fontFamily: 'inherit',
+              }}
+            >{saving ? t('deptModal.saving') : t('deptModal.add')}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 function CreateEmployeeModal({
   onClose,
   onSave,
@@ -203,10 +360,14 @@ function CreateEmployeeModal({
   onSave: (data: CreateEmployeePayload) => Promise<void>
   loading: boolean
 }) {
+  const { t } = useTranslation('employees')
+  const navigate = useNavigate()
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [supervisor, setSupervisor] = useState<{ id: number; label: string } | null>(null)
   const [depts, setDepts] = useState<Department[]>([])
   const [positions, setPositions] = useState<Position[]>([])
+  const [deptSearch, setDeptSearch] = useState('')
+  const [deptModalOpen, setDeptModalOpen] = useState(false)
 
   useEffect(() => {
     getDepartments(1, 200).then(d => setDepts(d.data ?? [])).catch(() => {})
@@ -281,10 +442,10 @@ function CreateEmployeeModal({
         }}>
           <div>
             <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-heading, #1a1f2e)' }}>
-              Yangi xodim qo'shish
+              {t('form.addEmployee')}
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-muted, #9aa1ad)', marginTop: 2 }}>
-              Xodim ma'lumotlarini kiriting
+              {t('form.enterInfo')}
             </div>
           </div>
           <button
@@ -303,83 +464,107 @@ function CreateEmployeeModal({
           {/* First / Last name */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
-              <label style={labelStyle}>Ism *</label>
+              <label style={labelStyle}>{t('form.firstName')} *</label>
               <input
                 style={inputStyle} value={form.first_name}
                 onChange={e => set('first_name', e.target.value)}
-                placeholder="Ism" maxLength={100} required
+                placeholder={t('form.firstName')} maxLength={100} required
                 onFocus={focusBorder} onBlur={blurBorder}
               />
             </div>
             <div>
-              <label style={labelStyle}>Familiya *</label>
+              <label style={labelStyle}>{t('form.lastName')} *</label>
               <input
                 style={inputStyle} value={form.last_name}
                 onChange={e => set('last_name', e.target.value)}
-                placeholder="Familiya" maxLength={100} required
+                placeholder={t('form.lastName')} maxLength={100} required
                 onFocus={focusBorder} onBlur={blurBorder}
               />
             </div>
           </div>
 
           {/* Department */}
-          <div>
-            <label style={labelStyle}>Bo'lim *</label>
-            <select
-              style={inputStyle} value={form.department}
-              onChange={e => set('department', e.target.value)}
-              required onFocus={focusBorder} onBlur={blurBorder}
-            >
-              <option value="">Bo'limni tanlang</option>
-              {depts.map(d => <option key={d.id} value={d.id}>{d.name_uz}</option>)}
-            </select>
-          </div>
+          <Select
+            label={t('form.dept')}
+            placeholder={t('form.selectDept')}
+            data={[
+              ...depts.map(d => ({ value: String(d.id), label: d.name_uz })),
+              { value: '__create_dept__', label: deptSearch.trim() ? `${deptSearch} — ${t('form.addDeptAction')}` : t('form.addNewDept') },
+            ]}
+            value={form.department || null}
+            onChange={v => {
+              if (v === '__create_dept__') { setDeptModalOpen(true); return }
+              set('department', v ?? '')
+            }}
+            searchValue={deptSearch}
+            onSearchChange={setDeptSearch}
+            required
+            searchable
+            comboboxProps={{ withinPortal: true, zIndex: 1001 }}
+            styles={{
+              label: labelStyle,
+              input: { border: '1.5px solid var(--border-color, #e4e7ef)', borderRadius: 10, fontSize: 13.5, color: 'var(--text-primary, #2a2f3a)', background: 'var(--bg-subtle, #f9fafc)', fontFamily: 'inherit' },
+            }}
+          />
 
           {/* Position */}
-          <div>
-            <label style={labelStyle}>Lavozim *</label>
-            <select
-              style={inputStyle} value={form.position}
-              onChange={e => set('position', e.target.value)}
-              required onFocus={focusBorder} onBlur={blurBorder}
-            >
-              <option value="">Lavozimni tanlang</option>
-              {positions.map(p => <option key={p.id} value={p.id}>{p.name_uz}</option>)}
-            </select>
-          </div>
+          <Select
+            label={t('form.position')}
+            placeholder={t('form.selectPos')}
+            data={positions.length > 0
+              ? positions.map(p => ({ value: String(p.id), label: p.name_uz }))
+              : [{ value: '__create_pos__', label: t('form.addNewPos') }]
+            }
+            value={form.position || null}
+            onChange={v => {
+              if (v === '__create_pos__') { onClose(); navigate('/divisions'); return }
+              set('position', v ?? '')
+            }}
+            required
+            searchable
+            comboboxProps={{ withinPortal: true, zIndex: 1001 }}
+            styles={{
+              label: labelStyle,
+              input: { border: '1.5px solid var(--border-color, #e4e7ef)', borderRadius: 10, fontSize: 13.5, color: 'var(--text-primary, #2a2f3a)', background: 'var(--bg-subtle, #f9fafc)', fontFamily: 'inherit' },
+            }}
+          />
 
           {/* Gender / Status */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div>
-              <label style={labelStyle}>Jinsi *</label>
-              <select
-                style={inputStyle} value={form.gender}
-                onChange={e => set('gender', e.target.value)}
-                required onFocus={focusBorder} onBlur={blurBorder}
-              >
-                <option value="">Tanlang</option>
-                <option value="male">Erkak</option>
-                <option value="female">Ayol</option>
-              </select>
-            </div>
-            <div>
-              <label style={labelStyle}>Holat</label>
-              <select
-                style={inputStyle} value={form.status}
-                onChange={e => set('status', e.target.value)}
-                onFocus={focusBorder} onBlur={blurBorder}
-              >
-                <option value="">Tanlang</option>
-                <option value="active">Faol</option>
-                <option value="leave">Ta'tilda</option>
-                <option value="probation">Sinov muddati</option>
-              </select>
-            </div>
+            <Select
+              label={t('form.gender')}
+              placeholder={t('form.select')}
+              data={[{ value: 'male', label: t('form.male') }, { value: 'female', label: t('form.female') }]}
+              value={form.gender || null}
+              onChange={v => set('gender', v ?? '')}
+              required
+              comboboxProps={{ withinPortal: true, zIndex: 1001 }}
+              styles={{
+                label: labelStyle,
+                input: { border: '1.5px solid var(--border-color, #e4e7ef)', borderRadius: 10, fontSize: 13.5, color: 'var(--text-primary, #2a2f3a)', background: 'var(--bg-subtle, #f9fafc)', fontFamily: 'inherit' },
+              }}
+            />
+            <Select
+              label={t('form.status')}
+              placeholder={t('form.select')}
+              data={[
+                { value: 'active', label: t('form.active') },
+                { value: 'leave', label: t('form.onLeave') },
+                { value: 'probation', label: t('form.probation') },
+              ]}
+              value={form.status || null}
+              onChange={v => set('status', v ?? '')}
+              comboboxProps={{ withinPortal: true, zIndex: 1001 }}
+              styles={{
+                label: labelStyle,
+                input: { border: '1.5px solid var(--border-color, #e4e7ef)', borderRadius: 10, fontSize: 13.5, color: 'var(--text-primary, #2a2f3a)', background: 'var(--bg-subtle, #f9fafc)', fontFamily: 'inherit' },
+              }}
+            />
           </div>
 
           {/* Supervisor */}
           <div>
-            <label style={labelStyle}>Rahbar</label>
+            <label style={labelStyle}>{t('form.supervisor')}</label>
             <SupervisorSearch
               value={supervisor}
               onChange={setSupervisor}
@@ -390,7 +575,7 @@ function CreateEmployeeModal({
           {/* Birth date / Hire date */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
-              <label style={labelStyle}>Tug'ilgan sana</label>
+              <label style={labelStyle}>{t('form.birthDate')}</label>
               <input
                 style={inputStyle} type="date" value={form.date_of_birth}
                 onChange={e => set('date_of_birth', e.target.value)}
@@ -398,7 +583,7 @@ function CreateEmployeeModal({
               />
             </div>
             <div>
-              <label style={labelStyle}>Ishga kirgan sana</label>
+              <label style={labelStyle}>{t('form.hireDate')}</label>
               <input
                 style={inputStyle} type="date" value={form.hire_date}
                 onChange={e => set('hire_date', e.target.value)}
@@ -410,7 +595,7 @@ function CreateEmployeeModal({
           {/* Phone / Email */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
-              <label style={labelStyle}>Telefon</label>
+              <label style={labelStyle}>{t('form.phone')}</label>
               <input
                 style={inputStyle} value={form.phone}
                 onChange={e => set('phone', e.target.value)}
@@ -419,7 +604,7 @@ function CreateEmployeeModal({
               />
             </div>
             <div>
-              <label style={labelStyle}>Email</label>
+              <label style={labelStyle}>{t('form.email')}</label>
               <input
                 style={inputStyle} type="email" value={form.email}
                 onChange={e => set('email', e.target.value)}
@@ -438,7 +623,7 @@ function CreateEmployeeModal({
               style={{ width: 16, height: 16, accentColor: '#4f46e5', cursor: 'pointer' }}
             />
             <span style={{ fontSize: 13.5, color: 'var(--text-secondary, #5b6270)', fontWeight: 500 }}>
-              Bo'lim boshlig'i
+              {t('form.isDeptHead')}
             </span>
           </label>
 
@@ -457,7 +642,7 @@ function CreateEmployeeModal({
               onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-subtle, #f4f5f7)')}
               onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.background = 'transparent')}
             >
-              Bekor qilish
+              {t('form.cancel')}
             </button>
             <button
               type="submit" disabled={loading}
@@ -472,11 +657,22 @@ function CreateEmployeeModal({
               onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = '#4338ca' }}
               onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = '#4f46e5' }}
             >
-              {loading ? 'Saqlanmoqda...' : "Qo'shish"}
+              {loading ? t('form.saving') : t('form.add')}
             </button>
           </div>
         </form>
       </div>
+      {deptModalOpen && (
+        <CreateDeptInlineModal
+          onClose={() => setDeptModalOpen(false)}
+          onCreated={dept => {
+            setDepts(prev => [...prev, dept])
+            set('department', String(dept.id))
+            setDeptSearch('')
+            setDeptModalOpen(false)
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -492,6 +688,10 @@ function EditEmployeeModal({
   onSave: (id: number, data: UpdateEmployeePayload) => Promise<void>
   loading: boolean
 }) {
+  const { t } = useTranslation('employees')
+  const navigate = useNavigate()
+  const [deptSearch, setDeptSearch] = useState('')
+  const [deptModalOpen, setDeptModalOpen] = useState(false)
   const [form, setForm] = useState<FormState>({
     first_name: employee.firstName,
     last_name: employee.lastName,
@@ -505,7 +705,9 @@ function EditEmployeeModal({
     email: employee.email,
     is_head: false,
   })
-  const [supervisor, setSupervisor] = useState<{ id: number; label: string } | null>(null)
+  const [supervisor, setSupervisor] = useState<{ id: number; label: string } | null>(
+    employee.supervisorId ? { id: employee.supervisorId, label: employee.supervisorName } : null
+  )
   const [depts, setDepts] = useState<Department[]>([])
   const [positions, setPositions] = useState<Position[]>([])
 
@@ -526,7 +728,7 @@ function EditEmployeeModal({
       position: Number(form.position),
       gender: form.gender as 'male' | 'female',
     }
-    if (supervisor) payload.supervisor = supervisor.id
+    payload.supervisor = supervisor ? supervisor.id : null
     if (form.status) payload.status = form.status as UpdateEmployeePayload['status']
     if (form.date_of_birth) payload.date_of_birth = form.date_of_birth
     if (form.hire_date) payload.hire_date = form.hire_date
@@ -581,7 +783,7 @@ function EditEmployeeModal({
         }}>
           <div>
             <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-heading, #1a1f2e)' }}>
-              Xodimni tahrirlash
+              {t('form.editEmployee')}
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-muted, #9aa1ad)', marginTop: 2 }}>
               {employee.fullName} · {employee.code}
@@ -601,79 +803,111 @@ function EditEmployeeModal({
         <form onSubmit={handleSubmit} style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
-              <label style={labelStyle}>Ism *</label>
+              <label style={labelStyle}>{t('form.firstName')} *</label>
               <input style={inputStyle} value={form.first_name}
                 onChange={e => set('first_name', e.target.value)}
-                placeholder="Ism" maxLength={100} required
+                placeholder={t('form.firstName')} maxLength={100} required
                 onFocus={focusBorder} onBlur={blurBorder} />
             </div>
             <div>
-              <label style={labelStyle}>Familiya *</label>
+              <label style={labelStyle}>{t('form.lastName')} *</label>
               <input style={inputStyle} value={form.last_name}
                 onChange={e => set('last_name', e.target.value)}
-                placeholder="Familiya" maxLength={100} required
+                placeholder={t('form.lastName')} maxLength={100} required
                 onFocus={focusBorder} onBlur={blurBorder} />
             </div>
           </div>
 
-          <div>
-            <label style={labelStyle}>Bo'lim *</label>
-            <select style={inputStyle} value={form.department}
-              onChange={e => set('department', e.target.value)}
-              required onFocus={focusBorder} onBlur={blurBorder}>
-              <option value="">Bo'limni tanlang</option>
-              {depts.map(d => <option key={d.id} value={d.id}>{d.name_uz}</option>)}
-            </select>
-          </div>
+          <Select
+            label={t('form.dept')}
+            placeholder={t('form.selectDept')}
+            data={[
+              ...depts.map(d => ({ value: String(d.id), label: d.name_uz })),
+              { value: '__create_dept__', label: deptSearch.trim() ? `${deptSearch} — ${t('form.addDeptAction')}` : t('form.addNewDept') },
+            ]}
+            value={form.department || null}
+            onChange={v => {
+              if (v === '__create_dept__') { setDeptModalOpen(true); return }
+              set('department', v ?? '')
+            }}
+            searchValue={deptSearch}
+            onSearchChange={setDeptSearch}
+            required
+            searchable
+            comboboxProps={{ withinPortal: true, zIndex: 1001 }}
+            styles={{
+              label: labelStyle,
+              input: { border: '1.5px solid var(--border-color, #e4e7ef)', borderRadius: 10, fontSize: 13.5, color: 'var(--text-primary, #2a2f3a)', background: 'var(--bg-subtle, #f9fafc)', fontFamily: 'inherit' },
+            }}
+          />
 
-          <div>
-            <label style={labelStyle}>Lavozim *</label>
-            <select style={inputStyle} value={form.position}
-              onChange={e => set('position', e.target.value)}
-              required onFocus={focusBorder} onBlur={blurBorder}>
-              <option value="">Lavozimni tanlang</option>
-              {positions.map(p => <option key={p.id} value={p.id}>{p.name_uz}</option>)}
-            </select>
-          </div>
+          <Select
+            label={t('form.position')}
+            placeholder={t('form.selectPos')}
+            data={positions.length > 0
+              ? positions.map(p => ({ value: String(p.id), label: p.name_uz }))
+              : [{ value: '__create_pos__', label: t('form.addNewPos') }]
+            }
+            value={form.position || null}
+            onChange={v => {
+              if (v === '__create_pos__') { onClose(); navigate('/divisions'); return }
+              set('position', v ?? '')
+            }}
+            required
+            searchable
+            comboboxProps={{ withinPortal: true, zIndex: 1001 }}
+            styles={{
+              label: labelStyle,
+              input: { border: '1.5px solid var(--border-color, #e4e7ef)', borderRadius: 10, fontSize: 13.5, color: 'var(--text-primary, #2a2f3a)', background: 'var(--bg-subtle, #f9fafc)', fontFamily: 'inherit' },
+            }}
+          />
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div>
-              <label style={labelStyle}>Jinsi *</label>
-              <select style={inputStyle} value={form.gender}
-                onChange={e => set('gender', e.target.value)}
-                required onFocus={focusBorder} onBlur={blurBorder}>
-                <option value="">Tanlang</option>
-                <option value="male">Erkak</option>
-                <option value="female">Ayol</option>
-              </select>
-            </div>
-            <div>
-              <label style={labelStyle}>Holat</label>
-              <select style={inputStyle} value={form.status}
-                onChange={e => set('status', e.target.value)}
-                onFocus={focusBorder} onBlur={blurBorder}>
-                <option value="">Tanlang</option>
-                <option value="active">Faol</option>
-                <option value="leave">Ta'tilda</option>
-                <option value="probation">Sinov muddati</option>
-              </select>
-            </div>
+            <Select
+              label={t('form.gender')}
+              placeholder={t('form.select')}
+              data={[{ value: 'male', label: t('form.male') }, { value: 'female', label: t('form.female') }]}
+              value={form.gender || null}
+              onChange={v => set('gender', v ?? '')}
+              required
+              comboboxProps={{ withinPortal: true, zIndex: 1001 }}
+              styles={{
+                label: labelStyle,
+                input: { border: '1.5px solid var(--border-color, #e4e7ef)', borderRadius: 10, fontSize: 13.5, color: 'var(--text-primary, #2a2f3a)', background: 'var(--bg-subtle, #f9fafc)', fontFamily: 'inherit' },
+              }}
+            />
+            <Select
+              label={t('form.status')}
+              placeholder={t('form.select')}
+              data={[
+                { value: 'active', label: t('form.active') },
+                { value: 'leave', label: t('form.onLeave') },
+                { value: 'probation', label: t('form.probation') },
+              ]}
+              value={form.status || null}
+              onChange={v => set('status', v ?? '')}
+              comboboxProps={{ withinPortal: true, zIndex: 1001 }}
+              styles={{
+                label: labelStyle,
+                input: { border: '1.5px solid var(--border-color, #e4e7ef)', borderRadius: 10, fontSize: 13.5, color: 'var(--text-primary, #2a2f3a)', background: 'var(--bg-subtle, #f9fafc)', fontFamily: 'inherit' },
+              }}
+            />
           </div>
 
           <div>
-            <label style={labelStyle}>Rahbar</label>
+            <label style={labelStyle}>{t('form.supervisor')}</label>
             <SupervisorSearch value={supervisor} onChange={setSupervisor} inputStyle={inputStyle} />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
-              <label style={labelStyle}>Tug'ilgan sana</label>
+              <label style={labelStyle}>{t('form.birthDate')}</label>
               <input style={inputStyle} type="date" value={form.date_of_birth}
                 onChange={e => set('date_of_birth', e.target.value)}
                 onFocus={focusBorder} onBlur={blurBorder} />
             </div>
             <div>
-              <label style={labelStyle}>Ishga kirgan sana</label>
+              <label style={labelStyle}>{t('form.hireDate')}</label>
               <input style={inputStyle} type="date" value={form.hire_date}
                 onChange={e => set('hire_date', e.target.value)}
                 onFocus={focusBorder} onBlur={blurBorder} />
@@ -682,14 +916,14 @@ function EditEmployeeModal({
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
-              <label style={labelStyle}>Telefon</label>
+              <label style={labelStyle}>{t('form.phone')}</label>
               <input style={inputStyle} value={form.phone}
                 onChange={e => set('phone', e.target.value)}
                 placeholder="+998 90 000 00 00" maxLength={30}
                 onFocus={focusBorder} onBlur={blurBorder} />
             </div>
             <div>
-              <label style={labelStyle}>Email</label>
+              <label style={labelStyle}>{t('form.email')}</label>
               <input style={inputStyle} type="email" value={form.email}
                 onChange={e => set('email', e.target.value)}
                 placeholder="email@example.com" maxLength={254}
@@ -702,7 +936,7 @@ function EditEmployeeModal({
               onChange={e => set('is_head', e.target.checked)}
               style={{ width: 16, height: 16, accentColor: '#4f46e5', cursor: 'pointer' }} />
             <span style={{ fontSize: 13.5, color: 'var(--text-secondary, #5b6270)', fontWeight: 500 }}>
-              Bo'lim boshlig'i
+              {t('form.isDeptHead')}
             </span>
           </label>
 
@@ -715,7 +949,7 @@ function EditEmployeeModal({
                 fontSize: 13.5, fontWeight: 600,
                 color: 'var(--text-secondary, #5b6270)', fontFamily: 'inherit',
               }}
-            >Bekor qilish</button>
+            >{t('form.cancel')}</button>
             <button type="submit" disabled={loading}
               style={{
                 flex: 1, padding: '10px 0', border: 'none',
@@ -724,10 +958,21 @@ function EditEmployeeModal({
                 cursor: loading ? 'not-allowed' : 'pointer',
                 fontSize: 13.5, fontWeight: 600, color: '#fff', fontFamily: 'inherit',
               }}
-            >{loading ? 'Saqlanmoqda...' : 'Saqlash'}</button>
+            >{loading ? t('form.saving') : t('form.save')}</button>
           </div>
         </form>
       </div>
+      {deptModalOpen && (
+        <CreateDeptInlineModal
+          onClose={() => setDeptModalOpen(false)}
+          onCreated={dept => {
+            setDepts(prev => [...prev, dept])
+            set('department', String(dept.id))
+            setDeptSearch('')
+            setDeptModalOpen(false)
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -737,8 +982,8 @@ export function EmployeeListPage() {
   const navigate = useNavigate()
   const { setSelectedEmployee } = useUIStore()
   const {
-    query, filterDept, sortKey, sortDir, sel, allSel, page,
-    setQuery, setFilterDept, toggleSort, toggleSel, toggleAllSel, setPage,
+    query, sortKey, sortDir, sel, allSel, page,
+    setQuery, toggleSort, toggleSel, toggleAllSel, setPage,
   } = useEmployeeFilterStore()
 
   const [employees, setEmployees] = useState<Employee[]>([])
@@ -784,7 +1029,7 @@ export function EmployeeListPage() {
   }
 
   const handleDelete = async (emp: Employee) => {
-    if (!window.confirm(`"${emp.fullName}" ni o'chirishni tasdiqlaysizmi?`)) return
+    if (!window.confirm(t('deleteConfirm', { name: emp.fullName }))) return
     setDeletingId(emp.id)
     try {
       await deleteEmployee(Number(emp.id))
@@ -815,15 +1060,14 @@ export function EmployeeListPage() {
   }
 
   const filtered = useMemo(() => {
-    let list = [...employees]
-    if (filterDept !== 'all') list = list.filter(e => e.departmentName === filterDept)
+    const list = [...employees]
     list.sort((a, b) => {
       const av = String((a as unknown as Record<string, unknown>)[sortKey] ?? '')
       const bv = String((b as unknown as Record<string, unknown>)[sortKey] ?? '')
       return av.localeCompare(bv) * sortDir
     })
     return list
-  }, [employees, filterDept, sortKey, sortDir])
+  }, [employees, sortKey, sortDir])
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1
@@ -885,20 +1129,6 @@ export function EmployeeListPage() {
             placeholder={t('common:search')}
             width={200}
           />
-          <select
-            value={filterDept}
-            onChange={e => setFilterDept(e.target.value)}
-            style={{
-              height: 36, border: '1.5px solid var(--border-color)',
-              borderRadius: 10, background: 'var(--bg-subtle)',
-              padding: '0 12px', fontSize: 13,
-              color: 'var(--text-secondary)',
-              cursor: 'pointer', outline: 'none',
-            }}
-          >
-            <option value="all">{t('common:allDepts')}</option>
-            {departments.map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
           <div style={{ flex: 1 }} />
           <CreateButton label={t('common:actions.create')} onClick={() => setModalOpen(true)} />
         </div>
@@ -913,14 +1143,14 @@ export function EmployeeListPage() {
             {allSel && <Checkmark />}
           </div>
           <div />
-          <SortHeader field="code"           label="Kod" />
+          <SortHeader field="code"           label={t('code')} />
           <SortHeader field="fullName"       label={t('name')} />
           <SortHeader field="departmentName" label={t('dept')} />
           <SortHeader field="position"       label={t('pos')} />
-          <SortHeader field="gender"         label="Jinsi" />
+          <SortHeader field="gender"         label={t('gender')} />
           <SortHeader field="status"         label={t('status')} />
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '.05em', textTransform: 'uppercase', textAlign: 'center' }}>
-            Amallar
+            {t('colActions')}
           </div>
         </div>
 
@@ -947,7 +1177,7 @@ export function EmployeeListPage() {
                 fontSize: 13, fontWeight: 600,
               }}
             >
-              Qayta urinish
+              {t('retry')}
             </button>
           </div>
         ) : filtered.length === 0 ? (
@@ -1027,7 +1257,7 @@ export function EmployeeListPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                Rows per page:
+                {t('rowsPerPage')}
               </span>
               <select
                 value={pageSize}

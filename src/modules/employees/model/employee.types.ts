@@ -12,6 +12,8 @@ export interface Employee {
   departmentName: string
   positionId: number | null
   position: string
+  supervisorId: number | null
+  supervisorName: string
   status: EmployeeStatus
   statusDisplay: string
   gender: Gender
@@ -50,6 +52,7 @@ export interface ApiEmployee {
   initials: string
   department: { id: number; name_uz: string; name_en: string; division: null; head_name: string; created_at: string } | null
   position: { id: number; name_uz: string; name_en: string } | null
+  supervisor: { id: number; code: string; full_name: string; initials: string; position: { id: number; name_uz: string; name_en: string } | null } | null
   status: EmployeeStatus
   status_display: string
   gender: ApiGender

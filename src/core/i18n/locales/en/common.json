@@ -4,6 +4,7 @@
   "adminRole": "System administrator",
   "adminName": "Timur Aliyev",
   "adminInitials": "TA",
+  "loading": "Loading...",
   "rail": { "hr": "HR", "reports": "REPORTS" },
   "sec": { "dash": "DASHBOARD", "company": "COMPANY", "eval": "PERFORMANCE EVALUATION" },
   "nav": {
@@ -50,5 +51,49 @@
     "pendingApproval": "Pending approval"
   },
   "gender": { "Ayol": "Female", "Erkak": "Male" },
-  "actions": { "edit": "Edit", "options": "Options", "printPdf": "Print PDF", "create": "Create" }
+  "actions": { "edit": "Edit", "options": "Options", "printPdf": "Print PDF", "create": "Create" },
+  "div": {
+    "title": "Divisions",
+    "total": "Total {{count}} divisions",
+    "colName": "Division name",
+    "colColor": "Color",
+    "colOrder": "Order",
+    "colDepts": "Departments",
+    "colActions": "Actions",
+    "noDepts": "No departments",
+    "notFound": "No divisions found",
+    "addBtn": "Create",
+    "retry": "Retry",
+    "modal": {
+      "addTitle": "Add division",
+      "editTitle": "Edit division",
+      "addSub": "Enter division details",
+      "editSub": "Update details",
+      "nameUz": "Name (UZ)",
+      "nameEn": "Name (EN)",
+      "colorLabel": "Color",
+      "orderLabel": "Order number",
+      "cancel": "Cancel",
+      "save": "Save",
+      "add": "Add",
+      "loading": "Loading..."
+    },
+    "delete": {
+      "title": "Delete division",
+      "confirm": "Are you sure you want to delete «{{name}}»? This action cannot be undone.",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleting": "Deleting..."
+    },
+    "deptCount": "{{count}} departments"
+  },
+  "orgChart": {
+    "loading": "Loading...",
+    "reset": "Reset",
+    "hint": "Drag to pan · Scroll to zoom",
+    "organization": "Organization",
+    "divCount": "{{count}} divisions",
+    "deptCount": "{{count}} depts",
+    "empCount": "{{count}} employees"
+  }
 }

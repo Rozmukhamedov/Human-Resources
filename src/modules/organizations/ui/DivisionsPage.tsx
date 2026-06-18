@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Division, DivisionPayload } from '../model/division.types'
 import { getDivisions, createDivision, updateDivision, deleteDivision } from '../api/divisions'
 
@@ -31,6 +32,7 @@ interface ModalProps {
 }
 
 function DivisionModal({ division, onClose, onSave, loading }: ModalProps) {
+  const { t } = useTranslation('common')
   const [form, setForm] = useState<DivisionPayload>(() => ({
     name_uz: division?.name_uz ?? '',
     name_en: division?.name_en ?? '',
@@ -86,10 +88,10 @@ function DivisionModal({ division, onClose, onSave, loading }: ModalProps) {
         }}>
           <div>
             <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-heading, #1a1f2e)' }}>
-              {division ? "Filialni tahrirlash" : "Yangi filial qo'shish"}
+              {division ? t('div.modal.editTitle') : t('div.modal.addTitle')}
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-muted, #9aa1ad)', marginTop: 2 }}>
-              {division ? "Ma'lumotlarni yangilang" : "Filial ma'lumotlarini kiriting"}
+              {division ? t('div.modal.editSub') : t('div.modal.addSub')}
             </div>
           </div>
           <button
@@ -105,12 +107,12 @@ function DivisionModal({ division, onClose, onSave, loading }: ModalProps) {
 
         <form onSubmit={handleSubmit} style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label style={labelStyle}>Nomi (UZ) *</label>
+            <label style={labelStyle}>{t('div.modal.nameUz')} *</label>
             <input
               style={inputStyle}
               value={form.name_uz}
               onChange={e => set('name_uz', e.target.value)}
-              placeholder="Masalan: Shimoliy filial"
+              placeholder="Masalan: Shimoliy bo'linma"
               required
               autoFocus
               onFocus={e => (e.target.style.borderColor = '#4f46e5')}
@@ -119,7 +121,7 @@ function DivisionModal({ division, onClose, onSave, loading }: ModalProps) {
           </div>
 
           <div>
-            <label style={labelStyle}>Nomi (EN)</label>
+            <label style={labelStyle}>{t('div.modal.nameEn')}</label>
             <input
               style={inputStyle}
               value={form.name_en ?? ''}
@@ -131,7 +133,7 @@ function DivisionModal({ division, onClose, onSave, loading }: ModalProps) {
           </div>
 
           <div>
-            <label style={labelStyle}>Rang</label>
+            <label style={labelStyle}>{t('div.modal.colorLabel')}</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               {PRESET_COLORS.map(c => (
                 <button
@@ -161,7 +163,7 @@ function DivisionModal({ division, onClose, onSave, loading }: ModalProps) {
           </div>
 
           <div>
-            <label style={labelStyle}>Tartib raqami</label>
+            <label style={labelStyle}>{t('div.modal.orderLabel')}</label>
             <input
               type="number"
               style={inputStyle}
@@ -190,7 +192,7 @@ function DivisionModal({ division, onClose, onSave, loading }: ModalProps) {
               onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-subtle, #f4f5f7)')}
               onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.background = 'transparent')}
             >
-              Bekor qilish
+              {t('div.modal.cancel')}
             </button>
             <button
               type="submit"
@@ -206,7 +208,7 @@ function DivisionModal({ division, onClose, onSave, loading }: ModalProps) {
               onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = '#4338ca' }}
               onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = '#4f46e5' }}
             >
-              {loading ? 'Yuklanmoqda...' : division ? 'Saqlash' : "Qo'shish"}
+              {loading ? t('div.modal.loading') : division ? t('div.modal.save') : t('div.modal.add')}
             </button>
           </div>
         </form>
@@ -222,6 +224,7 @@ function DepartmentsListModal({
   division: Division
   onClose: () => void
 }) {
+  const { t } = useTranslation('common')
   return (
     <div
       style={{
@@ -251,7 +254,7 @@ function DepartmentsListModal({
               {division.name_uz}
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-muted, #9aa1ad)', marginTop: 2 }}>
-              {division.department_count} ta bo'lim
+              {t('div.deptCount', { count: division.department_count })}
             </div>
           </div>
           <button
@@ -268,7 +271,7 @@ function DepartmentsListModal({
         <div style={{ overflowY: 'auto', padding: '12px 16px 20px' }}>
           {division.departments.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted, #9aa1ad)', fontSize: 13.5 }}>
-              Bo'limlar mavjud emas
+              {t('div.noDepts')}
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -326,6 +329,7 @@ function DeleteConfirm({
   onConfirm: () => Promise<void>
   loading: boolean
 }) {
+  const { t } = useTranslation('common')
   return (
     <div
       style={{
@@ -354,10 +358,10 @@ function DeleteConfirm({
           </svg>
         </div>
         <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-heading, #1a1f2e)', marginBottom: 8 }}>
-          Filialni o'chirish
+          {t('div.delete.title')}
         </div>
         <div style={{ fontSize: 13.5, color: 'var(--text-secondary, #5b6270)', lineHeight: 1.6, marginBottom: 24 }}>
-          <strong>{division.name_uz}</strong> filialni o'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi.
+          {t('div.delete.confirm', { name: division.name_uz })}
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button
@@ -372,7 +376,7 @@ function DeleteConfirm({
               fontFamily: 'inherit',
             }}
           >
-            Bekor qilish
+            {t('div.delete.cancel')}
           </button>
           <button
             onClick={() => void onConfirm()}
@@ -386,7 +390,7 @@ function DeleteConfirm({
               fontFamily: 'inherit',
             }}
           >
-            {loading ? "O'chirilmoqda..." : "O'chirish"}
+            {loading ? t('div.delete.deleting') : t('div.delete.delete')}
           </button>
         </div>
       </div>
@@ -429,6 +433,7 @@ function PagerBtn({
 }
 
 export function DivisionsPage() {
+  const { t } = useTranslation('common')
   const [divisions, setDivisions] = useState<Division[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -510,10 +515,10 @@ export function DivisionsPage() {
             color: 'var(--text-heading, #1a1f2e)',
             fontFamily: "'Plus Jakarta Sans', sans-serif",
           }}>
-            Filiallar
+            {t('div.title')}
           </div>
           <div style={{ fontSize: 12.5, color: 'var(--text-muted, #9aa1ad)', marginTop: 2 }}>
-            Jami {total} ta filial
+            {t('div.total', { count: total })}
           </div>
         </div>
         <button
@@ -540,7 +545,7 @@ export function DivisionsPage() {
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          Yaratish
+          {t('div.addBtn')}
         </button>
       </div>
 
@@ -557,12 +562,12 @@ export function DivisionsPage() {
               fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
             }}
           >
-            Qayta urinish
+            {t('div.retry')}
           </button>
         </div>
       ) : divisions.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted, #9aa1ad)', fontSize: 14 }}>
-          Filiallar topilmadi
+          {t('div.notFound')}
         </div>
       ) : (
         <>
@@ -579,19 +584,19 @@ export function DivisionsPage() {
                     #
                   </th>
                   <th style={{ padding: '11px 16px', textAlign: 'left', fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted, #9aa1ad)', textTransform: 'uppercase', letterSpacing: '.04em' }}>
-                    Filial nomi
+                    {t('div.colName')}
                   </th>
                   <th style={{ padding: '11px 16px', textAlign: 'left', fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted, #9aa1ad)', textTransform: 'uppercase', letterSpacing: '.04em', width: 80 }}>
-                    Rang
+                    {t('div.colColor')}
                   </th>
                   <th style={{ padding: '11px 16px', textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted, #9aa1ad)', textTransform: 'uppercase', letterSpacing: '.04em', width: 80 }}>
-                    Tartib
+                    {t('div.colOrder')}
                   </th>
                   <th style={{ padding: '11px 16px', textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted, #9aa1ad)', textTransform: 'uppercase', letterSpacing: '.04em', width: 100 }}>
-                    Bo'limlar
+                    {t('div.colDepts')}
                   </th>
                   <th style={{ padding: '11px 16px', textAlign: 'right', fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted, #9aa1ad)', textTransform: 'uppercase', letterSpacing: '.04em', width: 100 }}>
-                    Amallar
+                    {t('div.colActions')}
                   </th>
                 </tr>
               </thead>
