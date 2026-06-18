@@ -56,6 +56,12 @@ export interface ApiEmployee {
   status: EmployeeStatus
   status_display: string
   gender: ApiGender
+  date_of_birth: string | null
+  hire_date: string | null
+  phone: string
+  email: string
+  created_at?: string
+  updated_at?: string
 }
 
 export interface PaginatedEmployees {

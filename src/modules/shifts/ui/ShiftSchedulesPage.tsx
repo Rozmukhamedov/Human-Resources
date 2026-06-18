@@ -495,8 +495,8 @@ export function ShiftSchedulesPage() {
     setError(null)
     try {
       const data = await getShifts({ page: p, page_size: PAGE_SIZE, search: q || undefined })
-      setShifts(data.results ?? [])
-      setTotal(data.count ?? 0)
+      setShifts(data.data ?? [])
+      setTotal(data.total_elements ?? 0)
     } catch (e) {
       setError((e as Error).message || 'Xatolik yuz berdi')
     } finally {

@@ -36,10 +36,10 @@ function toEmployee(e: ApiEmployee): Employee {
     statusDisplay: e.status_display,
     gender: e.gender === 'female' ? 'Ayol' : 'Erkak',
     genderRaw: e.gender,
-    dateOfBirth: '',
-    hireDate: '',
-    email: '',
-    phone: '',
+    dateOfBirth: e.date_of_birth ?? '',
+    hireDate: e.hire_date ?? '',
+    email: e.email ?? '',
+    phone: e.phone ?? '',
   }
 }
 

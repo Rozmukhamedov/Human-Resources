@@ -1,6 +1,6 @@
-import { useParams } from 'react-router-dom'
+import { useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { employees } from '@data/employees'
+import type { EmployeeProfileContext } from '../EmployeeProfilePage'
 
 function InfoCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -23,16 +23,15 @@ function LinkRow({ icon, label, value, href }: { icon: 'email' | 'phone'; label:
       </div>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '.04em', textTransform: 'uppercase', marginBottom: 2 }}>{label}</div>
-        <a href={href} style={{ fontSize: 13, color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>{value}</a>
+        <a href={href} style={{ fontSize: 13, color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>{value || '—'}</a>
       </div>
     </div>
   )
 }
 
 export function ProfileTab() {
-  const { id } = useParams<{ id: string }>()
   const { t } = useTranslation('employees')
-  const emp = employees.find(e => e.id === id) ?? employees[0]
+  const { emp } = useOutletContext<EmployeeProfileContext>()
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

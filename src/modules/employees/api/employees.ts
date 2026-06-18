@@ -36,6 +36,10 @@ export function deleteEmployee(id: number) {
   })
 }
 
+export function getEmployee(id: number | string) {
+  return apiRequest<ApiEmployee>(`/employees/${id}/`)
+}
+
 export function getPositions(page = 1, pageSize = 100) {
   return apiRequest<PaginatedPositions>(
     `/employees/positions/?page=${page}&page_size=${pageSize}`

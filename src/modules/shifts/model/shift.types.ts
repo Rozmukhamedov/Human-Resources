@@ -28,8 +28,8 @@ export interface CreateShiftPayload {
 }
 
 export interface PaginatedShifts {
-  count: number
+  total_elements: number
   next: string | null
   previous: string | null
-  results: ShiftScheduleList[]
+  data: ShiftScheduleList[]
 }
