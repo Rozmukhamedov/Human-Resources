@@ -15,8 +15,10 @@
     "leave": "Leave requests",
     "attendance": "Attendance report",
     "assessments": "Assessments",
+    "assessmentTemplates": "Assessment templates",
     "organizations": "Organizations",
-    "departments": "Departments"
+    "departments": "Departments",
+    "divisions": "Divisions"
   },
   "titles": {
     "dashboard": "Dashboard",
@@ -28,8 +30,10 @@
     "attendance": "Attendance report",
     "assessments": "Assessments",
     "assessmentDetail": "Assessment",
+    "assessmentTemplates": "Assessment templates",
     "organizations": "Organizations",
-    "departments": "Departments"
+    "departments": "Departments",
+    "divisions": "Divisions"
   },
   "search": "Search...",
   "allDepts": "All departments",

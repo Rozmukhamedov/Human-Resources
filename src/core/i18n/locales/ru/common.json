@@ -15,8 +15,10 @@
     "leave": "Заявки на отпуск",
     "attendance": "Отчёт посещаемости",
     "assessments": "Аттестации",
+    "assessmentTemplates": "Шаблоны аттестации",
     "organizations": "Организации",
-    "departments": "Отделы"
+    "departments": "Отделы",
+    "divisions": "Филиалы"
   },
   "titles": {
     "dashboard": "График работы",
@@ -28,8 +30,10 @@
     "attendance": "Отчёт посещаемости",
     "assessments": "Аттестации",
     "assessmentDetail": "Аттестация",
+    "assessmentTemplates": "Шаблоны аттестации",
     "organizations": "Организации",
-    "departments": "Отделы"
+    "departments": "Отделы",
+    "divisions": "Филиалы"
   },
   "search": "Поиск...",
   "allDepts": "Все отделы",

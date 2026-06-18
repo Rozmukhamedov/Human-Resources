@@ -16,3 +16,54 @@ export interface Employee {
   email: string
   phone: string
 }
+
+export type ApiGender = 'male' | 'female'
+
+export interface CreateEmployeePayload {
+  code: string
+  first_name: string
+  last_name: string
+  department: number
+  position: number
+  supervisor?: number | null
+  status?: EmployeeStatus
+  gender: ApiGender
+  date_of_birth?: string | null
+  hire_date?: string | null
+  phone?: string
+  email?: string
+}
+
+export interface ApiEmployee {
+  id: number
+  code: string
+  first_name: string
+  last_name: string
+  full_name: string
+  initials: string
+  department: { id: number; name_uz: string; name_en: string } | null
+  position: { id: number; name: string } | null
+  supervisor_name: string | null
+  status: EmployeeStatus
+  status_display: string
+  gender: ApiGender
+}
+
+export interface PaginatedEmployees {
+  count: number
+  next: string | null
+  previous: string | null
+  results: ApiEmployee[]
+}
+
+export interface Position {
+  id: number
+  name: string
+}
+
+export interface PaginatedPositions {
+  count: number
+  next: string | null
+  previous: string | null
+  results: Position[]
+}

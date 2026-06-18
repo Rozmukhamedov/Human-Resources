@@ -15,8 +15,10 @@
     "leave": "Izn so'rovi",
     "attendance": "Davomat hisoboti",
     "assessments": "Oddiy attestatsiyalar",
+    "assessmentTemplates": "Baholash shablonlari",
     "organizations": "Tashkilotlar",
-    "departments": "Bo'limlar"
+    "departments": "Bo'limlar",
+    "divisions": "Filiallar"
   },
   "titles": {
     "dashboard": "Ish grafigi",
@@ -28,8 +30,10 @@
     "attendance": "Davomat hisoboti",
     "assessments": "Oddiy attestatsiyalar",
     "assessmentDetail": "Baholash",
+    "assessmentTemplates": "Baholash shablonlari",
     "organizations": "Tashkilotlar",
-    "departments": "Bo'limlar"
+    "departments": "Bo'limlar",
+    "divisions": "Filiallar"
   },
   "search": "Qidirish...",
   "allDepts": "Barcha bo'limlar",

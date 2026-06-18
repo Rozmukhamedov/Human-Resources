@@ -1,185 +1,36 @@
 import { useState, useEffect, useCallback } from 'react'
-import type { Department, CreateDepartmentPayload } from '../model/department.types'
-import {
-  getDepartments,
-  createDepartment,
-  updateDepartment,
-  deleteDepartment,
-} from '../api/departments'
+import type { Division, CreateDivisionPayload } from '../model/division.types'
+import { getDivisions, createDivision, updateDivision, deleteDivision } from '../api/divisions'
 
 const PAGE_SIZE = 12
 
-const COLORS = [
-  { bg: '#ede9fe', color: '#7c3aed' },
-  { bg: '#d1fae5', color: '#059669' },
-  { bg: '#fef3c7', color: '#d97706' },
-  { bg: '#fce7f3', color: '#db2777' },
-  { bg: '#dbeafe', color: '#2563eb' },
-  { bg: '#fee2e2', color: '#dc2626' },
-]
-
-const getColor = (id: number) => COLORS[Math.abs(id) % COLORS.length]
-
-function BuildingIcon({ color }: { color: string }) {
+function Spinner() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="18" height="18" rx="2"/>
-      <path d="M9 22V12h6v10"/>
-      <path d="M9 7h1M14 7h1M9 12h1M14 12h1"/>
-    </svg>
-  )
-}
-
-function DeptCard({
-  dept,
-  onEdit,
-  onDelete,
-}: {
-  dept: Department
-  onEdit: (d: Department) => void
-  onDelete: (d: Department) => void
-}) {
-  const [hovered, setHovered] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
-  const c = getColor(dept.id)
-
-  return (
-    <div
-      style={{
-        background: 'var(--surface, #fff)',
-        border: '1px solid var(--border-color, #ebedf1)',
-        borderRadius: 16,
-        padding: '18px 20px 16px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 14,
-        transition: 'box-shadow .15s, border-color .15s',
-        boxShadow: hovered ? '0 6px 20px rgba(0,0,0,.09)' : 'none',
-        borderColor: hovered ? '#c8cdd8' : 'var(--border-color, #ebedf1)',
-        position: 'relative',
-      }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => { setHovered(false); setMenuOpen(false) }}
-    >
-      {/* Top row */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-          <div style={{
-            width: 40, height: 40, borderRadius: 11,
-            background: c.bg,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0,
-          }}>
-            <BuildingIcon color={c.color} />
-          </div>
-          <div style={{ minWidth: 0 }}>
-            <div style={{
-              fontSize: 13.5, fontWeight: 700,
-              color: 'var(--text-heading, #1a1f2e)', lineHeight: 1.3,
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            }}>
-              {dept.name_uz}
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted, #9aa1ad)', marginTop: 2 }}>
-              {dept.head_name || '—'}
-            </div>
-          </div>
-        </div>
-
-        {/* Actions menu */}
-        <div style={{ position: 'relative', flexShrink: 0 }}>
-          <button
-            onClick={() => setMenuOpen(v => !v)}
-            style={{
-              width: 28, height: 28, borderRadius: 7, border: 'none',
-              background: menuOpen ? 'var(--bg-subtle, #f4f5f7)' : 'transparent',
-              cursor: 'pointer', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', color: 'var(--text-secondary, #5b6270)',
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
-            </svg>
-          </button>
-          {menuOpen && (
-            <div style={{
-              position: 'absolute', top: 'calc(100% + 4px)', right: 0, zIndex: 50,
-              background: 'var(--surface, #fff)', border: '1px solid var(--border-color, #ebedf1)',
-              borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,.12)', minWidth: 130, overflow: 'hidden',
-            }}>
-              <div
-                onClick={() => { setMenuOpen(false); onEdit(dept) }}
-                style={{
-                  padding: '9px 14px', fontSize: 13, cursor: 'pointer',
-                  color: 'var(--text-primary, #2a2f3a)',
-                  display: 'flex', alignItems: 'center', gap: 8,
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-subtle, #f4f5f7)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                </svg>
-                Tahrirlash
-              </div>
-              <div
-                onClick={() => { setMenuOpen(false); onDelete(dept) }}
-                style={{
-                  padding: '9px 14px', fontSize: 13, cursor: 'pointer',
-                  color: '#ef4444',
-                  display: 'flex', alignItems: 'center', gap: 8,
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#fef2f2')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                  <path d="M10 11v6"/><path d="M14 11v6"/>
-                </svg>
-                O'chirish
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Count */}
-      <div>
-        <div style={{
-          fontSize: 26, fontWeight: 800,
-          color: 'var(--text-heading, #1a1f2e)',
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-          letterSpacing: '-.02em', lineHeight: 1.1,
-        }}>
-          {dept.employee_count}
-        </div>
-        <div style={{ fontSize: 11.5, color: 'var(--text-muted, #9aa1ad)', marginTop: 3 }}>Xodimlar</div>
-      </div>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '60px 0' }}>
+      <div style={{
+        width: 36, height: 36, borderRadius: '50%',
+        border: '3px solid var(--border-color, #ebedf1)',
+        borderTopColor: '#4f46e5',
+        animation: 'spin 0.7s linear infinite',
+      }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }
 
 interface ModalProps {
-  dept: Department | null
+  division: Division | null
   onClose: () => void
-  onSave: (data: CreateDepartmentPayload) => Promise<void>
+  onSave: (data: CreateDivisionPayload) => Promise<void>
   loading: boolean
 }
 
-function DeptModal({ dept, onClose, onSave, loading }: ModalProps) {
-  const [form, setForm] = useState<CreateDepartmentPayload>(() =>
-    dept
-      ? { name_uz: dept.name_uz, name_en: dept.name_en, head_name: dept.head_name }
-      : { name_uz: '', name_en: '', head_name: '' }
-  )
-
-  const set = <K extends keyof CreateDepartmentPayload>(key: K, value: CreateDepartmentPayload[K]) =>
-    setForm(prev => ({ ...prev, [key]: value }))
+function DivisionModal({ division, onClose, onSave, loading }: ModalProps) {
+  const [name, setName] = useState(division?.name ?? '')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    void onSave(form)
+    void onSave({ name })
   }
 
   const inputStyle: React.CSSProperties = {
@@ -190,12 +41,6 @@ function DeptModal({ dept, onClose, onSave, loading }: ModalProps) {
     background: 'var(--bg-subtle, #f9fafc)',
     outline: 'none', fontFamily: 'inherit',
     transition: 'border-color .15s',
-  }
-
-  const labelStyle: React.CSSProperties = {
-    fontSize: 12, fontWeight: 600,
-    color: 'var(--text-secondary, #5b6270)',
-    display: 'block', marginBottom: 5,
   }
 
   return (
@@ -210,8 +55,7 @@ function DeptModal({ dept, onClose, onSave, loading }: ModalProps) {
     >
       <div style={{
         background: 'var(--surface, #fff)',
-        borderRadius: 20, width: 480,
-        maxHeight: '90vh', overflowY: 'auto',
+        borderRadius: 20, width: 440,
         boxShadow: '0 20px 60px rgba(0,0,0,.18)',
         fontFamily: "'Public Sans', sans-serif",
       }}>
@@ -222,10 +66,10 @@ function DeptModal({ dept, onClose, onSave, loading }: ModalProps) {
         }}>
           <div>
             <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-heading, #1a1f2e)' }}>
-              {dept ? "Bo'limni tahrirlash" : "Yangi bo'lim qo'shish"}
+              {division ? "Filialini tahrirlash" : "Yangi filial qo'shish"}
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-muted, #9aa1ad)', marginTop: 2 }}>
-              {dept ? "Ma'lumotlarni yangilang" : "Bo'lim ma'lumotlarini kiriting"}
+              {division ? "Ma'lumotlarni yangilang" : "Filial ma'lumotlarini kiriting"}
             </div>
           </div>
           <button
@@ -241,37 +85,16 @@ function DeptModal({ dept, onClose, onSave, loading }: ModalProps) {
 
         <form onSubmit={handleSubmit} style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label style={labelStyle}>Bo'lim nomi (UZ) *</label>
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary, #5b6270)', display: 'block', marginBottom: 5 }}>
+              Filial nomi *
+            </label>
             <input
               style={inputStyle}
-              value={form.name_uz}
-              onChange={e => set('name_uz', e.target.value)}
-              placeholder="Masalan: Kardiologiya bo'limi"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Masalan: Shimoliy filial"
               required
-              onFocus={e => (e.target.style.borderColor = '#4f46e5')}
-              onBlur={e => (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')}
-            />
-          </div>
-
-          <div>
-            <label style={labelStyle}>Bo'lim nomi (EN)</label>
-            <input
-              style={inputStyle}
-              value={form.name_en ?? ''}
-              onChange={e => set('name_en', e.target.value)}
-              placeholder="e.g. Cardiology Department"
-              onFocus={e => (e.target.style.borderColor = '#4f46e5')}
-              onBlur={e => (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')}
-            />
-          </div>
-
-          <div>
-            <label style={labelStyle}>Bo'lim rahbari</label>
-            <input
-              style={inputStyle}
-              value={form.head_name ?? ''}
-              onChange={e => set('head_name', e.target.value)}
-              placeholder="Ism va familiya"
+              autoFocus
               onFocus={e => (e.target.style.borderColor = '#4f46e5')}
               onBlur={e => (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')}
             />
@@ -288,7 +111,7 @@ function DeptModal({ dept, onClose, onSave, loading }: ModalProps) {
                 borderRadius: 10, background: 'transparent', cursor: 'pointer',
                 fontSize: 13.5, fontWeight: 600,
                 color: 'var(--text-secondary, #5b6270)',
-                fontFamily: 'inherit', transition: 'background .12s',
+                fontFamily: 'inherit',
               }}
               onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-subtle, #f4f5f7)')}
               onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.background = 'transparent')}
@@ -304,12 +127,12 @@ function DeptModal({ dept, onClose, onSave, loading }: ModalProps) {
                 background: loading ? '#a5b4fc' : '#4f46e5',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 fontSize: 13.5, fontWeight: 600, color: '#fff',
-                fontFamily: 'inherit', transition: 'background .12s',
+                fontFamily: 'inherit',
               }}
               onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = '#4338ca' }}
               onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = '#4f46e5' }}
             >
-              {loading ? 'Yuklanmoqda...' : dept ? 'Saqlash' : "Qo'shish"}
+              {loading ? 'Yuklanmoqda...' : division ? 'Saqlash' : "Qo'shish"}
             </button>
           </div>
         </form>
@@ -319,12 +142,12 @@ function DeptModal({ dept, onClose, onSave, loading }: ModalProps) {
 }
 
 function DeleteConfirm({
-  dept,
+  division,
   onClose,
   onConfirm,
   loading,
 }: {
-  dept: Department
+  division: Division
   onClose: () => void
   onConfirm: () => Promise<void>
   loading: boolean
@@ -357,10 +180,10 @@ function DeleteConfirm({
           </svg>
         </div>
         <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-heading, #1a1f2e)', marginBottom: 8 }}>
-          Bo'limni o'chirish
+          Filialni o'chirish
         </div>
         <div style={{ fontSize: 13.5, color: 'var(--text-secondary, #5b6270)', lineHeight: 1.6, marginBottom: 24 }}>
-          <strong>{dept.name_uz}</strong> bo'limini o'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi.
+          <strong>{division.name}</strong> filialni o'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi.
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button
@@ -389,7 +212,7 @@ function DeleteConfirm({
               fontFamily: 'inherit',
             }}
           >
-            {loading ? 'O\'chirilmoqda...' : 'O\'chirish'}
+            {loading ? "O'chirilmoqda..." : "O'chirish"}
           </button>
         </div>
       </div>
@@ -397,32 +220,52 @@ function DeleteConfirm({
   )
 }
 
-function Spinner() {
+function PagerBtn({
+  children,
+  onClick,
+  active,
+  disabled,
+}: {
+  children: React.ReactNode
+  onClick: () => void
+  active?: boolean
+  disabled?: boolean
+}) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '60px 0' }}>
-      <div style={{
-        width: 36, height: 36, borderRadius: '50%',
-        border: '3px solid var(--border-color, #ebedf1)',
-        borderTopColor: '#4f46e5',
-        animation: 'spin 0.7s linear infinite',
-      }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        width: 34, height: 34, borderRadius: 8,
+        border: '1.5px solid',
+        borderColor: active ? '#4f46e5' : 'var(--border-color, #e4e7ef)',
+        background: active ? '#4f46e5' : 'var(--surface, #fff)',
+        color: active ? '#fff' : disabled ? 'var(--text-muted, #9aa1ad)' : 'var(--text-primary, #2a2f3a)',
+        fontSize: 13, fontWeight: active ? 700 : 400,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        opacity: disabled ? 0.45 : 1,
+        transition: 'all .12s',
+        fontFamily: 'inherit',
+      }}
+    >
+      {children}
+    </button>
   )
 }
 
-export function DepartmentsPage() {
-  const [departments, setDepartments] = useState<Department[]>([])
+export function DivisionsPage() {
+  const [divisions, setDivisions] = useState<Division[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
-  const [modal, setModal] = useState<{ open: boolean; dept: Department | null }>({
-    open: false, dept: null,
+  const [modal, setModal] = useState<{ open: boolean; division: Division | null }>({
+    open: false, division: null,
   })
-  const [deleteTarget, setDeleteTarget] = useState<Department | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Division | null>(null)
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
@@ -430,8 +273,8 @@ export function DepartmentsPage() {
     setLoading(true)
     setError(null)
     try {
-      const data = await getDepartments(p, PAGE_SIZE)
-      setDepartments(data.data ?? [])
+      const data = await getDivisions(p, PAGE_SIZE)
+      setDivisions(data.data ?? [])
       setTotal(data.total_elements ?? 0)
     } catch (e) {
       setError((e as Error).message || 'Xatolik yuz berdi')
@@ -444,17 +287,17 @@ export function DepartmentsPage() {
     void load(page)
   }, [page, load])
 
-  const handleSave = async (data: CreateDepartmentPayload) => {
+  const handleSave = async (data: CreateDivisionPayload) => {
     setSaving(true)
     try {
-      if (modal.dept) {
-        const updated = await updateDepartment(modal.dept.id, data)
-        setDepartments(prev => prev.map(d => d.id === updated.id ? updated : d))
+      if (modal.division) {
+        const updated = await updateDivision(modal.division.id, data)
+        setDivisions(prev => prev.map(d => d.id === updated.id ? updated : d))
       } else {
-        await createDepartment(data)
+        await createDivision(data)
         await load(page)
       }
-      setModal({ open: false, dept: null })
+      setModal({ open: false, division: null })
     } catch (e) {
       alert((e as Error).message || 'Xatolik yuz berdi')
     } finally {
@@ -466,9 +309,9 @@ export function DepartmentsPage() {
     if (!deleteTarget) return
     setSaving(true)
     try {
-      await deleteDepartment(deleteTarget.id)
+      await deleteDivision(deleteTarget.id)
       setDeleteTarget(null)
-      if (departments.length === 1 && page > 1) {
+      if (divisions.length === 1 && page > 1) {
         setPage(p => p - 1)
       } else {
         await load(page)
@@ -493,14 +336,14 @@ export function DepartmentsPage() {
             color: 'var(--text-heading, #1a1f2e)',
             fontFamily: "'Plus Jakarta Sans', sans-serif",
           }}>
-            Bo'limlar
+            Filiallar
           </div>
           <div style={{ fontSize: 12.5, color: 'var(--text-muted, #9aa1ad)', marginTop: 2 }}>
-            Jami {total} ta bo'lim
+            Jami {total} ta filial
           </div>
         </div>
         <button
-          onClick={() => setModal({ open: true, dept: null })}
+          onClick={() => setModal({ open: true, division: null })}
           style={{
             display: 'flex', alignItems: 'center', gap: 7,
             padding: '9px 18px', borderRadius: 10, border: 'none',
@@ -531,10 +374,7 @@ export function DepartmentsPage() {
       {loading ? (
         <Spinner />
       ) : error ? (
-        <div style={{
-          textAlign: 'center', padding: '60px 0',
-          color: '#ef4444', fontSize: 14,
-        }}>
+        <div style={{ textAlign: 'center', padding: '60px 0', color: '#ef4444', fontSize: 14 }}>
           <div style={{ marginBottom: 12 }}>{error}</div>
           <button
             onClick={() => void load(page)}
@@ -547,25 +387,45 @@ export function DepartmentsPage() {
             Qayta urinish
           </button>
         </div>
-      ) : departments.length === 0 ? (
+      ) : divisions.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted, #9aa1ad)', fontSize: 14 }}>
-          Bo'limlar topilmadi
+          Filiallar topilmadi
         </div>
       ) : (
         <>
+          {/* Table */}
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: 16,
+            background: 'var(--surface, #fff)',
+            border: '1px solid var(--border-color, #ebedf1)',
+            borderRadius: 14,
+            overflow: 'hidden',
           }}>
-            {departments.map(dept => (
-              <DeptCard
-                key={dept.id}
-                dept={dept}
-                onEdit={d => setModal({ open: true, dept: d })}
-                onDelete={d => setDeleteTarget(d)}
-              />
-            ))}
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: "'Public Sans', sans-serif" }}>
+              <thead>
+                <tr style={{ background: 'var(--bg-subtle, #f9fafc)', borderBottom: '1px solid var(--border-color, #ebedf1)' }}>
+                  <th style={{ padding: '11px 16px', textAlign: 'left', fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted, #9aa1ad)', textTransform: 'uppercase', letterSpacing: '.04em', width: 60 }}>
+                    #
+                  </th>
+                  <th style={{ padding: '11px 16px', textAlign: 'left', fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted, #9aa1ad)', textTransform: 'uppercase', letterSpacing: '.04em' }}>
+                    Filial nomi
+                  </th>
+                  <th style={{ padding: '11px 16px', textAlign: 'right', fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted, #9aa1ad)', textTransform: 'uppercase', letterSpacing: '.04em', width: 120 }}>
+                    Amallar
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {divisions.map((division, idx) => (
+                  <TableRow
+                    key={division.id}
+                    division={division}
+                    index={(page - 1) * PAGE_SIZE + idx + 1}
+                    onEdit={() => setModal({ open: true, division })}
+                    onDelete={() => setDeleteTarget(division)}
+                  />
+                ))}
+              </tbody>
+            </table>
           </div>
 
           {/* Pagination */}
@@ -614,9 +474,9 @@ export function DepartmentsPage() {
       )}
 
       {modal.open && (
-        <DeptModal
-          dept={modal.dept}
-          onClose={() => setModal({ open: false, dept: null })}
+        <DivisionModal
+          division={modal.division}
+          onClose={() => setModal({ open: false, division: null })}
           onSave={handleSave}
           loading={saving}
         />
@@ -624,7 +484,7 @@ export function DepartmentsPage() {
 
       {deleteTarget && (
         <DeleteConfirm
-          dept={deleteTarget}
+          division={deleteTarget}
           onClose={() => setDeleteTarget(null)}
           onConfirm={handleDelete}
           loading={saving}
@@ -634,33 +494,86 @@ export function DepartmentsPage() {
   )
 }
 
-function PagerBtn({
+function TableRow({
+  division,
+  index,
+  onEdit,
+  onDelete,
+}: {
+  division: Division
+  index: number
+  onEdit: () => void
+  onDelete: () => void
+}) {
+  const [hovered, setHovered] = useState(false)
+
+  return (
+    <tr
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        borderBottom: '1px solid var(--border-color, #ebedf1)',
+        background: hovered ? 'var(--bg-subtle, #f9fafc)' : 'transparent',
+        transition: 'background .1s',
+      }}
+    >
+      <td style={{ padding: '12px 16px', fontSize: 13, color: 'var(--text-muted, #9aa1ad)', fontWeight: 500 }}>
+        {index}
+      </td>
+      <td style={{ padding: '12px 16px' }}>
+        <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-heading, #1a1f2e)' }}>
+          {division.name}
+        </span>
+      </td>
+      <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
+          <ActionBtn onClick={onEdit} title="Tahrirlash">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </ActionBtn>
+          <ActionBtn onClick={onDelete} title="O'chirish" danger>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6"/><path d="M14 11v6"/>
+            </svg>
+          </ActionBtn>
+        </div>
+      </td>
+    </tr>
+  )
+}
+
+function ActionBtn({
   children,
   onClick,
-  active,
-  disabled,
+  title,
+  danger,
 }: {
   children: React.ReactNode
   onClick: () => void
-  active?: boolean
-  disabled?: boolean
+  title: string
+  danger?: boolean
 }) {
+  const [hovered, setHovered] = useState(false)
   return (
     <button
       onClick={onClick}
-      disabled={disabled}
+      title={title}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
-        width: 34, height: 34, borderRadius: 8,
-        border: '1.5px solid',
-        borderColor: active ? '#4f46e5' : 'var(--border-color, #e4e7ef)',
-        background: active ? '#4f46e5' : 'var(--surface, #fff)',
-        color: active ? '#fff' : disabled ? 'var(--text-muted, #9aa1ad)' : 'var(--text-primary, #2a2f3a)',
-        fontSize: 13, fontWeight: active ? 700 : 400,
-        cursor: disabled ? 'not-allowed' : 'pointer',
+        width: 30, height: 30, borderRadius: 7, border: 'none',
+        background: hovered
+          ? danger ? '#fee2e2' : 'var(--bg-subtle, #f4f5f7)'
+          : 'transparent',
+        color: hovered
+          ? danger ? '#ef4444' : 'var(--text-primary, #2a2f3a)'
+          : 'var(--text-secondary, #5b6270)',
+        cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        opacity: disabled ? 0.45 : 1,
-        transition: 'all .12s',
-        fontFamily: 'inherit',
+        transition: 'background .12s, color .12s',
       }}
     >
       {children}

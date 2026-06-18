@@ -13,14 +13,16 @@ const ActivitiesTab        = lazy(() => import('@modules/employees').then(m => (
 const AssessmentsTab       = lazy(() => import('@modules/employees').then(m => ({ default: m.AssessmentsTab })))
 const IncidentsTab         = lazy(() => import('@modules/employees').then(m => ({ default: m.IncidentsTab })))
 const LeaveRequestsPage    = lazy(() => import('@modules/leave').then(m => ({ default: m.LeaveRequestsPage })))
-const AssessmentsPage      = lazy(() => import('@modules/assessments').then(m => ({ default: m.AssessmentsPage })))
-const AssessmentDetailPage = lazy(() => import('@modules/assessments').then(m => ({ default: m.AssessmentDetailPage })))
+const AssessmentsPage          = lazy(() => import('@modules/assessments').then(m => ({ default: m.AssessmentsPage })))
+const AssessmentDetailPage     = lazy(() => import('@modules/assessments').then(m => ({ default: m.AssessmentDetailPage })))
+const AssessmentTemplatesPage  = lazy(() => import('@modules/assessments').then(m => ({ default: m.AssessmentTemplatesPage })))
 const ShiftSchedulesPage   = lazy(() => import('@modules/shifts').then(m => ({ default: m.ShiftSchedulesPage })))
 const OrgChartPage         = lazy(() => import('@modules/org-chart').then(m => ({ default: m.OrgChartPage })))
 const AttendanceReportPage = lazy(() => import('@modules/attendance').then(m => ({ default: m.AttendanceReportPage })))
 const ProfilePage          = lazy(() => import('@modules/profile').then(m => ({ default: m.ProfilePage })))
 const OrganizationsPage    = lazy(() => import('@modules/organizations').then(m => ({ default: m.OrganizationsPage })))
 const DepartmentsPage      = lazy(() => import('@modules/organizations').then(m => ({ default: m.DepartmentsPage })))
+const DivisionsPage        = lazy(() => import('@modules/organizations').then(m => ({ default: m.DivisionsPage })))
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -46,8 +48,9 @@ export const router = createBrowserRouter([
             ],
           },
           { path: 'leave',              element: <LeaveRequestsPage /> },
-          { path: 'assessments',        element: <AssessmentsPage /> },
-          { path: 'assessments/:id',    element: <AssessmentDetailPage /> },
+          { path: 'assessments',                   element: <AssessmentsPage /> },
+          { path: 'assessments/:id',             element: <AssessmentDetailPage /> },
+          { path: 'assessments/templates',        element: <AssessmentTemplatesPage /> },
           { path: 'shifts',             element: <ShiftSchedulesPage /> },
           { path: 'org/supervisor',     element: <OrgChartPage mode="supervisor" /> },
           { path: 'org/structure',      element: <OrgChartPage mode="org" /> },
@@ -55,6 +58,7 @@ export const router = createBrowserRouter([
           { path: 'profile',            element: <ProfilePage /> },
           { path: 'organizations',      element: <OrganizationsPage /> },
           { path: 'departments',        element: <DepartmentsPage /> },
+          { path: 'divisions',          element: <DivisionsPage /> },
         ],
       },
     ],

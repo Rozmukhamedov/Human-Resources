@@ -4,10 +4,12 @@ import { useTranslation } from 'react-i18next'
 import { useUIStore } from '@core/store/uiStore'
 import { SectionHeader } from '@shared/ui/SectionHeader/SectionHeader'
 
-function NavItem({ label, path, badge }: { label: string; path: string; badge?: number }) {
+function NavItem({ label, path, badge, excludes }: { label: string; path: string; badge?: number; excludes?: string[] }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const active = location.pathname === path || (path !== '/' && location.pathname.startsWith(path))
+  const active =
+    (location.pathname === path || (path !== '/' && location.pathname.startsWith(path + '/')))
+    && !(excludes?.some(ex => location.pathname === ex || location.pathname.startsWith(ex + '/')))
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -73,6 +75,7 @@ function NavPanel() {
           <SectionHeader label={t('sec.company')} />
           <NavItem label={t('nav.employees')} path="/employees" />
           <NavItem label={t('nav.departments')} path="/departments" />
+          <NavItem label={t('nav.divisions')} path="/divisions" />
           <NavItem label={t('nav.organizations')} path="/organizations" />
           <NavItem label={t('nav.supervisorStruct')} path="/org/supervisor" />
           <NavItem label={t('nav.orgStruct')} path="/org/structure" />
@@ -82,7 +85,8 @@ function NavPanel() {
           <NavItem label={t('nav.shifts')} path="/shifts" />
           <NavItem label={t('nav.leave')} path="/leave" />
           <NavItem label={t('nav.attendance')} path="/attendance" />
-          <NavItem label={t('nav.assessments')} path="/assessments" />
+          <NavItem label={t('nav.assessments')} path="/assessments" excludes={['/assessments/templates']} />
+          <NavItem label={t('nav.assessmentTemplates')} path="/assessments/templates" />
         </div>
       </div>
 
@@ -339,11 +343,13 @@ function TopBar() {
     if (p === '/leave')           return [{ label: t('titles.leave'),            path: p, closable: false }]
     if (p === '/shifts')          return [{ label: t('titles.shifts'),           path: p, closable: false }]
     if (p === '/attendance')      return [{ label: t('titles.attendance'),       path: p, closable: false }]
-    if (p === '/assessments')     return [{ label: t('titles.assessments'),      path: p, closable: false }]
+    if (p === '/assessments')           return [{ label: t('titles.assessments'),         path: p, closable: false }]
+    if (p === '/assessments/templates') return [{ label: t('titles.assessmentTemplates'), path: p, closable: false }]
     if (p === '/org/supervisor')  return [{ label: t('titles.supervisorStruct'), path: p, closable: false }]
     if (p === '/org/structure')   return [{ label: t('titles.orgStruct'),        path: p, closable: false }]
     if (p === '/organizations')   return [{ label: t('titles.organizations'),    path: p, closable: false }]
     if (p === '/departments')     return [{ label: t('titles.departments'),      path: p, closable: false }]
+    if (p === '/divisions')       return [{ label: t('titles.divisions'),        path: p, closable: false }]
     if (p === '/profile')         return [{ label: t('adminName'),               path: p, closable: false }]
     return [{ label: t('titles.dashboard'), path: '/', closable: false }]
   }
