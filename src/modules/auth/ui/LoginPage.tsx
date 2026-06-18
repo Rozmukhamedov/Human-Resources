@@ -2,38 +2,41 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useUIStore } from '@core/store/uiStore'
-
-const CREDENTIALS = { email: 'admin@kpi.uz', password: 'admin123' }
+import { loginApi } from '@core/api/auth'
 
 export function LoginPage() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
   const { login, lang, setLang, colorMode, setColorMode } = useUIStore()
 
-  const [email, setEmail]         = useState('')
+  const [username, setUsername]   = useState('')
   const [password, setPassword]   = useState('')
   const [showPass, setShowPass]   = useState(false)
   const [remember, setRemember]   = useState(false)
   const [error, setError]         = useState('')
   const [loading, setLoading]     = useState(false)
-  const [emailFocus, setEmailFocus] = useState(false)
-  const [passFocus,  setPassFocus]  = useState(false)
+  const [userFocus, setUserFocus] = useState(false)
+  const [passFocus, setPassFocus] = useState(false)
 
   const handleLang = (code: 'uz' | 'en' | 'ru') => {
     setLang(code)
     void i18n.changeLanguage(code)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    if (!email || !password) { setError("Barcha maydonlarni to'ldiring"); return }
-    if (email !== CREDENTIALS.email || password !== CREDENTIALS.password) {
-      setError("Email yoki parol noto'g'ri")
-      return
-    }
+    if (!username || !password) { setError("Barcha maydonlarni to'ldiring"); return }
     setLoading(true)
-    setTimeout(() => { login(); navigate('/', { replace: true }) }, 700)
+    try {
+      const data = await loginApi(username, password)
+      login(data.user)
+      navigate('/', { replace: true })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Xatolik yuz berdi")
+    } finally {
+      setLoading(false)
+    }
   }
 
   const inputStyle = (focused: boolean): React.CSSProperties => ({
@@ -117,22 +120,17 @@ export function LoginPage() {
               <div style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 6 }}>Tizimga kirish uchun ma'lumotlaringizni kiriting</div>
             </div>
 
-            {/* Demo hint */}
-            <div style={{ background: 'var(--accent-soft)', border: '1px solid var(--accent-ring)', borderRadius: 10, padding: '10px 14px', marginBottom: 20, fontSize: 12.5, color: 'var(--accent)' }}>
-              <span style={{ fontWeight: 700 }}>Demo:</span> admin@kpi.uz / admin123
-            </div>
-
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
               <div>
-                <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 6 }}>Email</label>
+                <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 6 }}>Login</label>
                 <input
-                  type="email" value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onFocus={() => setEmailFocus(true)} onBlur={() => setEmailFocus(false)}
-                  placeholder="admin@kpi.uz"
-                  style={inputStyle(emailFocus)}
-                  autoComplete="email"
+                  type="text" value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  onFocus={() => setUserFocus(true)} onBlur={() => setUserFocus(false)}
+                  placeholder="admin"
+                  style={inputStyle(userFocus)}
+                  autoComplete="username"
                 />
               </div>
 

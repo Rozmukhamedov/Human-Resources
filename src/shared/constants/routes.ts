@@ -10,4 +10,5 @@ export const ROUTES = {
   ORG_SUPERVISOR: '/org/supervisor',
   ORG_STRUCTURE: '/org/structure',
   ATTENDANCE: '/attendance',
+  DEPARTMENTS: '/departments',
 } as const

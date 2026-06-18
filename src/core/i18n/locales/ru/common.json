@@ -15,7 +15,8 @@
     "leave": "Заявки на отпуск",
     "attendance": "Отчёт посещаемости",
     "assessments": "Аттестации",
-    "organizations": "Организации"
+    "organizations": "Организации",
+    "departments": "Отделы"
   },
   "titles": {
     "dashboard": "График работы",
@@ -27,7 +28,8 @@
     "attendance": "Отчёт посещаемости",
     "assessments": "Аттестации",
     "assessmentDetail": "Аттестация",
-    "organizations": "Организации"
+    "organizations": "Организации",
+    "departments": "Отделы"
   },
   "search": "Поиск...",
   "allDepts": "Все отделы",

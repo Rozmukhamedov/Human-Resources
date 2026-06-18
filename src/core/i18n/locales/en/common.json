@@ -15,7 +15,8 @@
     "leave": "Leave requests",
     "attendance": "Attendance report",
     "assessments": "Assessments",
-    "organizations": "Organizations"
+    "organizations": "Organizations",
+    "departments": "Departments"
   },
   "titles": {
     "dashboard": "Dashboard",
@@ -27,7 +28,8 @@
     "attendance": "Attendance report",
     "assessments": "Assessments",
     "assessmentDetail": "Assessment",
-    "organizations": "Organizations"
+    "organizations": "Organizations",
+    "departments": "Departments"
   },
   "search": "Search...",
   "allDepts": "All departments",
