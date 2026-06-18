@@ -534,8 +534,8 @@ export function EmployeeListPage() {
     let list = [...employees]
     if (filterDept !== 'all') list = list.filter(e => e.departmentName === filterDept)
     list.sort((a, b) => {
-      const av = String((a as Record<string, unknown>)[sortKey] ?? '')
-      const bv = String((b as Record<string, unknown>)[sortKey] ?? '')
+      const av = String((a as unknown as Record<string, unknown>)[sortKey] ?? '')
+      const bv = String((b as unknown as Record<string, unknown>)[sortKey] ?? '')
       return av.localeCompare(bv) * sortDir
     })
     return list

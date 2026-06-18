@@ -84,7 +84,7 @@ function PageBtn({
 export function DataTable<T>({
   title,
   columns,
-  rows,
+  rows = [],
   rowKey,
   onRowClick,
   headerRight,

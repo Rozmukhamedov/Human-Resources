@@ -1,5 +1,22 @@
 export type AssessmentStatus = 'approved' | 'pending' | 'in_progress' | 'rejected'
 
+export interface Assessment {
+  id: string
+  employeeName: string
+  startedDate: string
+  startedBy: string
+  reviewer: string
+  totalScore: string
+  departmentName: string
+  status: AssessmentStatus
+}
+
+export interface Competency {
+  title: string
+  items: string[]
+  score: number
+}
+
 export interface AssessmentList {
   id: number
   employee_name: string
