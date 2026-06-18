@@ -1,28 +1,28 @@
 import { apiRequest } from '@core/api/client'
-import type { Division, CreateDivisionPayload, PaginatedDivisions } from '../model/division.types'
+import type { Division, DivisionPayload, PaginatedDivisions } from '../model/division.types'
 
 export function getDivisions(page = 1, pageSize = 12) {
   return apiRequest<PaginatedDivisions>(
-    `/division/?page=${page}&page_size=${pageSize}`
+    `/employees/divisions/?page=${page}&page_size=${pageSize}`
   )
 }
 
-export function createDivision(data: CreateDivisionPayload) {
-  return apiRequest<Division>('/division/create/', {
+export function createDivision(data: DivisionPayload) {
+  return apiRequest<Division>('/employees/divisions/create/', {
     method: 'POST',
     body: JSON.stringify(data),
   })
 }
 
-export function updateDivision(id: number, data: CreateDivisionPayload) {
-  return apiRequest<Division>(`/division/${id}/update/`, {
-    method: 'PUT',
+export function updateDivision(id: number, data: DivisionPayload) {
+  return apiRequest<Division>(`/employees/divisions/${id}/update/`, {
+    method: 'PATCH',
     body: JSON.stringify(data),
   })
 }
 
 export function deleteDivision(id: number) {
-  return apiRequest<void>(`/division/${id}/delete/`, {
+  return apiRequest<void>(`/employees/divisions/${id}/delete/`, {
     method: 'DELETE',
   })
 }

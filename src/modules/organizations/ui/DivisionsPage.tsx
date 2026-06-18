@@ -1,8 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
-import type { Division, CreateDivisionPayload } from '../model/division.types'
+import type { Division, DivisionPayload } from '../model/division.types'
 import { getDivisions, createDivision, updateDivision, deleteDivision } from '../api/divisions'
 
 const PAGE_SIZE = 12
+
+const PRESET_COLORS = [
+  '#4f46e5', '#0891b2', '#059669', '#d97706', '#dc2626',
+  '#7c3aed', '#db2777', '#0284c7', '#65a30d', '#ea580c',
+]
 
 function Spinner() {
   return (
@@ -21,16 +26,24 @@ function Spinner() {
 interface ModalProps {
   division: Division | null
   onClose: () => void
-  onSave: (data: CreateDivisionPayload) => Promise<void>
+  onSave: (data: DivisionPayload) => Promise<void>
   loading: boolean
 }
 
 function DivisionModal({ division, onClose, onSave, loading }: ModalProps) {
-  const [name, setName] = useState(division?.name ?? '')
+  const [form, setForm] = useState<DivisionPayload>(() => ({
+    name_uz: division?.name_uz ?? '',
+    name_en: division?.name_en ?? '',
+    color: division?.color ?? PRESET_COLORS[0],
+    order: division?.order ?? 0,
+  }))
+
+  const set = <K extends keyof DivisionPayload>(key: K, value: DivisionPayload[K]) =>
+    setForm(prev => ({ ...prev, [key]: value }))
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    void onSave({ name })
+    void onSave(form)
   }
 
   const inputStyle: React.CSSProperties = {
@@ -41,6 +54,12 @@ function DivisionModal({ division, onClose, onSave, loading }: ModalProps) {
     background: 'var(--bg-subtle, #f9fafc)',
     outline: 'none', fontFamily: 'inherit',
     transition: 'border-color .15s',
+  }
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: 12, fontWeight: 600,
+    color: 'var(--text-secondary, #5b6270)',
+    display: 'block', marginBottom: 5,
   }
 
   return (
@@ -55,7 +74,8 @@ function DivisionModal({ division, onClose, onSave, loading }: ModalProps) {
     >
       <div style={{
         background: 'var(--surface, #fff)',
-        borderRadius: 20, width: 440,
+        borderRadius: 20, width: 460,
+        maxHeight: '90vh', overflowY: 'auto',
         boxShadow: '0 20px 60px rgba(0,0,0,.18)',
         fontFamily: "'Public Sans', sans-serif",
       }}>
@@ -66,7 +86,7 @@ function DivisionModal({ division, onClose, onSave, loading }: ModalProps) {
         }}>
           <div>
             <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-heading, #1a1f2e)' }}>
-              {division ? "Filialini tahrirlash" : "Yangi filial qo'shish"}
+              {division ? "Filialni tahrirlash" : "Yangi filial qo'shish"}
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-muted, #9aa1ad)', marginTop: 2 }}>
               {division ? "Ma'lumotlarni yangilang" : "Filial ma'lumotlarini kiriting"}
@@ -85,16 +105,70 @@ function DivisionModal({ division, onClose, onSave, loading }: ModalProps) {
 
         <form onSubmit={handleSubmit} style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary, #5b6270)', display: 'block', marginBottom: 5 }}>
-              Filial nomi *
-            </label>
+            <label style={labelStyle}>Nomi (UZ) *</label>
             <input
               style={inputStyle}
-              value={name}
-              onChange={e => setName(e.target.value)}
+              value={form.name_uz}
+              onChange={e => set('name_uz', e.target.value)}
               placeholder="Masalan: Shimoliy filial"
               required
               autoFocus
+              onFocus={e => (e.target.style.borderColor = '#4f46e5')}
+              onBlur={e => (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')}
+            />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Nomi (EN)</label>
+            <input
+              style={inputStyle}
+              value={form.name_en ?? ''}
+              onChange={e => set('name_en', e.target.value)}
+              placeholder="e.g. North Branch"
+              onFocus={e => (e.target.style.borderColor = '#4f46e5')}
+              onBlur={e => (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')}
+            />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Rang</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              {PRESET_COLORS.map(c => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => set('color', c)}
+                  style={{
+                    width: 28, height: 28, borderRadius: 8, border: 'none',
+                    background: c, cursor: 'pointer',
+                    outline: form.color === c ? `3px solid ${c}` : 'none',
+                    outlineOffset: 2,
+                    transform: form.color === c ? 'scale(1.15)' : 'scale(1)',
+                    transition: 'transform .12s',
+                  }}
+                />
+              ))}
+              <input
+                type="text"
+                value={form.color ?? ''}
+                onChange={e => set('color', e.target.value)}
+                placeholder="#4f46e5"
+                style={{ ...inputStyle, width: 110, padding: '6px 10px', fontSize: 12.5 }}
+                onFocus={e => (e.target.style.borderColor = '#4f46e5')}
+                onBlur={e => (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Tartib raqami</label>
+            <input
+              type="number"
+              style={inputStyle}
+              value={form.order ?? 0}
+              onChange={e => set('order', Number(e.target.value))}
+              min={0}
+              max={32767}
               onFocus={e => (e.target.style.borderColor = '#4f46e5')}
               onBlur={e => (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')}
             />
@@ -183,7 +257,7 @@ function DeleteConfirm({
           Filialni o'chirish
         </div>
         <div style={{ fontSize: 13.5, color: 'var(--text-secondary, #5b6270)', lineHeight: 1.6, marginBottom: 24 }}>
-          <strong>{division.name}</strong> filialni o'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi.
+          <strong>{division.name_uz}</strong> filialni o'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi.
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button
@@ -287,7 +361,7 @@ export function DivisionsPage() {
     void load(page)
   }, [page, load])
 
-  const handleSave = async (data: CreateDivisionPayload) => {
+  const handleSave = async (data: DivisionPayload) => {
     setSaving(true)
     try {
       if (modal.division) {
@@ -325,7 +399,6 @@ export function DivisionsPage() {
 
   return (
     <div style={{ padding: '18px 24px 40px', fontFamily: "'Public Sans', sans-serif" }}>
-      {/* Page header */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         marginBottom: 20,
@@ -370,7 +443,6 @@ export function DivisionsPage() {
         </button>
       </div>
 
-      {/* Content */}
       {loading ? (
         <Spinner />
       ) : error ? (
@@ -393,7 +465,6 @@ export function DivisionsPage() {
         </div>
       ) : (
         <>
-          {/* Table */}
           <div style={{
             background: 'var(--surface, #fff)',
             border: '1px solid var(--border-color, #ebedf1)',
@@ -403,13 +474,19 @@ export function DivisionsPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: "'Public Sans', sans-serif" }}>
               <thead>
                 <tr style={{ background: 'var(--bg-subtle, #f9fafc)', borderBottom: '1px solid var(--border-color, #ebedf1)' }}>
-                  <th style={{ padding: '11px 16px', textAlign: 'left', fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted, #9aa1ad)', textTransform: 'uppercase', letterSpacing: '.04em', width: 60 }}>
+                  <th style={{ padding: '11px 16px', textAlign: 'left', fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted, #9aa1ad)', textTransform: 'uppercase', letterSpacing: '.04em', width: 50 }}>
                     #
                   </th>
                   <th style={{ padding: '11px 16px', textAlign: 'left', fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted, #9aa1ad)', textTransform: 'uppercase', letterSpacing: '.04em' }}>
                     Filial nomi
                   </th>
-                  <th style={{ padding: '11px 16px', textAlign: 'right', fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted, #9aa1ad)', textTransform: 'uppercase', letterSpacing: '.04em', width: 120 }}>
+                  <th style={{ padding: '11px 16px', textAlign: 'left', fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted, #9aa1ad)', textTransform: 'uppercase', letterSpacing: '.04em', width: 80 }}>
+                    Rang
+                  </th>
+                  <th style={{ padding: '11px 16px', textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted, #9aa1ad)', textTransform: 'uppercase', letterSpacing: '.04em', width: 80 }}>
+                    Tartib
+                  </th>
+                  <th style={{ padding: '11px 16px', textAlign: 'right', fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted, #9aa1ad)', textTransform: 'uppercase', letterSpacing: '.04em', width: 100 }}>
                     Amallar
                   </th>
                 </tr>
@@ -428,7 +505,6 @@ export function DivisionsPage() {
             </table>
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -521,9 +597,37 @@ function TableRow({
         {index}
       </td>
       <td style={{ padding: '12px 16px' }}>
-        <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-heading, #1a1f2e)' }}>
-          {division.name}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 8, height: 8, borderRadius: '50%',
+            background: division.color || '#4f46e5',
+            flexShrink: 0,
+          }} />
+          <div>
+            <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-heading, #1a1f2e)' }}>
+              {division.name_uz}
+            </div>
+            {division.name_en && (
+              <div style={{ fontSize: 12, color: 'var(--text-muted, #9aa1ad)', marginTop: 1 }}>
+                {division.name_en}
+              </div>
+            )}
+          </div>
+        </div>
+      </td>
+      <td style={{ padding: '12px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{
+            width: 20, height: 20, borderRadius: 5,
+            background: division.color || '#4f46e5',
+          }} />
+          <span style={{ fontSize: 12, color: 'var(--text-muted, #9aa1ad)', fontFamily: 'monospace' }}>
+            {division.color || '—'}
+          </span>
+        </div>
+      </td>
+      <td style={{ padding: '12px 16px', textAlign: 'center', fontSize: 13, color: 'var(--text-secondary, #5b6270)', fontWeight: 600 }}>
+        {division.order}
       </td>
       <td style={{ padding: '12px 16px', textAlign: 'right' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>

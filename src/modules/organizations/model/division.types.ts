@@ -1,10 +1,16 @@
 export interface Division {
   id: number
-  name: string
+  name_uz: string
+  name_en: string
+  color: string
+  order: number
 }
 
-export interface CreateDivisionPayload {
-  name: string
+export interface DivisionPayload {
+  name_uz: string
+  name_en?: string
+  color?: string
+  order?: number
 }
 
 export interface PaginatedDivisions {
