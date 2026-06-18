@@ -215,6 +215,106 @@ function DivisionModal({ division, onClose, onSave, loading }: ModalProps) {
   )
 }
 
+function DepartmentsListModal({
+  division,
+  onClose,
+}: {
+  division: Division
+  onClose: () => void
+}) {
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        background: 'rgba(0,0,0,0.38)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        backdropFilter: 'blur(3px)',
+      }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div style={{
+        background: 'var(--surface, #fff)',
+        borderRadius: 20, width: 480,
+        maxHeight: '80vh', display: 'flex', flexDirection: 'column',
+        boxShadow: '0 20px 60px rgba(0,0,0,.18)',
+        fontFamily: "'Public Sans', sans-serif",
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '20px 24px 16px',
+          borderBottom: '1px solid var(--border-color, #ebedf1)',
+          flexShrink: 0,
+        }}>
+          <div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-heading, #1a1f2e)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: division.color || '#4f46e5', flexShrink: 0 }} />
+              {division.name_uz}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted, #9aa1ad)', marginTop: 2 }}>
+              {division.department_count} ta bo'lim
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              width: 32, height: 32, borderRadius: 8, border: 'none',
+              background: 'var(--bg-subtle, #f4f5f7)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'var(--text-secondary, #5b6270)', fontSize: 18, lineHeight: 1,
+            }}
+          >×</button>
+        </div>
+
+        <div style={{ overflowY: 'auto', padding: '12px 16px 20px' }}>
+          {division.departments.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted, #9aa1ad)', fontSize: 13.5 }}>
+              Bo'limlar mavjud emas
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {division.departments.map(dept => (
+                <div
+                  key={dept.id}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '10px 14px',
+                    borderRadius: 10,
+                    border: '1px solid var(--border-color, #ebedf1)',
+                    background: 'var(--bg-subtle, #f9fafc)',
+                  }}
+                >
+                  <div>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-heading, #1a1f2e)' }}>
+                      {dept.name_uz}
+                    </div>
+                    {dept.name_en && dept.name_en !== dept.name_uz && (
+                      <div style={{ fontSize: 12, color: 'var(--text-muted, #9aa1ad)', marginTop: 1 }}>
+                        {dept.name_en}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 4,
+                    fontSize: 12, color: 'var(--text-secondary, #5b6270)',
+                  }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                      <circle cx="9" cy="7" r="4"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span style={{ fontWeight: 600 }}>{dept.employee_count}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function DeleteConfirm({
   division,
   onClose,
@@ -340,6 +440,7 @@ export function DivisionsPage() {
     open: false, division: null,
   })
   const [deleteTarget, setDeleteTarget] = useState<Division | null>(null)
+  const [departmentsTarget, setDepartmentsTarget] = useState<Division | null>(null)
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
@@ -486,6 +587,9 @@ export function DivisionsPage() {
                   <th style={{ padding: '11px 16px', textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted, #9aa1ad)', textTransform: 'uppercase', letterSpacing: '.04em', width: 80 }}>
                     Tartib
                   </th>
+                  <th style={{ padding: '11px 16px', textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted, #9aa1ad)', textTransform: 'uppercase', letterSpacing: '.04em', width: 100 }}>
+                    Bo'limlar
+                  </th>
                   <th style={{ padding: '11px 16px', textAlign: 'right', fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted, #9aa1ad)', textTransform: 'uppercase', letterSpacing: '.04em', width: 100 }}>
                     Amallar
                   </th>
@@ -499,6 +603,7 @@ export function DivisionsPage() {
                     index={(page - 1) * PAGE_SIZE + idx + 1}
                     onEdit={() => setModal({ open: true, division })}
                     onDelete={() => setDeleteTarget(division)}
+                    onShowDepartments={() => setDepartmentsTarget(division)}
                   />
                 ))}
               </tbody>
@@ -566,6 +671,13 @@ export function DivisionsPage() {
           loading={saving}
         />
       )}
+
+      {departmentsTarget && (
+        <DepartmentsListModal
+          division={departmentsTarget}
+          onClose={() => setDepartmentsTarget(null)}
+        />
+      )}
     </div>
   )
 }
@@ -575,11 +687,13 @@ function TableRow({
   index,
   onEdit,
   onDelete,
+  onShowDepartments,
 }: {
   division: Division
   index: number
   onEdit: () => void
   onDelete: () => void
+  onShowDepartments: () => void
 }) {
   const [hovered, setHovered] = useState(false)
 
@@ -628,6 +742,30 @@ function TableRow({
       </td>
       <td style={{ padding: '12px 16px', textAlign: 'center', fontSize: 13, color: 'var(--text-secondary, #5b6270)', fontWeight: 600 }}>
         {division.order}
+      </td>
+      <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+        <button
+          onClick={division.department_count > 0 ? onShowDepartments : undefined}
+          style={{
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            minWidth: 24, height: 22, padding: '0 8px',
+            borderRadius: 6, fontSize: 12.5, fontWeight: 600, border: 'none',
+            background: division.department_count > 0 ? '#ede9fe' : 'var(--bg-subtle, #f4f5f7)',
+            color: division.department_count > 0 ? '#4f46e5' : 'var(--text-muted, #9aa1ad)',
+            cursor: division.department_count > 0 ? 'pointer' : 'default',
+            transition: 'background .12s',
+          }}
+          onMouseEnter={e => {
+            if (division.department_count > 0)
+              (e.currentTarget as HTMLButtonElement).style.background = '#ddd6fe'
+          }}
+          onMouseLeave={e => {
+            if (division.department_count > 0)
+              (e.currentTarget as HTMLButtonElement).style.background = '#ede9fe'
+          }}
+        >
+          {division.department_count}
+        </button>
       </td>
       <td style={{ padding: '12px 16px', textAlign: 'right' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>

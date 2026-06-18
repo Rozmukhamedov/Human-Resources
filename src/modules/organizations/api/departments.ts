@@ -1,10 +1,14 @@
 import { apiRequest } from '@core/api/client'
-import type { Department, CreateDepartmentPayload, PaginatedDepartments } from '../model/department.types'
+import type { Department, DepartmentDetail, CreateDepartmentPayload, PaginatedDepartments } from '../model/department.types'
 
 export function getDepartments(page = 1, pageSize = 10) {
   return apiRequest<PaginatedDepartments>(
     `/employees/departments/?page=${page}&page_size=${pageSize}`
   )
+}
+
+export function getDepartment(id: number) {
+  return apiRequest<DepartmentDetail>(`/employees/departments/${id}/`)
 }
 
 export function createDepartment(data: CreateDepartmentPayload) {
@@ -16,7 +20,7 @@ export function createDepartment(data: CreateDepartmentPayload) {
 
 export function updateDepartment(id: number, data: CreateDepartmentPayload) {
   return apiRequest<Department>(`/employees/departments/${id}/update/`, {
-    method: 'PUT',
+    method: 'PATCH',
     body: JSON.stringify(data),
   })
 }

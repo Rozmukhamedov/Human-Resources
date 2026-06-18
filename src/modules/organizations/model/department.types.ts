@@ -8,10 +8,18 @@ export interface Department {
   kpi_change: number | null
 }
 
+export interface DepartmentDetail {
+  id: number
+  name_uz: string
+  name_en: string
+  division: { id: number; name_uz: string; name_en: string } | null
+  created_at: string
+}
+
 export interface CreateDepartmentPayload {
   name_uz: string
   name_en?: string
-  head_name?: string | null
+  division?: number | null
 }
 
 export interface PaginatedDepartments {

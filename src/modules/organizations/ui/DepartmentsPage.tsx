@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { Department, CreateDepartmentPayload } from '../model/department.types'
+import type { Division } from '../model/division.types'
 import {
   getDepartments,
+  getDepartment,
   createDepartment,
   updateDepartment,
   deleteDepartment,
 } from '../api/departments'
+import { getDivisions } from '../api/divisions'
 
 const PAGE_SIZE = 12
 
@@ -162,16 +165,18 @@ function DeptCard({
 
 interface ModalProps {
   dept: Department | null
+  divisionId?: number | null
   onClose: () => void
   onSave: (data: CreateDepartmentPayload) => Promise<void>
   loading: boolean
+  divisions: Division[]
 }
 
-function DeptModal({ dept, onClose, onSave, loading }: ModalProps) {
+function DeptModal({ dept, divisionId, onClose, onSave, loading, divisions }: ModalProps) {
   const [form, setForm] = useState<CreateDepartmentPayload>(() =>
     dept
-      ? { name_uz: dept.name_uz, name_en: dept.name_en, head_name: dept.head_name }
-      : { name_uz: '', name_en: '', head_name: '' }
+      ? { name_uz: dept.name_uz, name_en: dept.name_en, division: divisionId ?? null }
+      : { name_uz: '', name_en: '', division: null }
   )
 
   const set = <K extends keyof CreateDepartmentPayload>(key: K, value: CreateDepartmentPayload[K]) =>
@@ -266,15 +271,19 @@ function DeptModal({ dept, onClose, onSave, loading }: ModalProps) {
           </div>
 
           <div>
-            <label style={labelStyle}>Bo'lim rahbari</label>
-            <input
-              style={inputStyle}
-              value={form.head_name ?? ''}
-              onChange={e => set('head_name', e.target.value)}
-              placeholder="Ism va familiya"
+            <label style={labelStyle}>Bo'lim (Division)</label>
+            <select
+              style={{ ...inputStyle, appearance: 'none' }}
+              value={form.division ?? ''}
+              onChange={e => set('division', e.target.value ? Number(e.target.value) : null)}
               onFocus={e => (e.target.style.borderColor = '#4f46e5')}
               onBlur={e => (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')}
-            />
+            >
+              <option value="">— Tanlang —</option>
+              {divisions.map(d => (
+                <option key={d.id} value={d.id}>{d.name_uz}</option>
+              ))}
+            </select>
           </div>
 
           <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
@@ -418,8 +427,9 @@ export function DepartmentsPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [divisions, setDivisions] = useState<Division[]>([])
 
-  const [modal, setModal] = useState<{ open: boolean; dept: Department | null }>({
+  const [modal, setModal] = useState<{ open: boolean; dept: Department | null; divisionId?: number | null }>({
     open: false, dept: null,
   })
   const [deleteTarget, setDeleteTarget] = useState<Department | null>(null)
@@ -444,16 +454,28 @@ export function DepartmentsPage() {
     void load(page)
   }, [page, load])
 
+  useEffect(() => {
+    getDivisions(1, 100).then(res => setDivisions(res.data ?? [])).catch(() => {})
+  }, [])
+
+  const handleEdit = async (dept: Department) => {
+    try {
+      const detail = await getDepartment(dept.id)
+      setModal({ open: true, dept, divisionId: detail.division?.id ?? null })
+    } catch {
+      setModal({ open: true, dept, divisionId: null })
+    }
+  }
+
   const handleSave = async (data: CreateDepartmentPayload) => {
     setSaving(true)
     try {
       if (modal.dept) {
-        const updated = await updateDepartment(modal.dept.id, data)
-        setDepartments(prev => prev.map(d => d.id === updated.id ? updated : d))
+        await updateDepartment(modal.dept.id, data)
       } else {
         await createDepartment(data)
-        await load(page)
       }
+      await load(page)
       setModal({ open: false, dept: null })
     } catch (e) {
       alert((e as Error).message || 'Xatolik yuz berdi')
@@ -562,7 +584,7 @@ export function DepartmentsPage() {
               <DeptCard
                 key={dept.id}
                 dept={dept}
-                onEdit={d => setModal({ open: true, dept: d })}
+                onEdit={d => void handleEdit(d)}
                 onDelete={d => setDeleteTarget(d)}
               />
             ))}
@@ -616,9 +638,11 @@ export function DepartmentsPage() {
       {modal.open && (
         <DeptModal
           dept={modal.dept}
+          divisionId={modal.divisionId}
           onClose={() => setModal({ open: false, dept: null })}
           onSave={handleSave}
           loading={saving}
+          divisions={divisions}
         />
       )}
 

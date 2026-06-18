@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useEffect } from 'react'
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { departments } from '@data/departments'
@@ -42,26 +42,151 @@ function getPageNumbers(current: number, total: number): (number | '...')[] {
 }
 
 type FormState = {
-  code: string
   first_name: string
   last_name: string
   department: string
   position: string
-  supervisor: string
   status: string
   gender: string
   date_of_birth: string
   hire_date: string
   phone: string
   email: string
+  is_head: boolean
 }
 
 const EMPTY_FORM: FormState = {
-  code: '', first_name: '', last_name: '',
-  department: '', position: '', supervisor: '',
+  first_name: '', last_name: '',
+  department: '', position: '',
   status: '', gender: '',
   date_of_birth: '', hire_date: '',
   phone: '', email: '',
+  is_head: false,
+}
+
+function SupervisorSearch({
+  value,
+  onChange,
+  inputStyle,
+}: {
+  value: { id: number; label: string } | null
+  onChange: (v: { id: number; label: string } | null) => void
+  inputStyle: React.CSSProperties
+}) {
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<ApiEmployee[]>([])
+  const [open, setOpen] = useState(false)
+  const [focused, setFocused] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const wrapRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const search = (q: string) => {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    if (!q.trim()) { setResults([]); setOpen(false); return }
+    timerRef.current = setTimeout(() => {
+      getEmployees({ search: q, page_size: 20 })
+        .then(d => { setResults(d.results ?? []); setOpen(true) })
+        .catch(() => {})
+    }, 280)
+  }
+
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const q = e.target.value
+    setQuery(q)
+    if (value) onChange(null)
+    search(q)
+  }
+
+  const select = (emp: ApiEmployee) => {
+    onChange({ id: emp.id, label: emp.full_name || `${emp.first_name} ${emp.last_name}` })
+    setQuery('')
+    setResults([])
+    setOpen(false)
+  }
+
+  const clear = () => {
+    onChange(null)
+    setQuery('')
+    setResults([])
+    setOpen(false)
+  }
+
+  const displayValue = value ? value.label : query
+
+  return (
+    <div ref={wrapRef} style={{ position: 'relative' }}>
+      <div style={{ position: 'relative' }}>
+        <input
+          style={{
+            ...inputStyle,
+            borderColor: focused ? '#4f46e5' : 'var(--border-color, #e4e7ef)',
+            paddingRight: value ? 36 : 13,
+          }}
+          value={displayValue}
+          onChange={handleInput}
+          onFocus={() => { setFocused(true); if (results.length) setOpen(true) }}
+          onBlur={() => setFocused(false)}
+          placeholder="Rahbarni qidiring..."
+          autoComplete="off"
+        />
+        {value && (
+          <button
+            type="button"
+            onClick={clear}
+            style={{
+              position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+              background: 'none', border: 'none', cursor: 'pointer', padding: 2,
+              color: 'var(--text-muted, #9aa1ad)', fontSize: 16, lineHeight: 1,
+              display: 'flex', alignItems: 'center',
+            }}
+          >×</button>
+        )}
+      </div>
+      {open && results.length > 0 && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 10,
+          background: 'var(--surface, #fff)',
+          border: '1.5px solid var(--border-color, #e4e7ef)',
+          borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,.1)',
+          maxHeight: 220, overflowY: 'auto',
+        }}>
+          {results.map(emp => (
+            <div
+              key={emp.id}
+              onMouseDown={() => select(emp)}
+              style={{
+                padding: '9px 13px', cursor: 'pointer', fontSize: 13.5,
+                color: 'var(--text-primary, #2a2f3a)',
+                borderBottom: '1px solid var(--border-color, #f0f1f5)',
+                display: 'flex', flexDirection: 'column', gap: 2,
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-subtle, #f4f5f7)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            >
+              <span style={{ fontWeight: 600 }}>
+                {emp.full_name || `${emp.first_name} ${emp.last_name}`}
+              </span>
+              {emp.position && (
+                <span style={{ fontSize: 11.5, color: 'var(--text-muted, #9aa1ad)' }}>
+                  {emp.position.name}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function CreateEmployeeModal({
@@ -74,6 +199,7 @@ function CreateEmployeeModal({
   loading: boolean
 }) {
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
+  const [supervisor, setSupervisor] = useState<{ id: number; label: string } | null>(null)
   const [depts, setDepts] = useState<Department[]>([])
   const [positions, setPositions] = useState<Position[]>([])
 
@@ -82,25 +208,25 @@ function CreateEmployeeModal({
     getPositions(1, 200).then(p => setPositions(p.results ?? [])).catch(() => {})
   }, [])
 
-  const set = (key: keyof FormState, value: string) =>
+  const set = (key: keyof FormState, value: string | boolean) =>
     setForm(prev => ({ ...prev, [key]: value }))
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const payload: CreateEmployeePayload = {
-      code: form.code,
       first_name: form.first_name,
       last_name: form.last_name,
       department: Number(form.department),
       position: Number(form.position),
       gender: form.gender as 'male' | 'female',
     }
-    if (form.supervisor) payload.supervisor = Number(form.supervisor)
+    if (supervisor) payload.supervisor = supervisor.id
     if (form.status) payload.status = form.status as CreateEmployeePayload['status']
     if (form.date_of_birth) payload.date_of_birth = form.date_of_birth
     if (form.hire_date) payload.hire_date = form.hire_date
     if (form.phone) payload.phone = form.phone
     if (form.email) payload.email = form.email
+    if (form.is_head) payload.is_head = form.is_head
     void onSave(payload)
   }
 
@@ -168,17 +294,6 @@ function CreateEmployeeModal({
         </div>
 
         <form onSubmit={handleSubmit} style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-
-          {/* Code */}
-          <div>
-            <label style={labelStyle}>Kod *</label>
-            <input
-              style={inputStyle} value={form.code}
-              onChange={e => set('code', e.target.value)}
-              placeholder="EMP-001" maxLength={10} required
-              onFocus={focusBorder} onBlur={blurBorder}
-            />
-          </div>
 
           {/* First / Last name */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -259,12 +374,11 @@ function CreateEmployeeModal({
 
           {/* Supervisor */}
           <div>
-            <label style={labelStyle}>Rahbar (ID)</label>
-            <input
-              style={inputStyle} value={form.supervisor}
-              onChange={e => set('supervisor', e.target.value)}
-              placeholder="Rahbar xodim ID raqami" type="number"
-              onFocus={focusBorder} onBlur={blurBorder}
+            <label style={labelStyle}>Rahbar</label>
+            <SupervisorSearch
+              value={supervisor}
+              onChange={setSupervisor}
+              inputStyle={inputStyle}
             />
           </div>
 
@@ -309,6 +423,19 @@ function CreateEmployeeModal({
               />
             </div>
           </div>
+
+          {/* Is head */}
+          <label style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer', userSelect: 'none' }}>
+            <input
+              type="checkbox"
+              checked={form.is_head}
+              onChange={e => set('is_head', e.target.checked)}
+              style={{ width: 16, height: 16, accentColor: '#4f46e5', cursor: 'pointer' }}
+            />
+            <span style={{ fontSize: 13.5, color: 'var(--text-secondary, #5b6270)', fontWeight: 500 }}>
+              Bo'lim boshlig'i
+            </span>
+          </label>
 
           {/* Actions */}
           <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>

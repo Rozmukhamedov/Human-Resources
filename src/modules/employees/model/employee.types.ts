@@ -20,7 +20,6 @@ export interface Employee {
 export type ApiGender = 'male' | 'female'
 
 export interface CreateEmployeePayload {
-  code: string
   first_name: string
   last_name: string
   department: number
@@ -32,6 +31,7 @@ export interface CreateEmployeePayload {
   hire_date?: string | null
   phone?: string
   email?: string
+  is_head?: boolean
 }
 
 export interface ApiEmployee {
