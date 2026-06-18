@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { getDepartmentDetail } from '../api/departments'
 import type { DepartmentDetailFull, DepartmentStaffMember } from '../model/department.types'
 
@@ -262,7 +262,6 @@ const IND_KEYS = ['attendance', 'tasks', 'care', 'docs', 'discipline', 'assessme
 
 export function DepartmentDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
   const [dept, setDept] = useState<DepartmentDetailFull | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -281,12 +280,6 @@ export function DepartmentDetailPage() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 14 }}>
         <div style={{ fontSize: 14, color: 'var(--text-muted)' }}>Bo'lim topilmadi</div>
-        <button
-          onClick={() => navigate('/departments')}
-          style={{ padding: '8px 18px', borderRadius: 9, border: 'none', background: '#4f46e5', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
-        >
-          Ortga
-        </button>
       </div>
     )
   }
@@ -297,26 +290,8 @@ export function DepartmentDetailPage() {
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: 24, fontFamily: "'Public Sans', sans-serif" }}>
 
-      {/* Back button + title */}
+      {/* Title */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22 }}>
-        <button
-          onClick={() => navigate('/departments')}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            padding: '7px 14px', borderRadius: 9,
-            border: '1.5px solid var(--border-color)',
-            background: 'transparent', cursor: 'pointer',
-            fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)',
-            fontFamily: 'inherit',
-          }}
-          onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-subtle)')}
-          onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.background = 'transparent')}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-          Ortga
-        </button>
         <div style={{ fontFamily: "'Plus Jakarta Sans'", fontWeight: 800, fontSize: 18, color: 'var(--text-heading)' }}>
           {dept.name_uz}
         </div>
@@ -332,7 +307,7 @@ export function DepartmentDetailPage() {
         )}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 20, maxWidth: 1200 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 20 }}>
 
         {/* ── Left sidebar ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>

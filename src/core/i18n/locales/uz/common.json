@@ -153,7 +153,8 @@
     "done": "xodim import qilindi",
     "saveWeights": "Saqlash",
     "weightsSaved": "Vaznlar saqlandi",
-    "monthSub": "{{year}} · {{month}}-oy"
+    "monthSub": "{{year}} · {{month}}-oy",
+    "exportExcel": "Excel eksport"
   },
   "holidays": {
     "title": "Dam olish kunlari",

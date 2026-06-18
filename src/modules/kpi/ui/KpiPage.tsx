@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { KpiWeights, KpiResultEmployee, KpiResultsResponse, KpiGrade } from '../model/kpi.types'
-import { getKpiWeights, updateKpiWeights, calculateKpi, getKpiResults } from '../api/kpi'
+import { getKpiWeights, updateKpiWeights, calculateKpi, getKpiResults, exportKpiExcel } from '../api/kpi'
 
 const KPI_KEYS: (keyof KpiWeights)[] = ['attendance', 'tasks', 'care', 'docs', 'discipline', 'assessment']
 
@@ -72,6 +72,7 @@ export function KpiPage() {
   const [resultsError, setResultsError] = useState<string | null>(null)
 
   const [toast, setToast] = useState('')
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
     setWeightsLoading(true)
@@ -154,7 +155,7 @@ export function KpiPage() {
   const topPerformer = rankList[0] ?? null
 
   return (
-    <div style={{ padding: '22px 24px 44px', maxWidth: 1400, margin: '0 auto' }}>
+    <div style={{ padding: '22px 24px 44px' }}>
       <style>{`@keyframes kpi-spin { to { transform: rotate(360deg); } }`}</style>
 
       {/* Header */}
@@ -170,6 +171,34 @@ export function KpiPage() {
           </div>
         </div>
         <div style={{ flex: 1 }} />
+        <button
+          onClick={async () => {
+            setExporting(true)
+            try {
+              await exportKpiExcel()
+            } catch (e) {
+              alert((e as Error).message || t('error'))
+            } finally {
+              setExporting(false)
+            }
+          }}
+          disabled={exporting}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 7,
+            padding: '8px 18px', border: 'none', borderRadius: 10,
+            background: 'var(--accent)', color: '#fff',
+            cursor: exporting ? 'not-allowed' : 'pointer',
+            fontSize: 13, fontWeight: 700, fontFamily: 'inherit',
+            opacity: exporting ? 0.6 : 1,
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          {exporting ? '...' : t('kpi.exportExcel')}
+        </button>
         {resultsLoading && <Spinner />}
       </div>
 
@@ -209,7 +238,7 @@ export function KpiPage() {
       </div>
 
       {/* Main content: weights panel + ranking table */}
-      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 16, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 16, alignItems: 'start', minWidth: 0 }}>
 
         {/* Weights panel */}
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 20 }}>
@@ -252,42 +281,43 @@ export function KpiPage() {
             <span style={{ fontWeight: 800, fontSize: 15, color: totalW === 100 ? '#0f9d58' : '#d97706' }}>{totalW}%</span>
           </div>
 
-          {weightsDirty && (
-            <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-              <button
-                onClick={handleResetWeights}
-                disabled={weightsSaving}
-                style={{
-                  flex: 1, padding: '9px 0',
-                  border: '1.5px solid var(--border-color, #e4e7ef)',
-                  borderRadius: 10, background: 'transparent', cursor: 'pointer',
-                  fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)',
-                  fontFamily: 'inherit',
-                }}
-              >
-                {t('kpi.reset')}
-              </button>
-              <button
-                onClick={() => void handleSaveWeights()}
-                disabled={weightsSaving}
-                style={{
-                  flex: 2, padding: '9px 0', border: 'none',
-                  borderRadius: 10,
-                  background: weightsSaving ? '#a5b4fc' : 'var(--accent)',
-                  cursor: weightsSaving ? 'not-allowed' : 'pointer',
-                  fontSize: 13, fontWeight: 700, color: '#fff',
-                  fontFamily: 'inherit',
-                  boxShadow: '0 2px 8px rgba(79,70,229,.2)',
-                }}
-              >
-                {weightsSaving ? '...' : t('kpi.saveWeights')}
-              </button>
-            </div>
-          )}
+          <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+            <button
+              onClick={handleResetWeights}
+              disabled={!weightsDirty || weightsSaving}
+              style={{
+                flex: 1, padding: '9px 0',
+                border: '1.5px solid var(--border-color, #e4e7ef)',
+                borderRadius: 10, background: 'transparent',
+                cursor: !weightsDirty || weightsSaving ? 'not-allowed' : 'pointer',
+                fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)',
+                fontFamily: 'inherit',
+                opacity: !weightsDirty ? 0.5 : 1,
+              }}
+            >
+              {t('kpi.reset')}
+            </button>
+            <button
+              onClick={() => void handleSaveWeights()}
+              disabled={!weightsDirty || weightsSaving}
+              style={{
+                flex: 2, padding: '9px 0', border: 'none',
+                borderRadius: 10,
+                background: !weightsDirty ? '#a5b4fc' : weightsSaving ? '#a5b4fc' : 'var(--accent)',
+                cursor: !weightsDirty || weightsSaving ? 'not-allowed' : 'pointer',
+                fontSize: 13, fontWeight: 700, color: '#fff',
+                fontFamily: 'inherit',
+                boxShadow: weightsDirty ? '0 2px 8px rgba(79,70,229,.2)' : 'none',
+                opacity: !weightsDirty ? 0.5 : 1,
+              }}
+            >
+              {weightsSaving ? '...' : t('kpi.saveWeights')}
+            </button>
+          </div>
         </div>
 
         {/* Ranking table */}
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: 16, overflow: 'hidden' }}>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: 16, overflow: 'hidden', minWidth: 0 }}>
           {resultsError ? (
             <div style={{ padding: '40px 24px', textAlign: 'center', color: '#ef4444', fontSize: 13.5 }}>
               <div style={{ marginBottom: 12 }}>{resultsError}</div>

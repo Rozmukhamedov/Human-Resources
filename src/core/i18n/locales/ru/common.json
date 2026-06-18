@@ -153,7 +153,8 @@
     "done": "сотрудников импортировано",
     "saveWeights": "Сохранить",
     "weightsSaved": "Веса сохранены",
-    "monthSub": "{{year}} · {{month}}-й месяц"
+    "monthSub": "{{year}} · {{month}}-й месяц",
+    "exportExcel": "Экспорт Excel"
   },
   "holidays": {
     "title": "Праздничные дни",

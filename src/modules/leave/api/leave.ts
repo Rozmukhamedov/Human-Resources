@@ -6,6 +6,7 @@ export interface GetLeavesParams {
   ordering?: string
   page?: number
   page_size?: number
+  employee?: number
 }
 
 export function getLeaves(params: GetLeavesParams = {}) {
@@ -14,6 +15,7 @@ export function getLeaves(params: GetLeavesParams = {}) {
   if (params.ordering) q.set('ordering', params.ordering)
   if (params.page != null) q.set('page', String(params.page))
   if (params.page_size != null) q.set('page_size', String(params.page_size))
+  if (params.employee != null) q.set('employee', String(params.employee))
   const qs = q.toString()
   return apiRequest<PaginatedLeaves>(`/leave/${qs ? `?${qs}` : ''}`)
 }

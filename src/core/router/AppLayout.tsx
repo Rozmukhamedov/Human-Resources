@@ -342,6 +342,10 @@ function TopBar() {
       { label: t('titles.employees'), path: '/employees', closable: false },
       { label: params.id, path: p, closable: true },
     ]
+    if (p.startsWith('/departments/') && params.id) return [
+      { label: t('titles.departments'), path: '/departments', closable: false },
+      { label: params.id, path: p, closable: true },
+    ]
     if (p.startsWith('/assessments/') && params.id) return [
       { label: t('titles.assessments'), path: '/assessments', closable: false },
       { label: t('titles.assessmentDetail'), path: p, closable: true },

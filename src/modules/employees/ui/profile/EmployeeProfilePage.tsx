@@ -114,7 +114,7 @@ export function EmployeeProfilePage() {
 
       {/* Content */}
       <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 20, maxWidth: 1100 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 20 }}>
 
           {/* Left sidebar */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -153,7 +153,7 @@ export function EmployeeProfilePage() {
           </div>
 
           {/* Right: outlet */}
-          <div>
+          <div style={{ minWidth: 0 }}>
             <Outlet context={{ emp } satisfies EmployeeProfileContext} />
           </div>
         </div>

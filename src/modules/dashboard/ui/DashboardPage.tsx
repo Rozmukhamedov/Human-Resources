@@ -1,7 +1,8 @@
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { employees } from '@data/employees'
-import { birthdays, deptBars } from '@data/birthdays'
 import { EmployeeAvatar } from '@shared/ui/EmployeeAvatar/EmployeeAvatar'
+import { getDashboard } from '../api/dashboard'
+import type { DashboardData } from '../model/dashboard.types'
 
 function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub: string; color: string }) {
   return (
@@ -15,21 +16,46 @@ function StatCard({ label, value, sub, color }: { label: string; value: string |
 
 export function DashboardPage() {
   const { t } = useTranslation(['dashboard', 'common'])
+  const [data, setData] = useState<DashboardData | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  const total = employees.length
-  const active = employees.filter(e => e.status === 'active').length
-  const onLeave = employees.filter(e => e.status === 'leave').length
-  const probation = employees.filter(e => e.status === 'probation').length
-  const maxBar = Math.max(...deptBars.map(b => b.count))
+  useEffect(() => {
+    getDashboard()
+      .then(setData)
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return (
+      <div style={{ padding: '18px 24px 40px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+        <div style={{ color: '#8d94a0', fontSize: 14 }}>{t('loading', { ns: 'common' })}</div>
+      </div>
+    )
+  }
+
+  if (!data) {
+    return (
+      <div style={{ padding: '18px 24px 40px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+        <div style={{ color: '#d97706', fontSize: 14 }}>{t('error', { ns: 'common' })}</div>
+      </div>
+    )
+  }
+
+  const { stat_cards, schedule_overview, not_filled_departments, employees_by_department, upcoming_birthdays } = data
+  const maxBar = Math.max(...employees_by_department.map(d => d.employee_count), 1)
+
+  const scheduleTotal = schedule_overview.total || 1
+  const approvedPct = (schedule_overview.approved / scheduleTotal) * 100
+  const submittedPct = (schedule_overview.submitted / scheduleTotal) * 100
 
   return (
     <div style={{ padding: '18px 24px 40px' }}>
       {/* Stat cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 18 }}>
-        <StatCard label={t('statCards.totalEmps', { ns: 'dashboard' })} value={total}    sub={t('status.active', { ns: 'common' })}    color="#2a2f3a" />
-        <StatCard label={t('statCards.active',    { ns: 'dashboard' })} value={active}   sub={t('status.active', { ns: 'common' })}    color="var(--accent,#4f46e5)" />
-        <StatCard label={t('statCards.onLeave',   { ns: 'dashboard' })} value={onLeave}  sub={t('status.leave',  { ns: 'common' })}    color="#d97706" />
-        <StatCard label={t('statCards.probation', { ns: 'dashboard' })} value={probation} sub={t('status.probation', { ns: 'common' })} color="#5b6270" />
+        <StatCard label={t('statCards.totalEmps', { ns: 'dashboard' })} value={stat_cards.total_employees} sub={t('status.active', { ns: 'common' })} color="#2a2f3a" />
+        <StatCard label={t('statCards.totalScore', { ns: 'dashboard' })} value={stat_cards.avg_kpi_score} sub="KPI" color="var(--accent,#4f46e5)" />
+        <StatCard label={t('totalDepts', { ns: 'dashboard' })} value={stat_cards.total_departments} sub={`${stat_cards.filled_departments} ${t('status.active', { ns: 'common' }).toLowerCase()}`} color="#d97706" />
+        <StatCard label={t('notFilledList', { ns: 'dashboard' })} value={stat_cards.not_filled_departments} sub={t('total', { ns: 'dashboard' })} color="#5b6270" />
       </div>
 
       {/* Weather + Birthdays row */}
@@ -70,14 +96,14 @@ export function DashboardPage() {
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 8, maxHeight: 170, overflowY: 'auto' }}>
-            {birthdays.map(b => (
-              <div key={b.initials} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '8px 6px', borderRadius: 9 }}>
+            {upcoming_birthdays.map(b => (
+              <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '8px 6px', borderRadius: 9 }}>
                 <EmployeeAvatar initials={b.initials} size={34} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#2a2f3a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.name}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#2a2f3a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.full_name}</div>
                   <div style={{ fontSize: 11.5, color: '#9aa1ad', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.department}</div>
                 </div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent,#4f46e5)', whiteSpace: 'nowrap' }}>{b.date}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent,#4f46e5)', whiteSpace: 'nowrap' }}>{b.month}</div>
               </div>
             ))}
           </div>
@@ -90,17 +116,17 @@ export function DashboardPage() {
           <div style={{ fontWeight: 700, fontSize: 14, color: '#2a2f3a', marginBottom: 6 }}>{t('scheduleStatus', { ns: 'dashboard' })}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
             <div style={{ position: 'relative', width: 170, height: 170, flexShrink: 0 }}>
-              <div style={{ width: 170, height: 170, borderRadius: '50%', background: 'conic-gradient(var(--accent,#4f46e5) 0 92.86%, #f59e0b 92.86% 96.43%, #94a3b8 96.43% 100%)' }} />
+              <div style={{ width: 170, height: 170, borderRadius: '50%', background: `conic-gradient(var(--accent,#4f46e5) 0 ${approvedPct}%, #f59e0b ${approvedPct}% ${approvedPct + submittedPct}%, #94a3b8 ${approvedPct + submittedPct}% 100%)` }} />
               <div style={{ position: 'absolute', inset: 30, borderRadius: '50%', background: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ fontFamily: "'Plus Jakarta Sans'", fontSize: 34, fontWeight: 800, color: '#2a2f3a', lineHeight: 1 }}>28</div>
+                <div style={{ fontFamily: "'Plus Jakarta Sans'", fontSize: 34, fontWeight: 800, color: '#2a2f3a', lineHeight: 1 }}>{schedule_overview.total}</div>
                 <div style={{ fontSize: 11, color: '#9aa1ad' }}>{t('totalDepts', { ns: 'dashboard' })}</div>
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {[
-                { color: 'var(--accent,#4f46e5)', label: t('status.approved', { ns: 'common' }), count: 26 },
-                { color: '#f59e0b', label: t('status.submitted', { ns: 'common' }), count: 1 },
-                { color: '#94a3b8', label: t('status.notCreated', { ns: 'common' }), count: 1 },
+                { color: 'var(--accent,#4f46e5)', label: t('status.approved', { ns: 'common' }), count: schedule_overview.approved },
+                { color: '#f59e0b', label: t('status.submitted', { ns: 'common' }), count: schedule_overview.submitted },
+                { color: '#94a3b8', label: t('status.notCreated', { ns: 'common' }), count: schedule_overview.not_created },
               ].map(item => (
                 <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ width: 11, height: 11, borderRadius: 3, background: item.color, flexShrink: 0 }} />
@@ -115,23 +141,15 @@ export function DashboardPage() {
         <div style={{ background: '#fff', border: '1px solid #ebedf1', borderRadius: 16, padding: '20px 22px' }}>
           <div style={{ fontWeight: 700, fontSize: 14, color: '#2a2f3a', marginBottom: 12 }}>{t('notFilledList', { ns: 'dashboard' })}</div>
           <div style={{ display: 'flex', fontSize: 11, fontWeight: 700, color: '#a3a9b4', letterSpacing: '.05em', textTransform: 'uppercase', padding: '0 4px 8px', borderBottom: '1px solid #f0f1f4' }}>
-            <span style={{ width: 34 }}>#</span><span style={{ flex: 1 }}>{t('total', { ns: 'dashboard' })}</span><span>{t('total', { ns: 'dashboard' })}</span>
+            <span style={{ width: 34 }}>#</span><span style={{ flex: 1 }}>{t('total', { ns: 'dashboard' })}</span><span>{t('statCards.totalEmps', { ns: 'dashboard' })}</span>
           </div>
-          {[
-            "Ichki nazorat va tashkiliy uslubiy bo'lim",
-            "Kichik yoshdagi bolalar patologiyasi bo'limi",
-          ].map((dept, i) => (
-            <div key={dept} style={{ display: 'flex', alignItems: 'center', padding: '11px 4px', borderBottom: i === 0 ? '1px solid #f4f5f7' : undefined }}>
+          {not_filled_departments.map((dept, i) => (
+            <div key={dept.id} style={{ display: 'flex', alignItems: 'center', padding: '11px 4px', borderBottom: i < not_filled_departments.length - 1 ? '1px solid #f4f5f7' : undefined }}>
               <span style={{ width: 34, color: '#a3a9b4', fontSize: 13 }}>{i + 1}</span>
-              <span style={{ flex: 1, fontSize: 13, color: '#3a4150' }}>{dept}</span>
-              <span style={{ fontWeight: 700, color: '#2a2f3a' }}>1.00</span>
+              <span style={{ flex: 1, fontSize: 13, color: '#3a4150' }}>{dept.name_uz}</span>
+              <span style={{ fontWeight: 700, color: '#2a2f3a' }}>{dept.employee_count}</span>
             </div>
           ))}
-          <div style={{ display: 'flex', alignItems: 'center', padding: '11px 4px' }}>
-            <span style={{ width: 34 }} />
-            <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: '#2a2f3a' }}>{t('totalRow', { ns: 'dashboard' })}</span>
-            <span style={{ fontWeight: 800, color: 'var(--accent,#4f46e5)' }}>2.00</span>
-          </div>
         </div>
       </div>
 
@@ -139,11 +157,11 @@ export function DashboardPage() {
       <div style={{ background: '#fff', border: '1px solid #ebedf1', borderRadius: 16, padding: '20px 22px' }}>
         <div style={{ fontWeight: 700, fontSize: 14, color: '#2a2f3a', marginBottom: 22 }}>{t('empByDept', { ns: 'dashboard' })}</div>
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, height: 220, paddingLeft: 6 }}>
-          {deptBars.map(bar => (
-            <div key={bar.name} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', gap: 8, minWidth: 0 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#5b6270' }}>{bar.count}</div>
-              <div style={{ width: '100%', borderRadius: '7px 7px 0 0', height: `${Math.max(6, Math.round(bar.count / maxBar * 100))}%`, background: `var(--accent,#4f46e5)`, opacity: 0.55 + (bar.count / maxBar) * 0.45 }} />
-              <div style={{ fontSize: 10, color: '#a3a9b4', textAlign: 'center', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: 64, overflow: 'hidden' }}>{bar.name}</div>
+          {employees_by_department.map(dept => (
+            <div key={dept.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', gap: 8, minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#5b6270' }}>{dept.employee_count}</div>
+              <div style={{ width: '100%', borderRadius: '7px 7px 0 0', height: `${Math.max(6, Math.round(dept.employee_count / maxBar * 100))}%`, background: `var(--accent,#4f46e5)`, opacity: 0.55 + (dept.employee_count / maxBar) * 0.45 }} />
+              <div style={{ fontSize: 10, color: '#a3a9b4', textAlign: 'center', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: 64, overflow: 'hidden' }}>{dept.name_uz}</div>
             </div>
           ))}
         </div>

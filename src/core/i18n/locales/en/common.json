@@ -153,7 +153,8 @@
     "done": "employees imported",
     "saveWeights": "Save weights",
     "weightsSaved": "Weights saved",
-    "monthSub": "{{year}} · Month {{month}}"
+    "monthSub": "{{year}} · Month {{month}}",
+    "exportExcel": "Export Excel"
   },
   "holidays": {
     "title": "Holidays",

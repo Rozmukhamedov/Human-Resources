@@ -152,17 +152,47 @@ function DeptCard({
         </div>
       </div>
 
-      {/* Count */}
-      <div>
-        <div style={{
-          fontSize: 26, fontWeight: 800,
-          color: 'var(--text-heading, #1a1f2e)',
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-          letterSpacing: '-.02em', lineHeight: 1.1,
-        }}>
-          {dept.employee_count}
+      {/* Stats */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 18 }}>
+        <div>
+          <div style={{
+            fontSize: 26, fontWeight: 800,
+            color: 'var(--text-heading, #1a1f2e)',
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            letterSpacing: '-.02em', lineHeight: 1.1,
+          }}>
+            {dept.employee_count}
+          </div>
+          <div style={{ fontSize: 11.5, color: 'var(--text-muted, #9aa1ad)', marginTop: 3 }}>Xodimlar</div>
         </div>
-        <div style={{ fontSize: 11.5, color: 'var(--text-muted, #9aa1ad)', marginTop: 3 }}>Xodimlar</div>
+
+        <div style={{ height: 28, width: 1, background: 'var(--border-color, #ebedf1)', flexShrink: 0 }} />
+
+        <div>
+          <div style={{
+            fontSize: 18, fontWeight: 700,
+            color: 'var(--text-heading, #1a1f2e)',
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            lineHeight: 1.1,
+          }}>
+            {dept.avg_kpi ?? 0}
+          </div>
+          <div style={{ fontSize: 11.5, color: 'var(--text-muted, #9aa1ad)', marginTop: 3 }}>O'rt. KPI</div>
+        </div>
+
+        <div>
+          <div style={{
+            fontSize: 14, fontWeight: 700,
+            color: (dept.kpi_change ?? 0) > 0 ? '#16a34a' : (dept.kpi_change ?? 0) < 0 ? '#ef4444' : 'var(--text-muted, #9aa1ad)',
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            lineHeight: 1.1,
+            display: 'flex', alignItems: 'center', gap: 2,
+          }}>
+            {(dept.kpi_change ?? 0) > 0 && '+'}
+            {dept.kpi_change ?? 0}%
+          </div>
+          <div style={{ fontSize: 11.5, color: 'var(--text-muted, #9aa1ad)', marginTop: 3 }}>O'zgarish</div>
+        </div>
       </div>
     </div>
   )
