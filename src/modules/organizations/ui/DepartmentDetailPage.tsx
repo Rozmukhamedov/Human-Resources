@@ -409,12 +409,12 @@ export function DepartmentDetailPage() {
               KPI ko'rsatkichlari
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-              {IND_KEYS.filter(k => dept.indicator_breakdown[k] != null).map(k => (
+              {IND_KEYS.map(k => (
                 <IndicatorCard
                   key={k}
                   indKey={k}
-                  avg={dept.indicator_breakdown[k]!.avg}
-                  weight={dept.indicator_breakdown[k]!.weight}
+                  avg={dept.indicator_breakdown[k]?.avg ?? null}
+                  weight={dept.indicator_breakdown[k]?.weight ?? 0}
                 />
               ))}
             </div>
