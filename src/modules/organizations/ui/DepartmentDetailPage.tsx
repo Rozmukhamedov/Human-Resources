@@ -413,8 +413,8 @@ export function DepartmentDetailPage() {
                 <IndicatorCard
                   key={k}
                   indKey={k}
-                  avg={dept.indicator_breakdown[k].avg}
-                  weight={dept.indicator_breakdown[k].weight}
+                  avg={dept.indicator_breakdown[k]?.avg ?? null}
+                  weight={dept.indicator_breakdown[k]?.weight ?? 0}
                 />
               ))}
             </div>
