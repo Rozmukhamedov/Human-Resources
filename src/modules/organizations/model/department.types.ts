@@ -53,14 +53,14 @@ export interface DepartmentDetailFull {
   month: number
   avg_kpi: number | null
   top_performer: TopPerformer | null
-  indicator_breakdown: {
+  indicator_breakdown: Partial<{
     attendance: IndicatorStat
     tasks: IndicatorStat
     care: IndicatorStat
     docs: IndicatorStat
     discipline: IndicatorStat
     assessment: IndicatorStat
-  }
+  }>
   staff: DepartmentStaffMember[]
 }
 
