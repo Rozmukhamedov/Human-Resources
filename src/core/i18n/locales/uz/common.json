@@ -59,7 +59,8 @@
     "notCreated": "Yaratilmagan",
     "rejected": "Rad etildi",
     "pending": "Kutilmoqda",
-    "pendingApproval": "Ma'qullov kutilmoqda"
+    "pendingApproval": "Ma'qullov kutilmoqda",
+    "draft": "Qoralama"
   },
   "gender": { "Ayol": "Ayol", "Erkak": "Erkak" },
   "actions": { "edit": "Tahrirlash", "options": "Opsiyalar", "printPdf": "PDF chop etish", "create": "Yaratish" },

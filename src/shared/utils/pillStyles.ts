@@ -1,4 +1,4 @@
-export type StatusKey = 'active' | 'leave' | 'probation' | 'approved' | 'rejected' | 'pending' | 'pendingApproval' | 'submitted' | 'notCreated' | 'in_progress'
+export type StatusKey = 'active' | 'leave' | 'probation' | 'approved' | 'rejected' | 'pending' | 'pendingApproval' | 'submitted' | 'notCreated' | 'in_progress' | 'draft'
 
 const STATUS_COLORS: Record<StatusKey, { color: string; bg: string }> = {
   active:         { color: '#0f9d58', bg: '#e7f7ee' },
@@ -11,6 +11,7 @@ const STATUS_COLORS: Record<StatusKey, { color: string; bg: string }> = {
   probation:      { color: '#5b6270', bg: '#eef0f3' },
   notCreated:     { color: '#5b6270', bg: '#eef0f3' },
   in_progress:    { color: '#2563eb', bg: '#eef4ff' },
+  draft:          { color: '#5b6270', bg: '#eef0f3' },
 }
 
 export function getStatusColors(key: string): { color: string; bg: string } {

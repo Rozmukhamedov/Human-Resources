@@ -25,21 +25,21 @@ export function getAssessmentDetail(id: number) {
 }
 
 export function createAssessment(data: AssessmentPayload) {
-  return apiRequest<AssessmentList>('/assessments/create/', {
+  return apiRequest<AssessmentList>('/assessments/', {
     method: 'POST',
     body: JSON.stringify(data),
   })
 }
 
 export function updateAssessment(id: number, data: Partial<AssessmentPayload>) {
-  return apiRequest<AssessmentList>(`/assessments/${id}/update/`, {
+  return apiRequest<AssessmentList>(`/assessments/${id}/`, {
     method: 'PATCH',
     body: JSON.stringify(data),
   })
 }
 
 export function deleteAssessment(id: number) {
-  return apiRequest<void>(`/assessments/${id}/delete/`, {
+  return apiRequest<void>(`/assessments/${id}/`, {
     method: 'DELETE',
   })
 }

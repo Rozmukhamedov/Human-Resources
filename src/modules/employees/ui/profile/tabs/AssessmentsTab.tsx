@@ -10,6 +10,10 @@ import { getAssessments } from '@modules/assessments/api/assessments'
 
 const PAGE_SIZE = 5
 
+function personName(p: { first_name: string; last_name: string } | null): string {
+  return p ? `${p.first_name} ${p.last_name}` : '—'
+}
+
 export function AssessmentsTab() {
   const { id } = useParams<{ id: string }>()
   const { t } = useTranslation(['assessments', 'common'])
@@ -47,59 +51,39 @@ export function AssessmentsTab() {
 
   const columns: Column<AssessmentList>[] = [
     {
-      key: 'template',
-      header: t('template', 'Template'),
-      render: (row) => <span style={{ color: 'var(--text-secondary)' }}>{row.template_name}</span>,
+      key: 'indicator',
+      header: t('indicator'),
+      render: (row) => <span style={{ color: 'var(--text-secondary)' }}>{row.indicator.name}</span>,
     },
     {
-      key: 'started',
-      header: t('started'),
-      render: (row) => <span style={{ color: 'var(--text-secondary)' }}>{row.started_date}</span>,
+      key: 'yearMonth',
+      header: t('yearMonth'),
+      render: (row) => <span style={{ color: 'var(--text-secondary)' }}>{row.month}/{row.year}</span>,
     },
     {
-      key: 'startedBy',
-      header: t('startedBy'),
-      render: (row) => <span style={{ color: 'var(--text-secondary)' }}>{row.started_by_name}</span>,
-    },
-    {
-      key: 'reviewers',
-      header: t('reviewers'),
-      render: (row) => (
-        <span style={{ color: 'var(--text-secondary)' }}>
-          {row.reviewer_names.join(', ') || '—'}
-        </span>
-      ),
-    },
-    {
-      key: 'totalScore',
-      header: t('totalScore'),
+      key: 'score',
+      header: t('score'),
       align: 'center',
       render: (row) => (
         <span style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: 13.5 }}>
-          {row.total_score ?? '—'}
+          {row.score}
         </span>
       ),
     },
     {
       key: 'dept',
       header: t('dept'),
-      render: (row) => <span style={{ color: 'var(--text-secondary)' }}>{row.department_name}</span>,
+      render: (row) => <span style={{ color: 'var(--text-secondary)' }}>{row.department?.name ?? '—'}</span>,
     },
     {
-      key: 'validity',
-      header: t('validity'),
-      render: (row) => (
-        <span style={{ color: 'var(--text-secondary)' }}>
-          {row.validity_from && row.validity_to
-            ? `${row.validity_from} – ${row.validity_to}`
-            : '—'}
-        </span>
-      ),
+      key: 'reviewedBy',
+      header: t('reviewedBy'),
+      render: (row) => <span style={{ color: 'var(--text-secondary)' }}>{personName(row.reviewed_by)}</span>,
     },
     {
       key: 'status',
       header: t('status'),
-      render: (row) => <StatusBadge statusKey={row.status} label={row.status_display} />,
+      render: (row) => <StatusBadge statusKey={row.status} label={t(`common:status.${row.status}`, row.status)} />,
     },
     {
       key: 'action',

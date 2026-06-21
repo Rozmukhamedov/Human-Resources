@@ -1,26 +1,14 @@
 export type KpiGrade = 'excellent' | 'good' | 'fair' | 'low'
 
-export interface KpiScores {
-  attendance: number | null
-  tasks: number | null
-  care: number | null
-  docs: number | null
-  discipline: number | null
-  assessment: number | null
+export interface KpiCustomWeight {
+  name: string
+  weight: number
 }
 
 export interface KpiWeights {
   attendance: number
-  tasks: number
-  care: number
-  docs: number
   discipline: number
-  assessment: number
-}
-
-export interface KpiWeightsResponse extends KpiWeights {
-  total_weight: number
-  updated_at: string
+  custom: Record<string, KpiCustomWeight>
 }
 
 export interface KpiResultEmployee {
@@ -30,11 +18,8 @@ export interface KpiResultEmployee {
   employee_code: string
   department_name: string
   attendance: number | null
-  tasks: number | null
-  care: number | null
-  docs: number | null
   discipline: number | null
-  assessment: number | null
+  custom_scores: Record<string, number | null>
   kpi: number
   grade: KpiGrade
 }
@@ -50,12 +35,22 @@ export interface KpiResultsResponse {
   results: KpiResultEmployee[]
 }
 
-export interface KpiEmployee {
-  id: string
-  initials: string
-  firstName: string
-  lastName: string
-  departmentName: string
-  scores: KpiScores
-  imported?: boolean
+export interface KpiCustomIndicator {
+  id: number
+  name: string
+  weight: number
+  order: number
+}
+
+export interface KpiWeightsConfig {
+  attendance: number
+  discipline: number
+  total_weight: number
+  custom_indicators: KpiCustomIndicator[]
+  updated_at: string
+}
+
+export interface KpiWeightsPayload {
+  attendance: number
+  discipline: number
 }

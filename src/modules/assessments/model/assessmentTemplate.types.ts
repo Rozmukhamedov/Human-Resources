@@ -1,16 +1,14 @@
 export interface AssessmentTemplate {
   id: number
-  name_uz: string
-  name_en: string
-  description: string
-  competencies: unknown[]
-  created_at: string
+  name: string
+  weight: number
+  order: number
 }
 
 export interface AssessmentTemplatePayload {
-  name_uz: string
-  name_en: string
-  description: string
+  name: string
+  weight: number
+  order: number
 }
 
 export interface PaginatedAssessmentTemplates {

@@ -32,14 +32,6 @@ function TemplateIcon({ color }: { color: string }) {
   )
 }
 
-function formatDate(iso: string) {
-  try {
-    return new Date(iso).toLocaleDateString('uz-UZ', { year: 'numeric', month: 'short', day: 'numeric' })
-  } catch {
-    return iso
-  }
-}
-
 function TemplateCard({
   template,
   onEdit,
@@ -87,10 +79,10 @@ function TemplateCard({
               color: 'var(--text-heading, #1a1f2e)', lineHeight: 1.3,
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
-              {template.name_uz}
+              {template.name}
             </div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted, #9aa1ad)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {template.name_en || '—'}
+            <div style={{ fontSize: 12, color: 'var(--text-muted, #9aa1ad)', marginTop: 2 }}>
+              Tartib raqami: {template.order}
             </div>
           </div>
         </div>
@@ -152,28 +144,15 @@ function TemplateCard({
         </div>
       </div>
 
-      {template.description && (
-        <div style={{
-          fontSize: 12.5, color: 'var(--text-secondary, #5b6270)',
-          lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box',
-          WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-        }}>
-          {template.description}
-        </div>
-      )}
-
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 }}>
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 5,
           background: c.bg, borderRadius: 7, padding: '4px 9px',
         }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: c.color }}>
-            {template.competencies.length}
+            {template.weight}%
           </span>
-          <span style={{ fontSize: 11.5, color: c.color }}>kompetensiya</span>
-        </div>
-        <div style={{ fontSize: 11.5, color: 'var(--text-muted, #9aa1ad)' }}>
-          {formatDate(template.created_at)}
+          <span style={{ fontSize: 11.5, color: c.color }}>vazn</span>
         </div>
       </div>
     </div>
@@ -190,8 +169,8 @@ interface ModalProps {
 function TemplateModal({ template, onClose, onSave, loading }: ModalProps) {
   const [form, setForm] = useState<AssessmentTemplatePayload>(() =>
     template
-      ? { name_uz: template.name_uz, name_en: template.name_en, description: template.description }
-      : { name_uz: '', name_en: '', description: '' }
+      ? { name: template.name, weight: template.weight, order: template.order }
+      : { name: '', weight: 0, order: 1 }
   )
 
   const set = <K extends keyof AssessmentTemplatePayload>(key: K, value: AssessmentTemplatePayload[K]) =>
@@ -261,12 +240,12 @@ function TemplateModal({ template, onClose, onSave, loading }: ModalProps) {
 
         <form onSubmit={handleSubmit} style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label style={labelStyle}>Nomi (UZ) *</label>
+            <label style={labelStyle}>Nomi *</label>
             <input
               style={inputStyle}
-              value={form.name_uz}
-              onChange={e => set('name_uz', e.target.value)}
-              placeholder="Masalan: Rahbarlik kompetensiyalari"
+              value={form.name}
+              onChange={e => set('name', e.target.value)}
+              placeholder="Masalan: Tasks"
               required
               onFocus={e => (e.target.style.borderColor = '#4f46e5')}
               onBlur={e => (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')}
@@ -274,24 +253,29 @@ function TemplateModal({ template, onClose, onSave, loading }: ModalProps) {
           </div>
 
           <div>
-            <label style={labelStyle}>Nomi (EN)</label>
+            <label style={labelStyle}>Vazn (%) *</label>
             <input
+              type="number"
+              min={0}
+              max={100}
               style={inputStyle}
-              value={form.name_en}
-              onChange={e => set('name_en', e.target.value)}
-              placeholder="e.g. Leadership Competencies"
+              value={form.weight}
+              onChange={e => set('weight', Number(e.target.value))}
+              required
               onFocus={e => (e.target.style.borderColor = '#4f46e5')}
               onBlur={e => (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')}
             />
           </div>
 
           <div>
-            <label style={labelStyle}>Tavsif</label>
-            <textarea
-              style={{ ...inputStyle, minHeight: 90, resize: 'vertical' }}
-              value={form.description}
-              onChange={e => set('description', e.target.value)}
-              placeholder="Shablon haqida qisqacha ma'lumot..."
+            <label style={labelStyle}>Tartib raqami *</label>
+            <input
+              type="number"
+              min={1}
+              style={inputStyle}
+              value={form.order}
+              onChange={e => set('order', Number(e.target.value))}
+              required
               onFocus={e => (e.target.style.borderColor = '#4f46e5')}
               onBlur={e => (e.target.style.borderColor = 'var(--border-color, #e4e7ef)')}
             />
@@ -380,7 +364,7 @@ function DeleteConfirm({
           Shablonni o'chirish
         </div>
         <div style={{ fontSize: 13.5, color: 'var(--text-secondary, #5b6270)', lineHeight: 1.6, marginBottom: 24 }}>
-          <strong>{template.name_uz}</strong> shablonini o'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi.
+          <strong>{template.name}</strong> ko'rsatkichini o'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi.
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button

@@ -12,6 +12,13 @@
   "rowsPerPage": "Rows per page:",
   "retry": "Retry",
   "deleteConfirm": "Confirm deletion of \"{{name}}\"?",
+  "import": "Import",
+  "importing": "Importing...",
+  "importSuccess": "Employees imported successfully",
+  "importError": "Failed to import employees",
+  "template": "Template",
+  "templateHint": "Download Excel template for import",
+  "templateError": "Failed to download template",
   "form": {
     "addEmployee": "Add employee",
     "editEmployee": "Edit employee",

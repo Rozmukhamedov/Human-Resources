@@ -12,6 +12,13 @@
   "rowsPerPage": "Qatorlar (sahifada):",
   "retry": "Qayta urinish",
   "deleteConfirm": "\"{{name}}\" ni o'chirishni tasdiqlaysizmi?",
+  "import": "Import",
+  "importing": "Import qilinmoqda...",
+  "importSuccess": "Xodimlar muvaffaqiyatli import qilindi",
+  "importError": "Xodimlarni import qilishda xatolik yuz berdi",
+  "template": "Shablon",
+  "templateHint": "Import uchun Excel shablonini yuklab olish",
+  "templateError": "Shablonni yuklab olishda xatolik yuz berdi",
   "form": {
     "addEmployee": "Xodim qo'shish",
     "editEmployee": "Xodimni tahrirlash",

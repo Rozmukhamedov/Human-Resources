@@ -13,7 +13,7 @@ import { getDivisions } from '@modules/organizations/api/divisions'
 import type { Department } from '@modules/organizations/model/department.types'
 import type { Division } from '@modules/organizations/model/division.types'
 import type { Employee, ApiEmployee, CreateEmployeePayload, UpdateEmployeePayload, Position } from '../model/employee.types'
-import { getEmployees, createEmployee, updateEmployee, deleteEmployee, getPositions } from '../api/employees'
+import { getEmployees, createEmployee, updateEmployee, deleteEmployee, getPositions, importEmployees, exportEmployeeTemplate } from '../api/employees'
 
 const PAGE_SIZE_OPTIONS = [10, 15, 25, 50]
 const COLS = '42px 52px 0.6fr 1.3fr 1.4fr 1.3fr 0.65fr 0.85fr 96px'
@@ -996,6 +996,9 @@ export function EmployeeListPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [pageSize, setPageSize] = useState(15)
+  const [importing, setImporting] = useState(false)
+  const [templateDownloading, setTemplateDownloading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const load = useCallback(async (p: number, size: number) => {
     setLoading(true)
@@ -1057,6 +1060,35 @@ export function EmployeeListPage() {
   const handleQueryChange = (q: string) => {
     setQuery(q)
     setPage(1)
+  }
+
+  const handleImportClick = () => fileInputRef.current?.click()
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setImporting(true)
+    try {
+      const result = await importEmployees(file)
+      await load(page, pageSize)
+      alert(result.message || t('importSuccess'))
+    } catch (err) {
+      alert(err instanceof Error ? err.message : t('importError'))
+    } finally {
+      setImporting(false)
+    }
+  }
+
+  const handleExportTemplate = async () => {
+    setTemplateDownloading(true)
+    try {
+      await exportEmployeeTemplate()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : t('templateError'))
+    } finally {
+      setTemplateDownloading(false)
+    }
   }
 
   const filtered = useMemo(() => {
@@ -1130,6 +1162,36 @@ export function EmployeeListPage() {
             width={200}
           />
           <div style={{ flex: 1 }} />
+          <HeaderButton
+            label={t('template')}
+            title={t('templateHint')}
+            disabled={templateDownloading}
+            onClick={() => void handleExportTemplate()}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+          </HeaderButton>
+          <HeaderButton
+            label={importing ? t('importing') : t('import')}
+            disabled={importing}
+            onClick={handleImportClick}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+          </HeaderButton>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            style={{ display: 'none' }}
+            onChange={e => void handleFileChange(e)}
+          />
           <CreateButton label={t('common:actions.create')} onClick={() => setModalOpen(true)} />
         </div>
 
@@ -1318,6 +1380,43 @@ export function EmployeeListPage() {
 }
 
 /* ── Small helpers ── */
+
+function HeaderButton({
+  children, label, title, onClick, disabled,
+}: {
+  children: React.ReactNode
+  label: string
+  title?: string
+  onClick?: () => void
+  disabled?: boolean
+}) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        height: 36, padding: '0 14px', borderRadius: 10,
+        border: '1.5px solid var(--border-color)',
+        background: hovered && !disabled ? 'var(--bg-subtle)' : 'transparent',
+        color: 'var(--text-secondary)',
+        fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.6 : 1,
+        transition: 'background .12s',
+        letterSpacing: '-.01em', flexShrink: 0,
+      }}
+    >
+      {children}
+      {label}
+    </button>
+  )
+}
 
 function Checkmark() {
   return (

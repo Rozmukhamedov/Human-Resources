@@ -1,18 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { KpiWeights, KpiResultEmployee, KpiResultsResponse, KpiGrade } from '../model/kpi.types'
-import { getKpiWeights, updateKpiWeights, calculateKpi, getKpiResults, exportKpiExcel } from '../api/kpi'
+import type { KpiResultEmployee, KpiResultsResponse, KpiGrade } from '../model/kpi.types'
+import { calculateKpi, getKpiResults, getKpiWeights, updateKpiWeights, exportKpiExcel } from '../api/kpi'
+import type { AssessmentTemplate } from '@modules/assessments/model/assessmentTemplate.types'
+import { updateAssessmentTemplate } from '@modules/assessments/api/assessmentTemplates'
 
-const KPI_KEYS: (keyof KpiWeights)[] = ['attendance', 'tasks', 'care', 'docs', 'discipline', 'assessment']
-
-const DEFAULT_WEIGHTS: KpiWeights = {
-  attendance: 20,
-  tasks: 25,
-  care: 20,
-  docs: 15,
-  discipline: 10,
-  assessment: 10,
-}
+const DEFAULT_KEYS: ('attendance' | 'discipline')[] = ['attendance', 'discipline']
 
 const AV_PALETTE: [string, string][] = [
   ['#eef2ff', '#4f46e5'],
@@ -61,11 +54,14 @@ function Spinner() {
 export function KpiPage() {
   const { t } = useTranslation('common')
 
-  const [weights, setWeights] = useState<KpiWeights>({ ...DEFAULT_WEIGHTS })
+  const [indicators, setIndicators] = useState<AssessmentTemplate[]>([])
   const [weightsLoading, setWeightsLoading] = useState(true)
   const [weightsSaving, setWeightsSaving] = useState(false)
-  const [weightsDirty, setWeightsDirty] = useState(false)
-  const [savedWeights, setSavedWeights] = useState<KpiWeights>({ ...DEFAULT_WEIGHTS })
+  const [savedIndicators, setSavedIndicators] = useState<AssessmentTemplate[]>([])
+  const [attendanceWeight, setAttendanceWeight] = useState(0)
+  const [disciplineWeight, setDisciplineWeight] = useState(0)
+  const [savedAttendanceWeight, setSavedAttendanceWeight] = useState(0)
+  const [savedDisciplineWeight, setSavedDisciplineWeight] = useState(0)
 
   const [results, setResults] = useState<KpiResultsResponse | null>(null)
   const [resultsLoading, setResultsLoading] = useState(true)
@@ -78,17 +74,13 @@ export function KpiPage() {
     setWeightsLoading(true)
     getKpiWeights()
       .then(data => {
-        const w: KpiWeights = {
-          attendance: data.attendance,
-          tasks: data.tasks,
-          care: data.care,
-          docs: data.docs,
-          discipline: data.discipline,
-          assessment: data.assessment,
-        }
-        setWeights(w)
-        setSavedWeights(w)
-        setWeightsDirty(false)
+        const sorted = [...data.custom_indicators].sort((a, b) => a.order - b.order)
+        setIndicators(sorted)
+        setSavedIndicators(sorted)
+        setAttendanceWeight(data.attendance)
+        setSavedAttendanceWeight(data.attendance)
+        setDisciplineWeight(data.discipline)
+        setSavedDisciplineWeight(data.discipline)
       })
       .catch(() => {})
       .finally(() => setWeightsLoading(false))
@@ -107,34 +99,42 @@ export function KpiPage() {
     loadResults()
   }, [])
 
-  const handleWeightChange = (key: keyof KpiWeights, val: number) => {
-    setWeights(prev => {
-      const next = { ...prev, [key]: val }
-      const changed = KPI_KEYS.some(k => next[k] !== savedWeights[k])
-      setWeightsDirty(changed)
-      return next
-    })
+  const handleWeightChange = (id: number, val: number) => {
+    setIndicators(prev => prev.map(ind => ind.id === id ? { ...ind, weight: val } : ind))
   }
 
+  const handleDefaultWeightChange = (key: 'attendance' | 'discipline', val: number) => {
+    if (key === 'attendance') setAttendanceWeight(val)
+    else setDisciplineWeight(val)
+  }
+
+  const weightsDirty = attendanceWeight !== savedAttendanceWeight
+    || disciplineWeight !== savedDisciplineWeight
+    || indicators.some(ind => ind.weight !== savedIndicators.find(s => s.id === ind.id)?.weight)
+
   const handleResetWeights = () => {
-    setWeights({ ...savedWeights })
-    setWeightsDirty(false)
+    setIndicators(savedIndicators.map(ind => ({ ...ind })))
+    setAttendanceWeight(savedAttendanceWeight)
+    setDisciplineWeight(savedDisciplineWeight)
   }
 
   const handleSaveWeights = async () => {
     setWeightsSaving(true)
     try {
-      const data = await updateKpiWeights(weights)
-      const w: KpiWeights = {
-        attendance: data.attendance,
-        tasks: data.tasks,
-        care: data.care,
-        docs: data.docs,
-        discipline: data.discipline,
-        assessment: data.assessment,
+      const changed = indicators.filter(ind => {
+        const saved = savedIndicators.find(s => s.id === ind.id)
+        return saved && saved.weight !== ind.weight
+      })
+      const tasks: Promise<unknown>[] = changed.map(ind =>
+        updateAssessmentTemplate(ind.id, { name: ind.name, weight: ind.weight, order: ind.order })
+      )
+      if (attendanceWeight !== savedAttendanceWeight || disciplineWeight !== savedDisciplineWeight) {
+        tasks.push(updateKpiWeights({ attendance: attendanceWeight, discipline: disciplineWeight }))
       }
-      setSavedWeights(w)
-      setWeightsDirty(false)
+      await Promise.all(tasks)
+      setSavedIndicators(indicators.map(ind => ({ ...ind })))
+      setSavedAttendanceWeight(attendanceWeight)
+      setSavedDisciplineWeight(disciplineWeight)
       await calculateKpi()
       setToast(t('kpi.weightsSaved'))
       setTimeout(() => setToast(''), 3000)
@@ -146,13 +146,17 @@ export function KpiPage() {
     }
   }
 
-  const totalW = KPI_KEYS.reduce((s, k) => s + (weights[k] || 0), 0)
+  const totalW = attendanceWeight + disciplineWeight + indicators.reduce((s, ind) => s + (ind.weight || 0), 0)
 
   const rankList: KpiResultEmployee[] = results?.results ?? []
   const avgKpi = results?.avg_kpi ?? 0
   const evalCount = results?.count ?? 0
   const belowCount = results?.below_75_count ?? 0
   const topPerformer = rankList[0] ?? null
+
+  const indicatorColumnCount = DEFAULT_KEYS.length + indicators.length
+  const tableColumns = `56px 1.7fr 1.5fr repeat(${indicatorColumnCount},minmax(0,1fr)) 160px 1fr`
+  const tableMinWidth = 460 + indicatorColumnCount * 90
 
   return (
     <div style={{ padding: '22px 24px 44px' }}>
@@ -259,18 +263,38 @@ export function KpiPage() {
             {t('kpi.weightsSub')}
           </div>
 
-          {KPI_KEYS.map(k => (
-            <div key={k} style={{ marginBottom: 15 }}>
+          {DEFAULT_KEYS.map(k => {
+            const weight = k === 'attendance' ? attendanceWeight : disciplineWeight
+            return (
+              <div key={k} style={{ marginBottom: 15 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>{t(`kpi.ind.${k}`)}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)' }}>{weight}%</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={weight}
+                  onChange={e => handleDefaultWeightChange(k, Number(e.target.value))}
+                  style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--accent)' }}
+                />
+              </div>
+            )
+          })}
+
+          {indicators.map(ind => (
+            <div key={ind.id} style={{ marginBottom: 15 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>{t(`kpi.ind.${k}`)}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)' }}>{weights[k]}%</span>
+                <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>{ind.name}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)' }}>{ind.weight}%</span>
               </div>
               <input
                 type="range"
                 min={0}
-                max={50}
-                value={weights[k]}
-                onChange={e => handleWeightChange(k, Number(e.target.value))}
+                max={100}
+                value={ind.weight}
+                onChange={e => handleWeightChange(ind.id, Number(e.target.value))}
                 style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--accent)' }}
               />
             </div>
@@ -334,11 +358,11 @@ export function KpiPage() {
             </div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
-              <div style={{ minWidth: 900 }}>
+              <div style={{ minWidth: tableMinWidth }}>
                 {/* Header row */}
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: '56px 1.7fr 1.5fr repeat(6,minmax(0,1fr)) 160px 1fr',
+                  gridTemplateColumns: tableColumns,
                   alignItems: 'center', padding: '0 16px', height: 46,
                   background: 'var(--bg-subtle)', borderBottom: '1px solid var(--border-color)',
                   fontSize: 10.5, fontWeight: 700, color: 'var(--text-muted)',
@@ -347,8 +371,11 @@ export function KpiPage() {
                   <div>{t('kpi.rank')}</div>
                   <div>{t('kpi.employee')}</div>
                   <div>{t('kpi.dept')}</div>
-                  {KPI_KEYS.map(k => (
-                    <div key={k} style={{ textAlign: 'center' }}>{t(`kpi.ind.${k}`)}</div>
+                  {DEFAULT_KEYS.map(k => (
+                    <div key={k} style={{ textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 4px' }}>{t(`kpi.ind.${k}`)}</div>
+                  ))}
+                  {indicators.map(ind => (
+                    <div key={ind.id} style={{ textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 4px' }}>{ind.name}</div>
                   ))}
                   <div>{t('kpi.kpiScore')}</div>
                   <div>{t('kpi.grade')}</div>
@@ -365,7 +392,7 @@ export function KpiPage() {
                         key={e.employee_id}
                         style={{
                           display: 'grid',
-                          gridTemplateColumns: '56px 1.7fr 1.5fr repeat(6,minmax(0,1fr)) 160px 1fr',
+                          gridTemplateColumns: tableColumns,
                           alignItems: 'center', padding: '0 16px', height: 56,
                           borderBottom: '1px solid var(--border-color)',
                         }}
@@ -406,11 +433,19 @@ export function KpiPage() {
                         </div>
 
                         {/* Indicator scores */}
-                        {KPI_KEYS.map(k => (
+                        {DEFAULT_KEYS.map(k => (
                           <div key={k} style={{ textAlign: 'center', fontSize: 12.5, fontWeight: 600, color: getCellColor(e[k]) }}>
                             {e[k] != null ? e[k] : '—'}
                           </div>
                         ))}
+                        {indicators.map(ind => {
+                          const v = e.custom_scores[ind.name] ?? null
+                          return (
+                            <div key={ind.id} style={{ textAlign: 'center', fontSize: 12.5, fontWeight: 600, color: getCellColor(v) }}>
+                              {v != null ? v : '—'}
+                            </div>
+                          )
+                        })}
 
                         {/* KPI score + progress bar */}
                         <div style={{ paddingRight: 14 }}>

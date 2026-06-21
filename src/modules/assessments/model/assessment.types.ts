@@ -1,4 +1,4 @@
-export type AssessmentStatus = 'approved' | 'pending' | 'in_progress' | 'rejected'
+export type AssessmentStatus = 'draft' | 'pending' | 'approved' | 'rejected'
 
 export interface Assessment {
   id: string
@@ -17,25 +17,36 @@ export interface Competency {
   score: number
 }
 
+export interface AssessmentPersonRef {
+  id: number
+  code: string
+  first_name: string
+  last_name: string
+}
+
+export interface AssessmentDepartmentRef {
+  id: number
+  name: string
+}
+
+export interface AssessmentIndicatorRef {
+  id: number
+  name: string
+  weight: number
+}
+
 export interface AssessmentList {
   id: number
-  employee: number
-  employee_name: string
-  employee_code: string
-  template: number
-  template_name: string
-  department: number
-  department_name: string
-  started_by: number
-  started_by_name: string
-  reviewer_names: string[]
-  started_date: string
+  employee: AssessmentPersonRef
+  department: AssessmentDepartmentRef | null
+  indicator: AssessmentIndicatorRef
+  reviewed_by: AssessmentPersonRef | null
+  year: number
+  month: number
+  score: string
   status: AssessmentStatus
-  status_display: string
-  total_score: string | null
-  validity_from: string | null
-  validity_to: string | null
-  notes?: string | null
+  notes: string
+  created_at: string
 }
 
 export interface PaginatedAssessments {
@@ -50,13 +61,12 @@ export interface PaginatedAssessments {
 
 export interface AssessmentPayload {
   employee: number
-  template: number
-  department: number
-  started_by: number
-  started_date: string
-  validity_from?: string | null
-  validity_to?: string | null
+  department?: number | null
+  indicator: number
+  reviewed_by?: number | null
+  year: number
+  month: number
+  score: string
   status?: AssessmentStatus
-  total_score?: string | null
   notes?: string
 }

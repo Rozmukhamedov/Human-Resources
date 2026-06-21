@@ -1,6 +1,6 @@
 import { apiRequest } from '@core/api/client'
 import { tokenStorage } from '@core/api/tokenStorage'
-import type { KpiWeights, KpiWeightsResponse, KpiResultsResponse } from '../model/kpi.types'
+import type { KpiResultsResponse, KpiWeightsConfig, KpiWeightsPayload } from '../model/kpi.types'
 
 export interface KpiResultsParams {
   year?: number
@@ -8,11 +8,11 @@ export interface KpiResultsParams {
 }
 
 export function getKpiWeights() {
-  return apiRequest<KpiWeightsResponse>('/kpi/weights/')
+  return apiRequest<KpiWeightsConfig>('/kpi/weights/')
 }
 
-export function updateKpiWeights(data: KpiWeights) {
-  return apiRequest<KpiWeightsResponse>('/kpi/weights/', {
+export function updateKpiWeights(data: KpiWeightsPayload) {
+  return apiRequest<KpiWeightsConfig>('/kpi/weights/', {
     method: 'PATCH',
     body: JSON.stringify(data),
   })

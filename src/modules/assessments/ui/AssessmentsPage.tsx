@@ -12,7 +12,7 @@ import { getAssessmentTemplates } from '../api/assessmentTemplates'
 import { getDepartments } from '@modules/organizations/api/departments'
 
 const PAGE_SIZE = 10
-const STATUS_OPTIONS: AssessmentStatus[] = ['pending', 'in_progress', 'approved', 'rejected']
+const STATUS_OPTIONS: AssessmentStatus[] = ['draft', 'pending', 'approved', 'rejected']
 
 const inputStyle: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box',
@@ -28,6 +28,10 @@ const labelStyle: React.CSSProperties = {
   fontSize: 12, fontWeight: 600,
   color: 'var(--text-secondary, #5b6270)',
   display: 'block', marginBottom: 5,
+}
+
+function personName(p: { first_name: string; last_name: string } | null): string {
+  return p ? `${p.first_name} ${p.last_name}` : '—'
 }
 
 interface SelectOption {
@@ -50,11 +54,11 @@ async function fetchEmployeeOptions(search: string): Promise<EmployeeSelectOptio
   }))
 }
 
-async function fetchTemplateOptions(search: string): Promise<SelectOption[]> {
+async function fetchIndicatorOptions(search: string): Promise<SelectOption[]> {
   const data = await getAssessmentTemplates(1, 100)
   const lower = search.toLowerCase()
-  const list = search ? data.data.filter(t => t.name_uz.toLowerCase().includes(lower)) : data.data
-  return list.map(t => ({ id: t.id, label: t.name_uz }))
+  const list = search ? data.data.filter(t => t.name.toLowerCase().includes(lower)) : data.data
+  return list.map(t => ({ id: t.id, label: t.name }))
 }
 
 async function fetchDepartmentOptions(search: string): Promise<SelectOption[]> {
@@ -222,17 +226,16 @@ function SearchSelect<T extends SelectOption>({
 interface FormState {
   employee: number | null
   employeeLabel: string
-  template: number | null
-  templateLabel: string
+  indicator: number | null
+  indicatorLabel: string
   department: number | null
   departmentLabel: string
-  started_by: number | null
-  startedByLabel: string
-  started_date: string
-  validity_from: string
-  validity_to: string
-  status: string
-  total_score: string
+  reviewedBy: number | null
+  reviewedByLabel: string
+  year: number
+  month: number
+  score: string
+  status: AssessmentStatus
   notes: string
 }
 
@@ -248,23 +251,22 @@ function AssessmentModal({
   loading: boolean
 }) {
   const { t } = useTranslation(['assessments', 'common'])
-  const today = new Date().toISOString().slice(0, 10)
+  const now = new Date()
   const [formError, setFormError] = useState('')
 
   const [form, setForm] = useState<FormState>({
-    employee: assessment?.employee ?? null,
-    employeeLabel: assessment?.employee_name ?? '',
-    template: assessment?.template ?? null,
-    templateLabel: assessment?.template_name ?? '',
-    department: assessment?.department ?? null,
-    departmentLabel: assessment?.department_name ?? '',
-    started_by: assessment?.started_by ?? null,
-    startedByLabel: assessment?.started_by_name ?? '',
-    started_date: assessment?.started_date ?? today,
-    validity_from: assessment?.validity_from ?? '',
-    validity_to: assessment?.validity_to ?? '',
-    status: assessment?.status ?? 'pending',
-    total_score: assessment?.total_score ?? '',
+    employee: assessment?.employee.id ?? null,
+    employeeLabel: assessment ? personName(assessment.employee) : '',
+    indicator: assessment?.indicator.id ?? null,
+    indicatorLabel: assessment?.indicator.name ?? '',
+    department: assessment?.department?.id ?? null,
+    departmentLabel: assessment?.department?.name ?? '',
+    reviewedBy: assessment?.reviewed_by?.id ?? null,
+    reviewedByLabel: assessment?.reviewed_by ? personName(assessment.reviewed_by) : '',
+    year: assessment?.year ?? now.getFullYear(),
+    month: assessment?.month ?? now.getMonth() + 1,
+    score: assessment?.score ?? '',
+    status: assessment?.status ?? 'draft',
     notes: assessment?.notes ?? '',
   })
 
@@ -289,26 +291,23 @@ function AssessmentModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const hasEmployee = form.employee != null || !!form.employeeLabel
-    const hasTemplate = form.template != null || !!form.templateLabel
-    const hasDepartment = form.department != null || !!form.departmentLabel
-    const hasStartedBy = form.started_by != null || !!form.startedByLabel
-    if (!hasEmployee || !hasTemplate || !hasDepartment || !hasStartedBy) {
+    const hasIndicator = form.indicator != null || !!form.indicatorLabel
+    if (!hasEmployee || !hasIndicator || !form.score) {
       setFormError(t('modal.requiredFields'))
       return
     }
     setFormError('')
     const payload: AssessmentPayload = {
-      ...(form.employee != null && { employee: form.employee }),
-      ...(form.template != null && { template: form.template }),
-      ...(form.department != null && { department: form.department }),
-      ...(form.started_by != null && { started_by: form.started_by }),
-      started_date: form.started_date,
-      validity_from: form.validity_from || null,
-      validity_to: form.validity_to || null,
-      status: form.status as AssessmentStatus || undefined,
-      total_score: form.total_score || null,
+      employee: form.employee as number,
+      indicator: form.indicator as number,
+      department: form.department,
+      reviewed_by: form.reviewedBy,
+      year: form.year,
+      month: form.month,
+      score: form.score,
+      status: form.status,
       notes: form.notes || undefined,
-    } as AssessmentPayload
+    }
     void onSave(payload)
   }
 
@@ -366,17 +365,17 @@ function AssessmentModal({
               />
             </div>
             <div>
-              <label style={labelStyle}>{t('template')} *</label>
+              <label style={labelStyle}>{t('indicator')} *</label>
               <SearchSelect
-                value={form.template}
-                displayLabel={form.templateLabel}
-                onChange={opt => setForm(p => ({ ...p, template: opt.id, templateLabel: opt.label }))}
-                fetchOptions={fetchTemplateOptions}
-                placeholder={t('modal.selectTemplate')}
+                value={form.indicator}
+                displayLabel={form.indicatorLabel}
+                onChange={opt => setForm(p => ({ ...p, indicator: opt.id, indicatorLabel: opt.label }))}
+                fetchOptions={fetchIndicatorOptions}
+                placeholder={t('modal.selectIndicator')}
               />
             </div>
             <div>
-              <label style={labelStyle}>{t('dept')} *</label>
+              <label style={labelStyle}>{t('dept')}</label>
               <SearchSelect
                 value={form.department}
                 displayLabel={form.departmentLabel}
@@ -386,13 +385,13 @@ function AssessmentModal({
               />
             </div>
             <div>
-              <label style={labelStyle}>{t('startedBy')} *</label>
+              <label style={labelStyle}>{t('reviewedBy')}</label>
               <SearchSelect<EmployeeSelectOption>
-                value={form.started_by}
-                displayLabel={form.startedByLabel}
-                onChange={opt => setForm(p => ({ ...p, started_by: opt.id, startedByLabel: opt.label }))}
+                value={form.reviewedBy}
+                displayLabel={form.reviewedByLabel}
+                onChange={opt => setForm(p => ({ ...p, reviewedBy: opt.id, reviewedByLabel: opt.label }))}
                 fetchOptions={fetchEmployeeOptions}
-                placeholder={t('modal.selectStartedBy')}
+                placeholder={t('modal.selectReviewedBy')}
               />
             </div>
           </div>
@@ -401,33 +400,24 @@ function AssessmentModal({
             <div style={{ fontSize: 12.5, color: '#ef4444', marginTop: -6 }}>{formError}</div>
           )}
 
-          <div>
-            <label style={labelStyle}>{t('started')} *</label>
-            <input
-              type="date" style={inputStyle}
-              value={form.started_date}
-              onChange={e => set('started_date', e.target.value)}
-              required
-              onFocus={focusBorder} onBlur={blurBorder}
-            />
-          </div>
-
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div>
-              <label style={labelStyle}>{t('validityFrom')}</label>
+              <label style={labelStyle}>{t('year')} *</label>
               <input
-                type="date" style={inputStyle}
-                value={form.validity_from}
-                onChange={e => set('validity_from', e.target.value)}
+                type="number" style={inputStyle}
+                value={form.year}
+                onChange={e => set('year', Number(e.target.value))}
+                required
                 onFocus={focusBorder} onBlur={blurBorder}
               />
             </div>
             <div>
-              <label style={labelStyle}>{t('validityTo')}</label>
+              <label style={labelStyle}>{t('month')} *</label>
               <input
-                type="date" style={inputStyle}
-                value={form.validity_to}
-                onChange={e => set('validity_to', e.target.value)}
+                type="number" min={1} max={12} style={inputStyle}
+                value={form.month}
+                onChange={e => set('month', Number(e.target.value))}
+                required
                 onFocus={focusBorder} onBlur={blurBorder}
               />
             </div>
@@ -439,29 +429,30 @@ function AssessmentModal({
               <select
                 style={{ ...inputStyle, cursor: 'pointer' }}
                 value={form.status}
-                onChange={e => set('status', e.target.value)}
+                onChange={e => set('status', e.target.value as AssessmentStatus)}
                 onFocus={focusBorder} onBlur={blurBorder}
               >
                 {STATUS_OPTIONS.map(s => (
-                  <option key={s} value={s}>{s}</option>
+                  <option key={s} value={s}>{t(`common:status.${s}`, s)}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label style={labelStyle}>{t('totalScore')}</label>
+              <label style={labelStyle}>{t('score')} *</label>
               <input
                 type="number" style={inputStyle}
-                value={form.total_score}
+                value={form.score}
                 onChange={e => {
                   const val = e.target.value
                   if (val === '' || (Number(val) >= 0 && Number(val) <= 100)) {
-                    set('total_score', val)
+                    set('score', val)
                   }
                 }}
                 min={0}
                 max={100}
                 step="0.01"
                 placeholder="0 – 100"
+                required
                 onFocus={focusBorder} onBlur={blurBorder}
               />
             </div>
@@ -558,7 +549,7 @@ function DeleteConfirm({
           {t('delete.title')}
         </div>
         <div style={{ fontSize: 13.5, color: 'var(--text-secondary, #5b6270)', lineHeight: 1.6, marginBottom: 24 }}>
-          {t('delete.confirm', { name: assessment.employee_name })}
+          {t('delete.confirm', { name: personName(assessment.employee) })}
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button
@@ -694,79 +685,59 @@ export function AssessmentsPage() {
       header: t('employee'),
       render: (row) => (
         <span style={{ fontWeight: 600, color: 'var(--text-heading)' }}>
-          {row.employee_name}
+          {personName(row.employee)}
         </span>
       ),
     },
     {
-      key: 'template',
-      header: t('template', 'Template'),
+      key: 'indicator',
+      header: t('indicator'),
       render: (row) => (
-        <span style={{ color: 'var(--text-secondary)' }}>{row.template_name}</span>
-      ),
-    },
-    {
-      key: 'started',
-      header: t('started'),
-      render: (row) => (
-        <span style={{ color: 'var(--text-secondary)' }}>{row.started_date}</span>
-      ),
-    },
-    {
-      key: 'startedBy',
-      header: t('startedBy'),
-      render: (row) => (
-        <span style={{ color: 'var(--text-secondary)' }}>{row.started_by_name}</span>
-      ),
-    },
-    {
-      key: 'reviewers',
-      header: t('reviewers'),
-      render: (row) => (
-        <span style={{ color: 'var(--text-secondary)' }}>
-          {row.reviewer_names.join(', ') || '—'}
-        </span>
-      ),
-    },
-    {
-      key: 'totalScore',
-      header: t('totalScore'),
-      align: 'center',
-      render: (row) => (
-        <span style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: 13.5 }}>
-          {row.total_score ?? '—'}
-        </span>
+        <span style={{ color: 'var(--text-secondary)' }}>{row.indicator.name}</span>
       ),
     },
     {
       key: 'dept',
       header: t('dept'),
-      width: 200,
+      width: 180,
       render: (row) => (
         <span style={{
           color: 'var(--text-secondary)', display: 'block',
-          maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis',
+          maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
-          {row.department_name}
+          {row.department?.name ?? '—'}
         </span>
       ),
     },
     {
-      key: 'validity',
-      header: t('validity'),
+      key: 'yearMonth',
+      header: t('yearMonth'),
       render: (row) => (
-        <span style={{ color: 'var(--text-secondary)' }}>
-          {row.validity_from && row.validity_to
-            ? `${row.validity_from} – ${row.validity_to}`
-            : '—'}
+        <span style={{ color: 'var(--text-secondary)' }}>{row.month}/{row.year}</span>
+      ),
+    },
+    {
+      key: 'score',
+      header: t('score'),
+      align: 'center',
+      render: (row) => (
+        <span style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: 13.5 }}>
+          {row.score}
         </span>
+      ),
+    },
+    {
+      key: 'reviewedBy',
+      header: t('reviewedBy'),
+      render: (row) => (
+        <span style={{ color: 'var(--text-secondary)' }}>{personName(row.reviewed_by)}</span>
       ),
     },
     {
       key: 'status',
       header: t('status'),
       render: (row) => (
-        <StatusBadge statusKey={row.status} label={row.status_display} />
+        <StatusBadge statusKey={row.status} label={t(`common:status.${row.status}`, row.status)} />
       ),
     },
     {

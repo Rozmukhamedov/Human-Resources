@@ -59,7 +59,8 @@
     "notCreated": "Не создано",
     "rejected": "Отклонено",
     "pending": "Ожидает",
-    "pendingApproval": "Ожидает утверждения"
+    "pendingApproval": "Ожидает утверждения",
+    "draft": "Черновик"
   },
   "gender": { "Ayol": "Женский", "Erkak": "Мужской" },
   "actions": { "edit": "Редактировать", "options": "Опции", "printPdf": "Печать PDF", "create": "Создать" },

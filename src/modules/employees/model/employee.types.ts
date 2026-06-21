@@ -74,6 +74,14 @@ export interface PaginatedEmployees {
   data: ApiEmployee[]
 }
 
+export interface ImportEmployeesResult {
+  created?: number
+  updated?: number
+  errors?: string[]
+  detail?: string
+  message?: string
+}
+
 export interface Position {
   id: number
   name_uz: string

@@ -59,7 +59,8 @@
     "notCreated": "Not created",
     "rejected": "Rejected",
     "pending": "Pending",
-    "pendingApproval": "Pending approval"
+    "pendingApproval": "Pending approval",
+    "draft": "Draft"
   },
   "gender": { "Ayol": "Female", "Erkak": "Male" },
   "actions": { "edit": "Edit", "options": "Options", "printPdf": "Print PDF", "create": "Create" },
