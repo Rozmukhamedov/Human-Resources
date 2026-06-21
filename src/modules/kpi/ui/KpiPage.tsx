@@ -386,7 +386,7 @@ export function KpiPage() {
                   {rankList.map((e) => {
                     const initials = getInitials(e.employee_name)
                     const [avBg, avColor] = getAvColor(e.employee_name)
-                    const gs = GRADE_STYLE[e.grade] ?? GRADE_STYLE.low
+                    const gs = e.grade ? (GRADE_STYLE[e.grade] ?? GRADE_STYLE.low) : { color: 'var(--text-muted, #9aa1ad)', bg: 'var(--bg-subtle, #f4f5f7)' }
                     return (
                       <div
                         key={e.employee_id}
@@ -462,7 +462,7 @@ export function KpiPage() {
                         {/* Grade badge */}
                         <div>
                           <span style={{ display: 'inline-flex', alignItems: 'center', fontSize: 11.5, fontWeight: 700, color: gs.color, background: gs.bg, borderRadius: 8, padding: '3px 10px', whiteSpace: 'nowrap' }}>
-                            {t(`kpi.${e.grade}`)}
+                            {e.grade ? t(`kpi.${e.grade}`) : '—'}
                           </span>
                         </div>
                       </div>

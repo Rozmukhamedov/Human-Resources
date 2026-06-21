@@ -1,10 +1,18 @@
 import { apiRequest } from '@core/api/client'
 import { tokenStorage } from '@core/api/tokenStorage'
-import type { KpiResultsResponse, KpiWeightsConfig, KpiWeightsPayload } from '../model/kpi.types'
+import type { KpiResultsResponse, KpiResultEmployee, KpiWeightsConfig, KpiWeightsPayload } from '../model/kpi.types'
 
 export interface KpiResultsParams {
   year?: number
   month?: number
+}
+
+type RawKpiResultEmployee = Omit<KpiResultEmployee, 'kpi' | 'grade'> & {
+  kpi: number | null
+  grade: KpiResultEmployee['grade'] | null
+}
+type RawKpiResultsResponse = Omit<KpiResultsResponse, 'results'> & {
+  results: RawKpiResultEmployee[]
 }
 
 export function getKpiWeights() {
@@ -22,12 +30,16 @@ export function calculateKpi() {
   return apiRequest<void>('/kpi/calculate/', { method: 'POST' })
 }
 
-export function getKpiResults(params: KpiResultsParams = {}) {
+export async function getKpiResults(params: KpiResultsParams = {}): Promise<KpiResultsResponse> {
   const q = new URLSearchParams()
   if (params.year != null) q.set('year', String(params.year))
   if (params.month != null) q.set('month', String(params.month))
   const qs = q.toString()
-  return apiRequest<KpiResultsResponse>(`/kpi/results/${qs ? `?${qs}` : ''}`)
+  const data = await apiRequest<RawKpiResultsResponse>(`/kpi/results/${qs ? `?${qs}` : ''}`)
+  return {
+    ...data,
+    results: data.results.map(r => ({ ...r, kpi: r.kpi ?? 0, grade: r.grade ?? '' })),
+  }
 }
 
 export async function exportKpiExcel(): Promise<void> {

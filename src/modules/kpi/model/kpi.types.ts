@@ -21,7 +21,7 @@ export interface KpiResultEmployee {
   discipline: number | null
   custom_scores: Record<string, number | null>
   kpi: number
-  grade: KpiGrade
+  grade: KpiGrade | ''
 }
 
 export interface KpiResultsResponse {
