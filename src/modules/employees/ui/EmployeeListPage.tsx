@@ -4,6 +4,7 @@ import { Select } from '@mantine/core'
 import { useTranslation } from 'react-i18next'
 import { useEmployeeFilterStore } from '@modules/employees/model/employeeFilterStore'
 import { useUIStore } from '@core/store/uiStore'
+import { useToastStore } from '@core/store/toastStore'
 import { EmployeeAvatar } from '@shared/ui/EmployeeAvatar/EmployeeAvatar'
 import { StatusBadge } from '@shared/ui/StatusBadge/StatusBadge'
 import { EmptyState } from '@shared/ui/EmptyState/EmptyState'
@@ -981,6 +982,7 @@ export function EmployeeListPage() {
   const { t } = useTranslation(['employees', 'common'])
   const navigate = useNavigate()
   const { setSelectedEmployee } = useUIStore()
+  const { addToast } = useToastStore()
   const {
     query, sortKey, sortDir, sel, allSel, page,
     setQuery, toggleSort, toggleSel, toggleAllSel, setPage,
@@ -997,6 +999,7 @@ export function EmployeeListPage() {
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [pageSize, setPageSize] = useState(15)
   const [importing, setImporting] = useState(false)
+  const [importProgress, setImportProgress] = useState(0)
   const [templateDownloading, setTemplateDownloading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -1069,14 +1072,16 @@ export function EmployeeListPage() {
     e.target.value = ''
     if (!file) return
     setImporting(true)
+    setImportProgress(0)
     try {
-      const result = await importEmployees(file)
+      const result = await importEmployees(file, setImportProgress)
       await load(page, pageSize)
-      alert(result.message || t('importSuccess'))
+      addToast({ type: 'success', title: result.message || t('importSuccess') })
     } catch (err) {
-      alert(err instanceof Error ? err.message : t('importError'))
+      addToast({ type: 'error', title: t('importError'), message: err instanceof Error ? err.message : undefined })
     } finally {
       setImporting(false)
+      setImportProgress(0)
     }
   }
 
@@ -1085,7 +1090,7 @@ export function EmployeeListPage() {
     try {
       await exportEmployeeTemplate()
     } catch (err) {
-      alert(err instanceof Error ? err.message : t('templateError'))
+      addToast({ type: 'error', title: t('templateError'), message: err instanceof Error ? err.message : undefined })
     } finally {
       setTemplateDownloading(false)
     }
@@ -1151,9 +1156,16 @@ export function EmployeeListPage() {
         }}>
           <span style={{
             fontFamily: "'Plus Jakarta Sans'", fontWeight: 700, fontSize: 16,
-            color: 'var(--text-heading)', letterSpacing: '-.01em', marginRight: 6, flexShrink: 0,
+            color: 'var(--text-heading)', letterSpacing: '-.01em', flexShrink: 0,
           }}>
             {t('common:titles.employees')}
+          </span>
+          <span style={{
+            fontSize: 12, fontWeight: 700, color: 'var(--text-muted)',
+            background: 'var(--bg-subtle)', borderRadius: 999, padding: '3px 10px',
+            marginRight: 6, flexShrink: 0,
+          }}>
+            {total}
           </span>
           <SearchInput
             value={query}
@@ -1175,7 +1187,7 @@ export function EmployeeListPage() {
             </svg>
           </HeaderButton>
           <HeaderButton
-            label={importing ? t('importing') : t('import')}
+            label={importing ? `${t('importing')} ${importProgress}%` : t('import')}
             disabled={importing}
             onClick={handleImportClick}
           >

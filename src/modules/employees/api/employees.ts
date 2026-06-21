@@ -47,28 +47,39 @@ export function getPositions(page = 1, pageSize = 100) {
   )
 }
 
-export async function importEmployees(file: File): Promise<ImportEmployeesResult> {
+export function importEmployees(file: File, onProgress?: (percent: number) => void): Promise<ImportEmployeesResult> {
   const BASE_URL = import.meta.env.VITE_API_BASE_URL as string
   const access = tokenStorage.getAccess()
-  const headers: Record<string, string> = {}
-  if (access) headers['Authorization'] = `Bearer ${access}`
 
-  const formData = new FormData()
-  formData.append('file', file)
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', `${BASE_URL}/employees/import/`)
+    if (access) xhr.setRequestHeader('Authorization', `Bearer ${access}`)
 
-  const res = await fetch(`${BASE_URL}/employees/import/`, {
-    method: 'POST',
-    headers,
-    body: formData,
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress?.(Math.round((e.loaded / e.total) * 100))
+    }
+
+    xhr.onload = () => {
+      let data: ImportEmployeesResult = {}
+      try {
+        data = xhr.responseText ? (JSON.parse(xhr.responseText) as ImportEmployeesResult) : {}
+      } catch {
+        // non-JSON response body
+      }
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(data)
+      } else {
+        reject(new Error(data.detail || data.message || xhr.responseText || `HTTP ${xhr.status}`))
+      }
+    }
+
+    xhr.onerror = () => reject(new Error('Network error'))
+
+    const formData = new FormData()
+    formData.append('file', file)
+    xhr.send(formData)
   })
-
-  const text = await res.text()
-  const data = text ? (JSON.parse(text) as ImportEmployeesResult) : {}
-
-  if (!res.ok) {
-    throw new Error(data.detail || data.message || text || `HTTP ${res.status}`)
-  }
-  return data
 }
 
 export async function exportEmployeeTemplate(): Promise<void> {
